@@ -17,14 +17,17 @@ Abrir `index.html` en Chrome, Firefox o Edge. No requiere instalar paquetes, eje
 
 ## Publicar en Hostinger (sitio NUEVO, independiente de Semillería Durán)
 
-1. Entrar a [Sitios web de Hostinger](https://hpanel.hostinger.com/websites).
-2. En el plan Business, seleccionar **Crear sitio** → **PHP/HTML** (sitio vacío / personalizado). **No** modificar el sitio `orchid-viper-129475.hostingersite.com`.
-3. Elegir un dominio o subdominio disponible para el juego. No asumir una URL hasta que Hostinger confirme el alta.
-4. En el panel del **nuevo sitio**, abrir **Avanzado → Git** (en algunas versiones: **Git**).
-5. Elegir **Conectar GitHub** o **Continuar con GitHub**. Autorizar el acceso al repositorio `gustavothinkinfinite-stack/zombie` si Hostinger lo solicita.
-6. Seleccionar **rama `main`** y la ruta de publicación `public_html` (o dejar la ruta de instalación vacía para la raíz según lo indique hPanel). La carpeta destino debe estar vacía.
-7. Ejecutar **Deploy / Desplegar**. Habilitar el despliegue automático tras cada push si la opción aparece.
-8. Abrir la URL que genere Hostinger y comprobar que se muestra **Último Refugio**, que se puede iniciar una partida y que las teclas y el canvas responden.
+**Sitio reservado en Hostinger:** https://wheat-chough-542895.hostingersite.com/ (creado el 2026-10-23; la publicación del juego no está confirmada).
+
+**Panel GIT del sitio:** https://hpanel.hostinger.com/websites/wheat-chough-542895.hostingersite.com/advanced/git?redirectLocation=side_menu
+
+1. Abrir el panel GIT del sitio enlazado arriba. **No** modificar `orchid-viper-129475.hostingersite.com` (Semillería Durán).
+2. Elegir **Conectar con GitHub** / **Continuar con GitHub**. Autorizar en GitHub el acceso a **solo** `gustavothinkinfinite-stack/zombie` si se ofrece esta selección.
+3. Seleccionar el repositorio `gustavothinkinfinite-stack/zombie` y la rama **`main`**.
+4. Confirmar el directorio raíz de publicación **`public_html`** (o dejar la ruta de instalación vacía si la interfaz antigua así lo solicita). Verificar que el destino esté vacío antes de desplegar.
+5. Ejecutar **Deploy / Desplegar** y verificar que el despliegue indique éxito.
+6. Activar **Auto-deployment** para que nuevas versiones en `main` se publiquen automáticamente.
+7. Abrir https://wheat-chough-542895.hostingersite.com/ y verificar pantalla de inicio de **Último Refugio**, movimiento, oleadas y construcción.
 
 Para un sitio estático como este no se debe elegir el flujo Node.js/React, ni agregar comandos `npm`.
 
