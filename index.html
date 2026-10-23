@@ -1,80 +1,59 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0e1515">
-<meta name="description" content="Último Refugio: sobreviví, explorá 300 tramos de calle, saqueá edificios y construí tu base.">
-<title>Último Refugio | Supervivencia en mundo abierto</title>
-<link rel="stylesheet" href="./style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#151016">
+<title>Crónicas de París — Vampiro: La Mascarada | RPG 2D</title>
+<meta name="description" content="Crónicas de París: un RPG 2D narrativo de ghouls y vampiros ambientado en el Principado de París.">
+<link rel="stylesheet" href="style.css?v=vtm1">
 </head>
 <body>
-<div class="app">
-<header class="topbar">
-  <div class="brand"><span class="brand-mark">UR</span><div><strong>ÚLTIMO REFUGIO</strong><small>CIUDAD EN CUARENTENA · MUNDO ABIERTO</small></div></div>
-  <div class="topstats">
-    <span class="pill">DÍA <b id="day">1</b></span>
-    <span class="pill">HORA <b id="clock">08:00</b></span>
-    <span class="pill">EXPLORADO <b id="explored">1 / 300</b></span>
-    <span class="pill"><span class="online"></span> SIN OLEADAS</span>
-  </div>
+<div class="page">
+<header class="mast">
+  <div class="brand"><div class="sigil">V</div><div><strong>CRÓNICAS DE PARÍS</strong><small>UN RELATO DE SERVIDUMBRE Y SANGRE · EDICIÓN PROTOTIPO</small></div></div>
+  <div class="meta"><span>PARÍS · ÉPOCA ACTUAL</span><span class="dot">●</span><span>SIETE CLANES DE LA CAMARILLA</span></div>
 </header>
-<div class="layout">
-<main class="game-frame">
-<div class="game-toolbar"><div><strong id="place">BARRIO CENTRAL</strong><span id="context">Explorá, saqueá, sobreviví.</span></div><div><button id="mapBtn" title="Mapa [M]">Mapa [M]</button><button id="saveBtn" title="Guardar [V]">Guardar</button><button id="pauseBtn">Pausa</button></div></div>
-<div class="stage" id="stage">
- <canvas id="game" width="1000" height="640" aria-label="Mapa del juego Último Refugio"></canvas>
- <div id="noiseTag" class="noise-tag">SILENCIO</div>
- <div id="prompt" class="interaction hidden"></div>
- <div id="toast" class="toast hidden"></div>
- <div id="overlay" class="overlay">
-   <div class="over-card"><div class="eyebrow">SUPERVIVENCIA · EXPLORACIÓN · CONSTRUCCIÓN</div><h1 id="overlayTitle">EL MUNDO SE TERMINÓ.<br>NO TU HISTORIA.</h1>
-   <p id="overlayCopy">300 tramos de calle conectados. Entrá en casas, comercios y depósitos; buscá materiales y volvé a mejorar tu refugio. Los zombis no esperan oleadas: están ahí afuera y escuchan cada ruido.</p>
-   <div class="intro-badges"><span>300 tramos</span><span>1.196 edificios explorables</span><span>ruido dinámico</span><span>guardado local</span></div>
-   <div class="intro-buttons"><button id="newBtn" class="primary">Nueva partida</button><button id="continueBtn" class="secondary">Continuar partida</button></div>
-   <small>WASD: mover · SHIFT: correr · Clic: disparar · F: golpe · E: interactuar · B: construir</small>
-   </div>
+<div id="welcome" class="screen welcome">
+ <div class="ornament">✦ &nbsp; PARÍS BAJO LA MÁSCARA &nbsp; ✦</div>
+ <h1>Antes de la eternidad,<br><em>la servidumbre.</em></h1>
+ <p>Tu sangre pertenece a otro. Sos un ghoul al servicio de un antiguo vampiro de París. Conocé a tu Domitor, cumplí sus encargos y decidí si el precio de la inmortalidad merece ser pagado.</p>
+ <div class="welcome-actions"><button id="startNew" class="primary">CREAR PERSONAJE</button><button id="continueGame" class="secondary">CONTINUAR PARTIDA</button></div>
+ <div class="tags"><span>Creación según 3.ª edición</span><span>Misiones con tiradas</span><span>Aprecio del Domitor</span><span>Pixel art 2D</span></div>
+ <div class="smallprint">Adaptación no oficial de reglas para un videojuego experimental. El sistema de aprecio y las misiones son originales de esta versión.</div>
+</div>
+<div id="creator" class="screen creator hidden">
+ <div class="creator-head"><div><div class="eyebrow">EL SIERVO ANTES DEL ABRAZO</div><h1>Creación del personaje</h1></div><div class="stepmark" id="stepMark">PASO 1 / 6</div></div>
+ <div class="creator-layout">
+  <section class="paper"><div class="steps" id="steps"></div><div id="createBody"></div><div class="footnav"><button id="previousStep" class="secondary">← Volver</button><div id="validation" role="status"></div><button id="nextStep" class="primary">Continuar →</button></div></section>
+  <aside class="sheet"><h2>FICHA DEL PERSONAJE</h2><div id="sheetSummary"></div><hr><div class="rule-note"><strong>REGLAS</strong><p>Atributos: 7/5/3 · Habilidades: 13/9/5 · Trasfondos: 5 · Virtudes: 7 · Gratuitos: 15.</p><p>Empezás como ghoul sin Disciplinas. El Abrazo y las Disciplinas llegarán después.</p><small>Vampiro: La Mascarada 3.ª ed. · Capítulo 3</small></div></aside>
  </div>
- <div class="touch-controls" id="touchControls"><div class="dpad"><button data-key="w" class="up">▲</button><button data-key="a" class="left">◀</button><button data-key="s" class="down">▼</button><button data-key="d" class="right">▶</button></div><div class="touch-actions"><button id="touchRun">CORRER</button><button id="touchInteract">E</button><button id="touchMelee">GOLPE</button><button id="touchShoot" class="danger">DISPARAR</button></div></div>
 </div>
-<div class="actionbar">
- <div class="mode-line"><strong id="modeText">EXPLORAR</strong><span id="hint">Acercate a una puerta y presioná E para ingresar.</span></div>
- <div class="actions"><button data-build="wall">1 · Barricada</button><button data-build="trap">2 · Trampa</button><button data-build="tower">3 · Torreta</button><button data-build="outpost">4 · Puesto</button><button id="cancelBuild">B · Construir</button></div>
+<div id="play" class="screen play hidden">
+ <div class="game-top">
+  <div><div class="eyebrow" id="sceneLabel">RESIDENCIA DEL DOMITOR</div><h2 id="sceneTitle">La primera noche</h2></div>
+  <div class="game-buttons"><button id="characterBtn">Ficha</button><button id="journalBtn">Diario</button><button id="manualSaveBtn">Guardar</button><button id="titleBtn">Menú</button></div>
+ </div>
+ <div class="game-layout">
+  <section class="gamepane">
+   <div class="canvas-wrap"><canvas id="world" width="480" height="300" aria-label="Mapa pixel art de Crónicas de París"></canvas><div id="floatingHint">WASD para moverte · E para interactuar</div><div id="notice" class="notice hidden"></div></div>
+   <div class="controls"><span><kbd>WASD</kbd> Mover</span><span><kbd>E</kbd> Hablar / entrar</span><span><kbd>ESPACIO</kbd> Interactuar</span><span>También podés tocar sobre el mapa para caminar</span></div>
+   <div class="touch" id="touchPanel"><div class="touch-dpad"><button data-move="up">▲</button><div><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div></div><button id="touchUse" class="primary">INTERACTUAR</button></div>
+  </section>
+  <aside class="status">
+   <section><div class="eyebrow">TU DOMITOR</div><h3 id="masterLabel">—</h3><p id="masterRole"></p><div class="bar-label"><span>APRECIO</span><b id="appreciationText">0 / 100</b></div><div class="bar"><div id="appreciationBar"></div></div><p class="caption" id="embraceHint">Su aprobación todavía está lejos.</p></section>
+   <section><div class="eyebrow">ESTADO DEL PERSONAJE</div><div class="kv"><span>Nombre</span><b id="playName">—</b></div><div class="kv"><span>Condición</span><b id="playState">Ghoul</b></div><div class="kv"><span>Clan del maestro</span><b id="playClan">—</b></div><div class="kv"><span>Humanidad</span><b id="playHumanity">—</b></div><div class="kv"><span>Voluntad</span><b id="playWill">—</b></div></section>
+   <section><div class="eyebrow">ENCARGO ACTUAL</div><h3 id="questTitle">—</h3><p id="questDetail">Acercate a tu maestro.</p><div id="questPhase" class="quest-phase">POR COMENZAR</div></section>
+   <section><div class="eyebrow">REGISTRO DE LA NOCHE</div><div id="history"></div></section>
+  </aside>
+ </div>
+ <div id="dialog" class="dialog hidden" role="dialog" aria-modal="true"><div class="dialog-card"><div class="eyebrow" id="dialogEyebrow">CONVERSACIÓN</div><h2 id="dialogTitle">—</h2><p id="dialogText">—</p><div id="dialogOptions"></div><button id="dialogClose" class="dialog-close">Cerrar</button></div></div>
+ <div id="sheetModal" class="dialog hidden" role="dialog" aria-modal="true"><div class="dialog-card wide"><div class="eyebrow">PERSONAJE</div><h2>Tu ficha</h2><div id="sheetDetail"></div><button id="sheetClose">Cerrar ficha</button></div></div>
+ <div id="journalModal" class="dialog hidden" role="dialog" aria-modal="true"><div class="dialog-card wide"><div class="eyebrow">DIARIO</div><h2>El precio de la sangre</h2><div id="journalDetail"></div><button id="journalClose">Cerrar diario</button></div></div>
 </div>
-</main>
-<aside class="sidebar">
-<section class="panel">
- <h2>ESTADO DEL SUPERVIVIENTE</h2>
- <div class="meter-row"><span>Salud</span><b id="hpText">100/100</b></div><div class="meter"><i id="hpBar" class="hp"></i></div>
- <div class="meter-row"><span>Resistencia</span><b id="staminaText">100%</b></div><div class="meter"><i id="staminaBar" class="stamina"></i></div>
- <div class="meter-row"><span>Hambre</span><b id="hungerText">0%</b></div><div class="meter"><i id="hungerBar" class="hunger"></i></div>
- <div class="meter-row"><span>Ruido</span><b id="noiseText">0</b></div><div class="meter"><i id="noiseBar" class="noise"></i></div>
- <div class="divider"></div>
- <div class="ammo"><span>MUNICIÓN</span><strong id="ammo">12 / 36</strong></div>
- <button id="reloadBtn" class="full">Recargar [R]</button>
-</section>
-<section class="panel">
- <h2>MOCHILA Y RECURSOS <span id="capacity">0 / 55</span></h2>
- <div class="resource-grid"><span>🪵 Madera <b id="wood">0</b></span><span>⚙ Chatarra <b id="scrap">0</b></span><span>▣ Tela <b id="cloth">0</b></span><span>🥫 Comida <b id="food">0</b></span><span>✚ Botiquines <b id="med">0</b></span><span>◈ Munición <b id="bullets">0</b></span></div>
- <div class="two-actions"><button id="eatBtn">Comer</button><button id="healBtn">Curarse [Q]</button></div>
-</section>
-<section class="panel">
- <h2>MAPA DE LA CIUDAD</h2><canvas id="minimap" width="300" height="225"></canvas>
- <p class="muted">20 × 15 sectores = <strong>300 tramos de calle</strong>. Tu refugio está marcado en verde. Solo se revelan los sectores visitados.</p>
- <div class="progress"><div id="progressBar"></div></div>
-</section>
-<section class="panel">
- <h2>BASE Y CONSTRUCCIÓN</h2>
- <div id="baseStatus" class="muted">Refugio inicial establecido.</div>
- <p class="muted">Construí cerca de tu refugio o de un puesto de avanzada. Los recursos salen de casas, tiendas y depósitos.</p>
- <div class="build-costs"><div>1 Barricada <b>6 madera · 2 chatarra</b></div><div>2 Trampa <b>4 madera · 2 chatarra</b></div><div>3 Torreta <b>8 madera · 12 chatarra</b></div><div>4 Puesto <b>14 madera · 10 chatarra</b></div></div>
-</section>
-<section class="panel guide"><h2>CONTROLES</h2><div>WASD / flechas <b>Mover</b></div><div>Shift <b>Correr (hace ruido)</b></div><div>Clic / espacio <b>Disparar (muy ruidoso)</b></div><div>F <b>Golpe silencioso</b></div><div>E <b>Entrar / saquear / salir</b></div><div>R <b>Recargar</b></div><div>B, 1–4 <b>Construcción</b></div><div>M, V <b>Mapa / guardar</b></div></section>
-<section class="panel"><h2>REGISTRO</h2><div id="log" class="log">La ciudad está en silencio. Por ahora.</div></section>
-</aside>
+<footer>CRÓNICAS DE PARÍS · BASADO EN EL MUNDO CREADO PARA EL PRINCIPADO DE PARÍS · DATOS GUARDADOS EN ESTE NAVEGADOR</footer>
 </div>
-<footer>ÚLTIMO REFUGIO · PROTOTIPO MUNDO ABIERTO · PROGRESO GUARDADO EN ESTE NAVEGADOR</footer>
-</div>
-<script src="./game.js" defer></script>
+<script src="vtm-data.js?v=vtm1"></script>
+<script src="vtm-game.js?v=vtm1"></script>
 </body>
 </html>
