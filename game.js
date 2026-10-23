@@ -215,6 +215,20 @@ function spawnAround(x,y,min,max,alerted){
  }
  return false;
 }
+function spawnGroupNear(x,y,count){
+ if(!spawnAround(x,y,70,280,false))return;
+ const lead=zombies[zombies.length-1];
+ for(let i=1;i<count&&zombies.length<80;i++){
+  let pos=null;
+  for(let attempts=0;attempts<8;attempts++){
+   const a=rand(0,Math.PI*2),d=rand(20,72);
+   const cx=lead.x+Math.cos(a)*d,cy=lead.y+Math.sin(a)*d;
+   if(dist(cx,cy,saved.player.x,saved.player.y)<390||blockedWorld(cx,cy,14,true))continue;
+   pos={x:cx,y:cy};break;
+  }
+  if(pos)zombies.push(makeZombie(pos.x,pos.y,false));
+ }
+}
 function ambient(dt){
  if(mode!=="world")return;
  spawnTimer+=dt;
@@ -229,7 +243,7 @@ function ambient(dt){
    spawned.add(k);
    const count=1+Math.floor(hash(col,row,777)*3);
    if(k===BASE_ID)continue;
-   for(let i=0;i<count;i++)spawnAround((col+.5)*S,(row+.5)*S,70,280,false);
+   spawnGroupNear((col+.5)*S,(row+.5)*S,count);
   }
  if(zombies.length<45&&roll(.19+(saved.noise||0)*.004))spawnAround(saved.player.x,saved.player.y,560,1060,roll(.4));
  zombies=zombies.filter(z=>z.hp>0&&dist(z.x,z.y,saved.player.x,saved.player.y)<1850);
