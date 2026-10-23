@@ -1,70 +1,73 @@
-# Último Refugio — Mundo abierto 2D
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.1)
 
-Prototipo jugable de supervivencia zombi con exploración, saqueo y construcción de refugio. **No tiene oleadas**.
+RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
-**Juego:** https://wheat-chough-542895.hostingersite.com/  
-**Hostinger GIT:** https://hpanel.hostinger.com/websites/wheat-chough-542895.hostingersite.com/advanced/git  
-**Repositorio:** https://github.com/gustavothinkinfinite-stack/zombie
+- **Juego:** https://wheat-chough-542895.hostingersite.com/
+- **GitHub:** https://github.com/gustavothinkinfinite-stack/zombie
+- **Configuración de despliegue:** https://hpanel.hostinger.com/websites/wheat-chough-542895.hostingersite.com/advanced/git
+- **Rama:** \`main\`
+- **Ruta de alojamiento:** \`public_html\`
+- **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
-## Cambios de la versión 2
+## Características incorporadas
 
-- Ciudad procedural de 20 × 15 sectores, **300 tramos de calle transitables**. No son todavía 300 calles distintas con nombres individuales.
-- **1.196 edificios** distribuidos por la ciudad: casas, tiendas, farmacias, talleres, almacenes y comisarías; se puede entrar en cualquiera de ellos.
-- Cada interior tiene **5 puntos de saqueo** con recursos según el tipo de edificio. El saqueo no se repite y se guarda.
-- Infectados deambulando por el mapa: encuentros de 1 a 3 zombis; algunos interiores contienen 1 a 2 infectados.
-- IA con visión, persecución y reacción al ruido. Disparar es mucho más ruidoso que caminar; correr también puede atraer zombis.
-- Mochila limitada, hambre, salud, resistencia, comida, curación, munición y recarga.
-- Base inicial en el sector central. Se pueden construir barricadas, trampas, torretas automáticas y puestos avanzados para extender el radio de construcción.
-- Mapa de niebla exploratoria: revela los sectores visitados.
-- Guardado automático cada 18 segundos y manual, mediante `localStorage` en el navegador.
+1. **Creador en seis pasos:** concepto/nombre, clan del Domitor, Naturaleza, Conducta, Atributos, Habilidades, Trasfondos, Virtudes y puntos gratuitos.
+2. **Reglas de Vampiro: La Mascarada 3.ª edición:** Atributos 7/5/3 con 1 punto base cada uno; Habilidades 13/9/5 con máximo 3 durante asignación inicial; Trasfondos 5; Virtudes 7 con 1 punto base; Humanidad = Conciencia + Autocontrol; Fuerza de Voluntad = Coraje; 15 puntos gratuitos y sus costes según manual. Todos los presupuestos son validados.
+3. **Creación de ghoul (adaptación propia):** comienza humano, sin Disciplinas, y sólo puede seleccionar Trasfondos de mortal: Aliados, Contactos, Criados, Fama, Influencia y Recursos.
+4. **Siete clanes de la Camarilla:** Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere y Ventrue. Un maestro prediseñado para cada uno.
+5. **Casa inicial:** vista cenital pixel art. Aparece dentro de la residencia, frente al Domitor; se puede hablar con él y salir a París.
+6. **Mapa inicial de París:** selección y desplazamiento físico entre ocho lugares; opciones de investigación, política, favores y combate mediante diálogos.
+7. **Sistema de misiones:** ocho encargos repetibles en un ciclo introductorio, dos enfoques de resolución y tiradas d10 (Atributo + Habilidad; cada resultado >= dificultad aporta éxito, los 1 cancelan éxitos).
+8. **Aprecio del Domitor:** 0–100; puede subir o bajar con diálogos, cumplimiento y resultados de misiones. Al llegar a 100 se ofrece el Abrazo; el jugador puede aceptarlo o aplazarlo.
+9. **Abrazo y Disciplinas:** al aceptar, el personaje se convierte en Vástago del clan de su Domitor y distribuye 3 círculos iniciales entre las Disciplinas del clan.
+10. **Guardado local:** partidas persistentes mediante \`localStorage\`, tecla/acción "Guardar" y recuperación desde la portada.
+
+## PNJ y ambientación de la campaña de París
+
+Se han incorporado **con sus nombres y cargos conocidos**:
+
+- **Pierre Duvalier:** Príncipe Toreador de París; Domitor elegible Toreador.
+- **Lord Thomas Wyndham:** Sheriff Ventrue; Domitor Ventrue.
+- **Marcus von Württemberg:** Alto Regente Tremere; Domitor Tremere.
+- **Erebos:** referente Nosferatu; Domitor Nosferatu.
+- **Lucien:** Brujah afín a los anarquistas pero fiel a la Camarilla; Domitor Brujah.
+- **Etienne Moreau:** Senescal, mencionada únicamente por su cargo *público*. **No revelar secretos de la campaña**.
+- **Pierre Dupont:** periodista interesado en incidentes nocturnos.
+- **John Winthrop, Ingrid e Isabelle Dubois:** presentes en la base de continuidad narrativa para futuras expansiones.
+- **St. July, Elíseo, residencia Tremere de Passy, red Nosferatu, policía y barrios de París:** referencias de escenarios del universo establecido.
+
+**PNJ nuevos, no provenientes del proyecto original confirmado:**
+- **Gabriel Forestier**, Domitor Gangrel y guardián de los límites de París.
+- **Marianne Delacroix**, Domitor Malkavian de Montmartre.
+
+Los dos últimos son personajes creados **provisionalmente** para completar los siete clanes, no NPC establecidos de la campaña anterior.
+
+**Importante:** el juego todavía NO importa toda la documentación de otro proyecto, la ciudad completa ni todas las fichas de sus PNJ. Esta versión utiliza solamente los datos conocidos. No debe confundirse con una reproducción exhaustiva del Principado.
+
+## Referencia de reglas
+
+El manual aportado por el usuario, *Vampiro: La Mascarada — 3.ª edición*, contiene:
+- p. 103 — secuencia y presupuestos del creador, clanes, atributos y habilidades.
+- p. 104 — Naturaleza/Conducta, Trasfondos y tabla de costes de puntos gratuitos.
+- p. 106 — distribución inicial de rasgos y Virtudes.
+- p. 107 — Humanidad y Fuerza de Voluntad.
+
+Las misiones, la barra 0–100 de aprecio, la condición inicial sin Disciplinas y la ceremonia opcional son **reglas adaptadas expresamente para este videojuego**, no procedimientos establecidos por el manual.
 
 ## Controles
 
-| Acción | Teclas |
-|---|---|
-| Moverse | WASD / flechas |
-| Correr | Shift |
-| Apuntar y disparar | Clic / Espacio |
-| Golpe cuerpo a cuerpo | F |
-| Abrir puerta / saquear / salir / guardar en base | E |
-| Recargar | R |
-| Usar botiquín | Q |
-| Modo de construcción | B |
-| Barricada / trampa / torreta / puesto | 1 / 2 / 3 / 4 |
-| Mapa completo | M |
-| Guardar | V |
-| Pausa | Esc / P |
+- \`WASD\` / flechas: movimiento.
+- \`E\` / barra espaciadora: hablar / entrar / investigar según proximidad.
+- Clic sobre el mapa: caminar hasta el punto.
+- En pantallas táctiles: cruceta y botón Interactuar.
+- Botones de ficha, diario y guardar: disponibles arriba del escenario.
 
-En pantallas táctiles hay cruceta y botones de acción. La selección de construcción se hace desde la barra inferior.
+## Estado y próximos pasos
 
-## Desarrollo
+Ésta es una **versión 0.1**, no un juego terminado. Falta ampliar interiores, retratos/animaciones, mapas transitables completos de París, decisiones a largo plazo, NPC adicionales con rutinas, fichas de salud/combate, equipo, economía de vitae y más profundidad en las misiones.
 
-Proyecto estático sin dependencias ni proceso de compilación:
+**Pruebas realizadas antes de la entrega:** carga de scripts, seis pasos de distribución de puntos, inicio del ghoul, conversación, aceptación de un encargo, salida a París, resolución de una tirada, informe al Domitor, cambio de aprecio, Abrazo al 100 % y asignación de Disciplinas.
 
-- `index.html`: interfaz y paneles.
-- `style.css`: estilos responsivos.
-- `game.js`: mundo, enemigos, interiores, persistencia, controles y renderizado Canvas.
+## No oficial
 
-Para probarlo en local basta abrir `index.html` en un navegador. Hostinger está conectado al repositorio de GitHub, rama `main`, directorio `public_html`. El despliegue automático figuraba como activado en el panel; **cada versión debe verificarse en la URL pública**, no basta con confirmar el push.
-
-## Límites del prototipo
-
-- Mapa procedural sin misiones, personajes no jugadores ni narrativa todavía.
-- El arte es esquemático y los interiores comparten un diseño básico.
-- No hay multijugador ni cuenta de usuario. La partida se guarda solamente en el navegador y dispositivo actual.
-- La simulación mantiene activos a los enemigos del área cercana; no calcula físicamente a cada zombi de toda la ciudad cuando el jugador está lejos.
-- Los 300 tramos son sectores conectados de una cuadrícula, no una topografía urbana realista ni 300 vías con nombres independientes.
-- Es una versión inicial: no está ajustado definitivamente el equilibrio de hambre, combate, ruido, botín ni construcción.
-
-## Próximas mejoras sugeridas
-
-1. Calles y barrios con nombres, edificios reconocibles, obstáculos, vehículos, plazas y caminos no repetitivos.
-2. Interior de cada edificio diferente, llaves, puertas cerradas y saqueo con tiempo/riesgo.
-3. Sistema de inventario más detallado, almacenes, fabricación, reparaciones, iluminación y electricidad.
-4. Estados de IA: oído/visión con línea de vista, agrupación, infestaciones persistentes y dificultad por barrio.
-5. Múltiples supervivientes, asignación de tareas y progresión de refugio.
-6. Guardado del mundo más completo y pruebas automatizadas del equilibrio.
-
-## Seguridad del despliegue
-
-El proyecto del juego usa el sitio independiente `wheat-chough-542895.hostingersite.com`. No modificar `orchid-viper-129475.hostingersite.com` (Semillería Durán).
+Prototipo no oficial creado como adaptación de una campaña propia. No incorpora escaneos, ilustraciones ni texto extenso extraídos del manual. No está afiliado a las editoriales ni titulares de la franquicia.
