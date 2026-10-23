@@ -1,49 +1,70 @@
-# Último Refugio — Supervivencia zombi 2D
+# Último Refugio — Mundo abierto 2D
 
-Juego web de supervivencia y construcción de base. Prototipo inicial para navegador, sin dependencias externas.
+Prototipo jugable de supervivencia zombi con exploración, saqueo y construcción de refugio. **No tiene oleadas**.
 
-## Estado actual
+**Juego:** https://wheat-chough-542895.hostingersite.com/  
+**Hostinger GIT:** https://hpanel.hostinger.com/websites/wheat-chough-542895.hostingersite.com/advanced/git  
+**Repositorio:** https://github.com/gustavothinkinfinite-stack/zombie
 
-- Movimiento y combate en vista cenital 2D.
-- Recolección de madera, chatarra y botiquines.
-- Construcción de muros, torretas y trampas.
-- Defensa de un generador central ante oleadas de zombis.
-- Controles para teclado, mouse y dispositivos táctiles.
-- Récord local guardado por el navegador.
+## Cambios de la versión 2
 
-## Jugar localmente
+- Ciudad procedural de 20 × 15 sectores, **300 tramos de calle transitables**. No son todavía 300 calles distintas con nombres individuales.
+- **1.196 edificios** distribuidos por la ciudad: casas, tiendas, farmacias, talleres, almacenes y comisarías; se puede entrar en cualquiera de ellos.
+- Cada interior tiene **5 puntos de saqueo** con recursos según el tipo de edificio. El saqueo no se repite y se guarda.
+- Infectados deambulando por el mapa: encuentros de 1 a 3 zombis; algunos interiores contienen 1 a 2 infectados.
+- IA con visión, persecución y reacción al ruido. Disparar es mucho más ruidoso que caminar; correr también puede atraer zombis.
+- Mochila limitada, hambre, salud, resistencia, comida, curación, munición y recarga.
+- Base inicial en el sector central. Se pueden construir barricadas, trampas, torretas automáticas y puestos avanzados para extender el radio de construcción.
+- Mapa de niebla exploratoria: revela los sectores visitados.
+- Guardado automático cada 18 segundos y manual, mediante `localStorage` en el navegador.
 
-Abrir `index.html` en Chrome, Firefox o Edge. No requiere instalar paquetes, ejecutar un servidor de desarrollo ni compilar.
+## Controles
 
-## Publicar en Hostinger (sitio NUEVO, independiente de Semillería Durán)
+| Acción | Teclas |
+|---|---|
+| Moverse | WASD / flechas |
+| Correr | Shift |
+| Apuntar y disparar | Clic / Espacio |
+| Golpe cuerpo a cuerpo | F |
+| Abrir puerta / saquear / salir / guardar en base | E |
+| Recargar | R |
+| Usar botiquín | Q |
+| Modo de construcción | B |
+| Barricada / trampa / torreta / puesto | 1 / 2 / 3 / 4 |
+| Mapa completo | M |
+| Guardar | V |
+| Pausa | Esc / P |
 
-**Sitio reservado en Hostinger:** https://wheat-chough-542895.hostingersite.com/ (creado el 2026-10-23; la publicación del juego no está confirmada).
+En pantallas táctiles hay cruceta y botones de acción. La selección de construcción se hace desde la barra inferior.
 
-**Panel GIT del sitio:** https://hpanel.hostinger.com/websites/wheat-chough-542895.hostingersite.com/advanced/git?redirectLocation=side_menu
+## Desarrollo
 
-1. Abrir el panel GIT del sitio enlazado arriba. **No** modificar `orchid-viper-129475.hostingersite.com` (Semillería Durán).
-2. Elegir **Conectar con GitHub** / **Continuar con GitHub**. Autorizar en GitHub el acceso a **solo** `gustavothinkinfinite-stack/zombie` si se ofrece esta selección.
-3. Seleccionar el repositorio `gustavothinkinfinite-stack/zombie` y la rama **`main`**.
-4. Confirmar el directorio raíz de publicación **`public_html`** (o dejar la ruta de instalación vacía si la interfaz antigua así lo solicita). Verificar que el destino esté vacío antes de desplegar.
-5. Ejecutar **Deploy / Desplegar** y verificar que el despliegue indique éxito.
-6. Activar **Auto-deployment** para que nuevas versiones en `main` se publiquen automáticamente.
-7. Abrir https://wheat-chough-542895.hostingersite.com/ y verificar pantalla de inicio de **Último Refugio**, movimiento, oleadas y construcción.
+Proyecto estático sin dependencias ni proceso de compilación:
 
-Para un sitio estático como este no se debe elegir el flujo Node.js/React, ni agregar comandos `npm`.
+- `index.html`: interfaz y paneles.
+- `style.css`: estilos responsivos.
+- `game.js`: mundo, enemigos, interiores, persistencia, controles y renderizado Canvas.
 
-Documentación oficial:
-- https://www.hostinger.com/support/1583302-how-to-deploy-a-git-repository-in-hostinger/
-- https://www.hostinger.com/es/support/1583214-como-anadir-un-sitio-web-en-hostinger/
+Para probarlo en local basta abrir `index.html` en un navegador. Hostinger está conectado al repositorio de GitHub, rama `main`, directorio `public_html`. El despliegue automático figuraba como activado en el panel; **cada versión debe verificarse en la URL pública**, no basta con confirmar el push.
 
-## Estructura
+## Límites del prototipo
 
-- `index.html`: juego completo, interfaz, estilos y código.
-- `README.md`: documentación del proyecto y despliegue.
+- Mapa procedural sin misiones, personajes no jugadores ni narrativa todavía.
+- El arte es esquemático y los interiores comparten un diseño básico.
+- No hay multijugador ni cuenta de usuario. La partida se guarda solamente en el navegador y dispositivo actual.
+- La simulación mantiene activos a los enemigos del área cercana; no calcula físicamente a cada zombi de toda la ciudad cuando el jugador está lejos.
+- Los 300 tramos son sectores conectados de una cuadrícula, no una topografía urbana realista ni 300 vías con nombres independientes.
+- Es una versión inicial: no está ajustado definitivamente el equilibrio de hambre, combate, ruido, botín ni construcción.
 
-## Siguientes iteraciones
+## Próximas mejoras sugeridas
 
-Separar CSS/JS en carpetas, agregar inventario y almacenamiento en la base, construcción de edificios, supervivientes aliados, mejoras y guardado de partidas completas.
+1. Calles y barrios con nombres, edificios reconocibles, obstáculos, vehículos, plazas y caminos no repetitivos.
+2. Interior de cada edificio diferente, llaves, puertas cerradas y saqueo con tiempo/riesgo.
+3. Sistema de inventario más detallado, almacenes, fabricación, reparaciones, iluminación y electricidad.
+4. Estados de IA: oído/visión con línea de vista, agrupación, infestaciones persistentes y dificultad por barrio.
+5. Múltiples supervivientes, asignación de tareas y progresión de refugio.
+6. Guardado del mundo más completo y pruebas automatizadas del equilibrio.
 
-## Aclaración
+## Seguridad del despliegue
 
-Este repositorio es código fuente. Crear el archivo o hacer push a GitHub no publica automáticamente un sitio en Hostinger hasta configurar una vez la integración en hPanel.
+El proyecto del juego usa el sitio independiente `wheat-chough-542895.hostingersite.com`. No modificar `orchid-viper-129475.hostingersite.com` (Semillería Durán).
