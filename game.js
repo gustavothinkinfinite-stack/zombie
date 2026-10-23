@@ -23,7 +23,7 @@ let saved,buildings=[],buildingById=new Map(),zombies=[],roomZombies=[],bullets=
 let mode="menu",lastMode="world",inside=null,buildType=null,keys=new Set(),pointer={x:500,y:320,active:false,down:false},camera={x:0,y:0},moveTimer=0,shotTimer=0,autosave=0,spawnTimer=0,hudTimer=0,noticeTimer=0,noticeText="",frameLast=performance.now(),clockTime=0,roomSpawned=false,runTouch=false;
 function makeSave(){
  const startX=(BASE_X+.5)*S,startY=(BASE_Y+.5)*S;
- return {version:2,seed:Math.floor(Math.random()*2000000000),player:{x:startX,y:startY,hp:100,stamina:100,hunger:7,ammo:12,face:0,invuln:0},inv:{wood:12,scrap:9,cloth:2,food:2,med:1,bullets:18},time:480,visited:[BASE_ID],loot:{},structures:[],roomId:null,roomPos:null,outside:null,deaths:0,kills:0};
+ return {version:2,seed:Math.floor(Math.random()*2000000000),player:{x:startX,y:startY,hp:100,stamina:100,hunger:7,ammo:12,face:0,invuln:0},inv:{wood:12,scrap:9,cloth:2,food:2,med:1,bullets:18},time:480,visited:[BASE_ID],loot:{},clearedRooms:{},structures:[],roomId:null,roomPos:null,outside:null,deaths:0,kills:0};
 }
 function buildWorld(){
  buildings=[];buildingById=new Map();
@@ -47,7 +47,7 @@ function load(){
   saved.player.hunger=clamp(Number(saved.player.hunger)||0,0,100);
   saved.player.x=clamp(Number(saved.player.x)||0,18,W-18);
   saved.player.y=clamp(Number(saved.player.y)||0,18,H-18);
-  saved.visited=Array.isArray(saved.visited)?saved.visited:[BASE_ID];
+  saved.visited=Array.isArray(saved.visited)?saved.visited:[BASE_ID];saved.clearedRooms=saved.clearedRooms||{};
   return true;
  }catch(e){return false;}
 }
@@ -149,7 +149,7 @@ function lootSpot(i){
 function initializeRoom(){
  roomZombies=[];roomSpawned=true;
  const p=saved.player;
- const amount=hash(inside.col,inside.row,inside.n,70)<.26?2:hash(inside.col,inside.row,inside.n,71)<.42?1:0;
+ const amount=saved.clearedRooms[inside.id]?0:hash(inside.col,inside.row,inside.n,70)<.26?2:hash(inside.col,inside.row,inside.n,71)<.42?1:0;
  for(let i=0;i<amount;i++){
   const x=180+i*390+rand(-40,40),y=245+rand(-35,65);
   if(dist(x,y,p.x,p.y)>145)roomZombies.push(makeZombie(x,y,true));
@@ -176,11 +176,11 @@ function interact(){
  if(t.kind==="exit"){leave();return;}
  if(t.kind==="base"){save(false);return;}
  if(t.kind==="loot"){
-  const reward=generateLoot(inside,t.index),n=addLoot(reward.type,reward.count);
-  if(!n){note("Mochila llena. Construí un puesto o gastá materiales.");return;}
+  const reward=generateLoot(inside,t.index);
+  if(capacity()-usedSlots()<reward.count){note("Necesitás "+reward.count+" espacios libres para recoger estos suministros.");return;}
+  const n=addLoot(reward.type,reward.count);
   if(!saved.loot[inside.id])saved.loot[inside.id]=[];
-  if(n===reward.count)saved.loot[inside.id].push(t.index);
-  else{note("Mochila casi llena: quedan recursos en el mueble.");return;}
+  saved.loot[inside.id].push(t.index);
   sound(saved.outside.x,saved.outside.y,120,5);
   const names={wood:"madera",scrap:"chatarra",cloth:"tela",food:"comida",med:"botiquín",bullets:"balas"};
   announce("Encontraste "+n+" de "+names[reward.type]+".");
@@ -253,7 +253,7 @@ function zombieAI(dt){
   if(d<z.r+13&&z.hit<=0&&p.invuln<=0){p.hp=clamp(p.hp-rand(7,11),0,100);p.invuln=.55;z.hit=1.1;noticeText="¡Te atacó un infectado!";noticeTimer=1.2;if(p.hp<=0)die();}
   if(!inside&&d>1300&&z.alert<=0)z.walk=0;
  }
- if(inside)roomZombies=roomZombies.filter(z=>z.hp>0);
+ if(inside){roomZombies=roomZombies.filter(z=>z.hp>0);if(roomSpawned&&roomZombies.length===0)saved.clearedRooms[inside.id]=true;}
  else zombies=zombies.filter(z=>z.hp>0);
 }
 function shoot(){
