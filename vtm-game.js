@@ -25,8 +25,9 @@
  }
  function freeCost(cat){return {"Atributo":5,"Habilidad":2,"Trasfondo":1,"Virtud":2,"Humanidad":1,"Voluntad":1}[cat];}
  function adjusted(trait,cat){
-  const data=cat==="Atributo"?"attrs":cat==="Habilidad"?"skills":cat==="Trasfondo"?"backgrounds":"virtues";
-  return creator[data][trait]+(creator.free[data][trait]||0);
+  const data=cat==="Atributo"?"attr":cat==="Habilidad"?"skills":cat==="Trasfondo"?"backgrounds":"virtues";
+  const purchases=cat==="Atributo"?"attrs":data;
+  return creator[data][trait]+(creator.free[purchases][trait]||0);
  }
  function humanity(){return creator.virtues.Conciencia+creator.virtues.Autocontrol+(creator.free.virtues.Conciencia||0)+(creator.free.virtues.Autocontrol||0)+creator.free.humanity;}
  function will(){return creator.virtues.Coraje+(creator.free.virtues.Coraje||0)+creator.free.will;}
