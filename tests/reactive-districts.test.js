@@ -91,7 +91,8 @@ test("Rumores externos no se confunden con las pruebas del barrio receptor",()=>
  const def=R.byId.passy,g=fresh("stjuly");at(g,def,def.report+2);
  const shop=K.byId["stjuly-cafe"],out=R.shopChoices(g,shop);
  assert.ok(out.some(a=>a.label.includes("Passy")));
- assert.equal(out.some(a=>a.label.includes("Contrastar registros")),false);
+ assert.ok(out.some(a=>a.label.includes("Una invitación falsificada")));
+ assert.ok(out.some(a=>a.label.includes("Contrastar registros")));
 });
 test("Persistencia local sin reemplazar el formato de partidas de Vampiro",()=>{
  const g=fresh();g.clock.minutes=23*60+50;R.tick(g);
