@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -211,6 +211,10 @@
   game.cityPos=game.cityPos||{x:46,y:267};
   game.venue=game.venue||null;
   game.flags=game.flags||{};
+  game.npcRelations=game.npcRelations||{};
+  game.npcFlags=game.npcFlags||{};
+  game.knownNpcs=Array.isArray(game.knownNpcs)?game.knownNpcs:[];
+  game.access=game.access||{};
  }
  function enterGame(){
   expandSave();
@@ -226,7 +230,7 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,flags:{}};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -246,6 +250,8 @@
   $("exposureText").textContent=game.exposure+" / 100";
   $("exposureBar").style.width=game.exposure+"%";
   $("dupontRelation").textContent=game.relations.dupont>=2?"Confía en vos":game.relations.dupont<=-2?"Desconfía de vos":"Neutral";
+  $("knownNpcs").textContent=game.knownNpcs.length+" / 8";
+  $("elyseeStatus").textContent=game.access.elysee?"Concedido":game.observed.invitation||game.access.courtReferral?"Con recomendación":"Pendiente";
   $("leadsStatus").textContent=game.activeQuest==="archivos"?"Pruebas: "+game.arc.clues.length+"/2 como mínimo. "+(game.readyReport?"Informá al Domitor.":"Investigá tres fuentes en París."):"Los sucesos nocturnos se ocultan entre rumores y silencios.";
  }
  function questObj(id){return D.quests.find(q=>q.id===id);}
@@ -329,22 +335,8 @@
   hud();save();
  }
  function locationAction(location){
-  if(!game.activeQuest){
-   askMenu(location.name,location.detail+" No tenés un encargo activo para este lugar.",[{label:"Regresar a las calles",action:()=>{}}],"PARÍS");return;
-  }
-  const q=questObj(game.activeQuest);
-  if(q.id==="archivos"&&!game.readyReport&&["hemeroteca","policia","stjuly"].includes(location.id)){
-    enterVenue(location);return;
-  }
-  if(q.place!==location.id){
-   askMenu(location.name,location.detail+" Tu misión actual está vinculada con "+D.locations.find(x=>x.id===q.place).name+".",[{label:"Continuar explorando",action:()=>{}}],"UN LUGAR DE PARÍS");
-   return;
-  }
-  if(game.readyReport){notice("Ya cumpliste esta parte: volvé con tu Domitor.");return;}
-  askMenu(q.title,location.detail+"\n\n"+q.summary,
-   [{label:"Actuar con "+q.attr+" + "+q.skill+" (dificultad "+q.difficulty+")",action:()=>questAction(q,false)},
-    {label:"Intentar un abordaje sigiloso con Astucia + Sigilo (dificultad "+(q.difficulty+1)+", mayor aprecio)",action:()=>questAction(q,true)},
-    {label:"Abandonar el lugar sin intervenir",action:()=>{log("Te retiraste sin actuar.");}}],"MISIÓN · "+q.kind.toUpperCase());
+  if(location.id==="elysee"&&!game.access.elysee){elyseeGate();return;}
+  enterVenue(location);
  }
 
  function exposure(delta,reason){
