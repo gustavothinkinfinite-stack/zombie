@@ -291,6 +291,19 @@
   }
   game.venueReturn=game.venueReturn||null;
   game.venue=game.venue||null;
+  // Una partida antigua puede señalar un interior retirado en una actualización.
+  // Recuperar el barrio de origen, si existe, antes de dibujar o interactuar.
+  if(game.scene==="venue"&&!D.locations.some(location=>location.id===game.venue)){
+   const ret=game.venueReturn;
+   if(ret?.scene==="district"&&T?.byId[ret.district]){
+    game.scene="district";game.district=ret.district;
+    game.x=Number.isFinite(ret.x)?ret.x:240;
+    game.y=Number.isFinite(ret.y)?ret.y:195;
+   }else{
+    game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;
+   }
+   game.venue=null;game.venueReturn=null;
+  }
   game.flags=game.flags||{};
   game.npcRelations=game.npcRelations||{};
   game.npcFlags=game.npcFlags||{};
