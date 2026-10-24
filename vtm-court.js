@@ -55,7 +55,7 @@ window.VTM_COURT=(()=>{
   s.sanctions=s.sanctions&&typeof s.sanctions==="object"?s.sanctions:{};
   s.sanctions.restrictedUntil=Math.max(0,Math.floor(Number(s.sanctions.restrictedUntil)||0));
   s.history=Array.isArray(s.history)?s.history.slice(0,60):[];
-  s.lastExposureBand=clamp(Math.floor(Number(s.lastExposureBand)||0),0,2);
+  s.lastExposureBand=clamp(Math.floor(Number(s.lastExposureBand)||0),0,3);
   s.idCounter=clamp(Math.floor(Number(s.idCounter)||0),0,99999);
   g.court=s;return s;
  }
@@ -76,12 +76,12 @@ window.VTM_COURT=(()=>{
  }
  function exposureReview(g){
   if(!g?.embraced)return null;
-  const c=init(g),band=g.exposure>=75?2:g.exposure>=45?1:0;
+  const c=init(g),band=g.exposure>=90?3:g.exposure>=75?2:g.exposure>=45?1:0;
   if(band<=c.lastExposureBand)return null;
   c.lastExposureBand=band;
   // Rumor ≠ prueba. No hay sentencia automática por una barra de exposición.
-  return addCase(g,"mascarada","exposure:"+band,band===1?0:1,
-   band===1?"Rumores mortales que requieren verificación.":"Hay varios testimonios mortales sin corroborar sobre tus movimientos.");
+  return addCase(g,"mascarada","exposure:"+band,band===1?0:band===2?1:2,
+   band===1?"Rumores mortales que requieren verificación.":band===2?"Hay varios testimonios mortales aún sin corroborar sobre tus movimientos.":"Se acumularon testimonios concordantes de exposición muy elevada; la corte debe evaluar su consistencia.");
  }
  function hunting(g,place,result){
   if(!g?.embraced||!result?.success||!HUNT_DOMAINS[place])return null;
@@ -200,6 +200,12 @@ window.VTM_COURT=(()=>{
   c.prestige=clamp(c.prestige+delta,-30,50);
   g.factions.camarilla=clamp((g.factions.camarilla||0)+delta,-100,100);
   if(verdict==="sanctioned")c.sanctions.restrictedUntil=Math.max(c.sanctions.restrictedUntil,g.clock.night+1);
+  if(verdict==="sanctioned"&&!c.recognized){
+   // Antes de su presentación formal, el chiquillo sigue bajo tutela.
+   // No se presume una infracción adicional ni se dicta pena contra el sire sin prueba.
+   g.appreciation=clamp((Number(g.appreciation)||0)-5,0,100);
+   addLog(g,"La Guardiana notificó la censura al Domitor, responsable de orientar al nuevo Vástago.");
+  }
   addLog(g,T[record.tradition].name+": "+(verdict==="dismissed"?"archivado":verdict==="warning"?"amonestado":"censura")+".");
   return {ok:true,verdict,description:text,delta,cost:method==="restitution"?35:0};
  }
@@ -230,6 +236,7 @@ window.VTM_COURT=(()=>{
  }
  function arbitrate(g,id,approach,roll){
   if(!g.embraced||g.scene!=="venue"||g.venue!=="elysee"||!g.access?.elysee)return {error:"El arbitraje requiere comparecer ante la corte"};
+  if(!init(g).recognized)return {error:"Debés completar primero tu presentación formal ante el príncipe"};
   const c=init(g),d=DISPUTES[id],state=c.disputes[id]||{};
   if(!d)return {error:"Disputa inexistente"};
   if(state.status==="settled")return {error:"Esta disputa ya fue resuelta"};
