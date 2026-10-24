@@ -263,6 +263,20 @@ Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 
+## Renovación visual — Fachadas, luces y animación (24 de octubre de 2026)
+
+**Actualización visual implementada en el videojuego web**, sin nuevas imágenes conceptuales ni cambios a misiones, acciones, coordenadas, combate, reglas de la Mascarada o formato de partidas guardadas.
+
+- **Fachadas:** `vtm-districts.js` añade cornisas, frisos, contrafuertes, balcones, respiraderos industriales, entradas con pórticos y detalles distintos según la arquitectura de cada uno de los ocho barrios. Los edificios se conservan en el fondo cacheado para evitar recalcular su geometría en cada cuadro.
+- **Iluminación nocturna:** la misma capa del distrito añade fuentes de luz animadas, tonalidades específicas para Passy, Elíseo, St. July, Bastilla, Archivo Policial, Hemeroteca, Saint-Denis y los túneles, y reflejos segmentados sobre calles mojadas. Se desactiva cuando el jugador apaga los FX.
+- **Profundidad:** `vtm-ambience.js` dibuja efectos de farolas sobre el personaje y, al pasar por detrás de ciertas copas de árboles, una capa de vegetación que lo oculta parcialmente. Esta prueba de oclusión sólo consulta las coordenadas gráficas del jugador: no crea obstáculos, rutas ni colisiones.
+- **Animación:** `vtm-graphics.js` mejora la alternancia de cuadros al caminar con el atlas actual, ancla la sombra al suelo, añade un ligero movimiento del abrigo y una respiración casi imperceptible al quedarse quieto. El sprite de reserva recibe animaciones equivalentes; se mantienen las escalas de 46 % en mapa y 68 % en barrios y el tamaño original en interiores.
+- **Integración:** la llamada de `vtm-game.js` al renderizador de primer plano recibe escena, barrio y posición del personaje sólo para visualizar profundidad. Las estructuras de juego no se modificaron.
+- **Caché:** los cuatro archivos gráficos y el punto de integración reciben referencias nuevas en `index.html` (`gfx-night-2-20261024`).
+- **Pruebas:** `node tests/night-visual-smoke.js` verifica ocho barrios, nuevos reflejos y gradientes, que FX puede desactivarse, que las copas de árboles ocultan al personaje sólo al pasar detrás, que caminar genera fotogramas diferentes, que las escalas se mantienen y que los estados guardados quedan idénticos. Las comprobaciones de código finalizaron correctamente.
+
+**Pendiente de confirmación:** GitHub contiene los cambios, pero no se ha verificado su despliegue en Hostinger ni su apariencia definitiva en el navegador del usuario. Los sprites detallados siguen siendo arte procedural y atlas SVG existente, no un nuevo paquete de sprites dibujados a mano.
+
 ## Refinamiento gráfico — Barrios y mapa de París (24 de octubre de 2026)
 
 Se trabajó directamente sobre las escenas que el usuario mostró funcionando en Hostinger, en especial el **Barrio del Archivo Policial** y el **mapa general del Principado**. Se modificó el código renderizado; no se generaron imágenes de ejemplo.
