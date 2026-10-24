@@ -43,9 +43,11 @@ console.log("OK: la partida dañada no contamina el respaldo");
 
 const fail=storage();
 assert.equal(S.save(fail,key,first,clans),true);
+// Simular un guardado principal válido más reciente que la copia secundaria.
+fail.db.set(key,JSON.stringify(second));
 fail.block(bk);
-assert.equal(S.save(fail,key,second,clans),false);
-assert.equal(fail.getItem(key),JSON.stringify(first));
+assert.equal(S.save(fail,key,third,clans),false);
+assert.equal(fail.getItem(key),JSON.stringify(second));
 console.log("OK: no sobrescribir guardado previo si el respaldo falla");
 
 const failPrimary=storage();
