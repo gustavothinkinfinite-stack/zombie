@@ -10,7 +10,8 @@ window.VTM_ADVANCED_TACTICS=(()=>{
   if(!a)return null;
   let s=a.tactical;
   if(!s||typeof s!=="object"||Array.isArray(s))s=a.tactical={};
-  s.distance=clamp(Math.floor(Number.isFinite(+s.distance)?+s.distance:1),0,2);
+  // Los combates antiguos sin tactical siguen al alcance cuerpo a cuerpo.
+  s.distance=clamp(Math.floor(Number.isFinite(+s.distance)?+s.distance:0),0,2);
   s.cover=clamp(Math.floor(Number(s.cover)||0),0,2);
   s.enemyCover=clamp(Math.floor(Number(s.enemyCover)||0),0,1);
   s.aim=clamp(Math.floor(Number(s.aim)||0),0,2);
