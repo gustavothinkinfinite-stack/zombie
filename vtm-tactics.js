@@ -4,10 +4,11 @@
    Los efectos concretos se simplifican para el prototipo, nunca sustituyen la ficha de mesa. */
 window.VTM_TACTICS=(()=>{
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const EQ=window.VTM_EQUIPMENT;
  const ENEMIES=Object.freeze({
-  saintdenis:{name:"Matón de Saint-Denis",health:6,dex:3,wits:2,str:3,stamina:2,skill:2,damage:"contundente",reward:2},
-  bastilla:{name:"Provocador de Bastilla",health:6,dex:2,wits:3,str:3,stamina:2,skill:2,damage:"contundente",reward:2},
-  passy:{name:"Custodio armado de Passy",health:7,dex:3,wits:2,str:2,stamina:3,skill:3,damage:"letal",reward:3}
+  saintdenis:{name:"Matón de Saint-Denis",health:6,dex:3,wits:2,str:3,stamina:2,skill:2,willpower:2,armor:0,ammo:0,style:"agresivo",damage:"contundente",reward:2},
+  bastilla:{name:"Provocador de Bastilla",health:6,dex:3,wits:3,str:2,stamina:2,skill:2,willpower:3,armor:0,ammo:0,style:"evasivo",damage:"contundente",reward:2},
+  passy:{name:"Custodio armado de Passy",health:7,dex:3,wits:2,str:2,stamina:3,skill:3,willpower:4,armor:1,ammo:4,style:"armado",damage:"letal",reward:3}
  });
  // Poderes de 1 a 5. Celeridad, Potencia y Fortaleza mantienen además efecto pasivo.
  const POWERS=Object.freeze({
@@ -90,6 +91,8 @@ window.VTM_TACTICS=(()=>{
  function init(g){
   g.combat=g.combat||{};
   g.combat.records=g.combat.records||{};
+  if(EQ)EQ.init(g);
+  if(g.combat.active?.enemy){const enemy=g.combat.active.enemy,def=ENEMIES[g.combat.active.place];if(def)for(const key of ["willpower","armor","style","ammo"])if(enemy[key]===undefined)enemy[key]=def[key];}
   const m=g.mechanics||{};
   const oldHealthOnly=!m.damage;
   m.damage=m.damage||{contundente:0,letal:0,agravado:0};
@@ -111,7 +114,8 @@ window.VTM_TACTICS=(()=>{
   return "Salud "+m.health+"/7 · contundente "+m.damage.contundente+
    " · letal "+m.damage.letal+" · agravado "+m.damage.agravado+
    (g.embraced?" · Sangre "+m.blood+"/10":"")+
-   (g.combat.active?" · enemigo "+g.combat.active.enemy.health+"/"+g.combat.active.enemy.max:"");
+   (g.combat.active?" · enemigo "+g.combat.active.enemy.health+"/"+g.combat.active.enemy.max:"")+
+   (EQ?" · "+EQ.summary(g):"");
  }
  function deal(g,damage,type){
   init(g);const m=g.mechanics,amount=clamp(Math.floor(damage),0,7);
@@ -123,7 +127,8 @@ window.VTM_TACTICS=(()=>{
   init(g);
   const isVampire=!!g.embraced,fort=isVampire?power(g,"Fortaleza"):0;
   // Fortaleza puede absorber agravado. Los mortales no absorben daño letal con Resistencia.
-  const pool=type==="agravado"?fort:type==="letal"?(isVampire?rank(g,"Resistencia")+fort:0):rank(g,"Resistencia")+fort;
+  const armor=type==="agravado"?0:EQ?.init(g).armor?EQ.ITEMS.chaleco.soak:0;
+  const pool=(type==="agravado"?fort:type==="letal"?(isVampire?rank(g,"Resistencia")+fort:0):rank(g,"Resistencia")+fort)+armor;
   const rolled=pool>0?dice(pool,6,rng):{dice:[],net:0};
   let rest=Math.max(0,raw-rolled.net-g.mechanics.guard);
   g.mechanics.guard=0;
@@ -136,15 +141,17 @@ window.VTM_TACTICS=(()=>{
   if(g.combat.active)return {error:"Ya participás en un combate."};
   if(g.combat.records[place]==="won")return {error:"Ya neutralizaste la amenaza de este lugar."};
   if(g.mechanics.health<=0)return {error:"Estás incapacitado; necesitás recuperarte."};
-  g.combat.active={place,round:1,enemy:{name:e.name,health:e.health,max:e.health,dex:e.dex,wits:e.wits,str:e.str,stamina:e.stamina,skill:e.skill,damage:e.damage},history:[],ended:false};
+  g.combat.active={place,round:1,enemy:{name:e.name,health:e.health,max:e.health,dex:e.dex,wits:e.wits,str:e.str,stamina:e.stamina,skill:e.skill,damage:e.damage,willpower:e.willpower,armor:e.armor,ammo:e.ammo,style:e.style},history:[],ended:false};
   return {started:true,enemy:e.name};
  }
  function action(g,choice,rng=Math.random){
   init(g);
   const encounter=g.combat.active;if(!encounter||encounter.ended)return {error:"No hay combate activo."};
   const e=encounter.enemy;
-  const valid=["golpe","arma","disparo","esquiva","huida"].includes(choice);
+  const valid=["golpe","arma","disparo","esquiva","huida","recargar"].includes(choice);
   if(!valid)return {error:"Acción no admitida."};
+  if(EQ&&choice!=="recargar"){const reason=EQ.moveAllowed(g,choice);if(reason)return {error:reason};}
+  if(choice==="recargar"&&(!EQ||EQ.init(g).equipped!=="pistola"||EQ.init(g).ammo<=0||EQ.init(g).magazine>=6))return {error:"No podés recargar ahora."};
   const log=[],playerInit=rank(g,"Destreza")+rank(g,"Astucia")+Math.floor(rng()*10)+1+
    (g.embraced?Math.min(3,power(g,"Celeridad")):0);
   const enemyInit=e.dex+e.wits+Math.floor(rng()*10)+1;
@@ -159,19 +166,21 @@ window.VTM_TACTICS=(()=>{
     return;
    }
    if(dodging){log.push("Adoptás una postura defensiva.");return;}
+   if(choice==="recargar"){const r=EQ.reload(g);log.push(r.ok?"Recargaste "+r.loaded+" cartucho(s); quedan "+r.reserve+" en reserva.":r.error);return;}
    const st=choice==="golpe"?"Pelea":choice==="arma"?"Armas Cuerpo a Cuerpo":"Armas de Fuego";
-   if(choice==="disparo"&&skill(g,st)===0){log.push("No tenés preparación para manejar un arma de fuego.");return;}
-   if(choice==="disparo"&&!(g.character.backgrounds?.Recursos>=2||g.character.backgrounds?.Aliados>=2)){log.push("No disponés de un arma de fuego ni contactos que puedan proporcionarla.");return;}
+   if(choice==="disparo"){if(!EQ?.useAmmo(g)){log.push("No queda munición.");return;}log.push("Disparaste un cartucho.");}
    const p=dice(rank(g,"Destreza")+skill(g,st)+wounds(g)+
     (g.embraced&&g.mechanics.battleSpeed>0?1:0),choice==="disparo"?7:6,rng);
    outcome.playerRoll=p;
    if(!p.success){log.push("Tu ataque falló ("+p.dice.join(", ")+").");return;}
-   const type=g.embraced&&g.mechanics.claws&&choice==="golpe"?"agravado":choice==="disparo"||choice==="arma"?"letal":"contundente";
-   const extra=type==="agravado"?1:choice==="arma"?1:choice==="disparo"?2:0;
-   const dmg=dice(rank(g,"Fuerza")+Math.max(0,p.net-1)+extra,6,rng);
-   const potency=g.embraced?power(g,"Potencia"):0;
+   const weapon=EQ?.ITEMS[EQ.init(g).equipped];
+   const type=g.embraced&&g.mechanics.claws&&choice==="golpe"?"agravado":choice==="disparo"?"letal":choice==="arma"?weapon?.damage||"contundente":"contundente";
+   const extra=type==="agravado"?1:choice==="arma"?weapon?.bonus||0:0;
+   const dmg=dice(choice==="disparo"?(weapon?.bonus||3)+1+Math.max(0,p.net-1):rank(g,"Fuerza")+Math.max(0,p.net-1)+extra,6,rng);
+   const potency=g.embraced&&choice!=="disparo"?power(g,"Potencia"):0;
    const raw=Math.max(0,dmg.net+potency);
-   const armor=type==="agravado"?0:e.stamina;
+   if(e.style==="evasivo"&&e.health<=Math.ceil(e.max/2)&&dice(e.dex+2,7,rng).net>=p.net){log.push("El adversario esquivó el ataque.");return;}
+   const armor=type==="agravado"?0:e.stamina+(e.armor||0);
    const absorbed=dice(armor,6,rng);
    const net=Math.max(0,raw-absorbed.net);
    e.health=clamp(e.health-net,0,e.max);
@@ -186,7 +195,9 @@ window.VTM_TACTICS=(()=>{
   const npc=()=>{
    if(done)return;
    if(e.skipAttack){e.skipAttack=false;log.push("El adversario pierde su acción por un poder sobrenatural.");return;}
-   const attack=dice(e.dex+e.skill,6,rng);outcome.enemyRoll=attack;
+   const attack=dice(e.dex+e.skill+(e.style==="agresivo"&&e.health<=3?1:0),6,rng);outcome.enemyRoll=attack;
+   if(e.style==="armado"&&e.ammo>0){e.ammo--;log.push("El custodio disparó ("+e.ammo+" cartuchos restantes).");}
+   else if(e.style==="armado"&&e.ammo<=0){e.damage="contundente";log.push("El custodio agotó su munición y combate a golpes.");}
    if(!attack.success){log.push("El adversario falló su ataque.");return;}
    const dodge=dodging?dice(rank(g,"Destreza")+skill(g,"Esquivar")+wounds(g),6,rng):{net:0,dice:[]};
    if(dodge.net>=attack.net&&dodge.net>0){log.push("Evitaste el ataque por Esquivar.");return;}
