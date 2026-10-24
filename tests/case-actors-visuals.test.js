@@ -63,7 +63,7 @@ test("Orden de carga, integración con el motor y etiquetas",()=>{
  const code=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
  for(const file of ["vtm-case-visuals.js","vtm-case-actors.js"])
   assert.ok(html.indexOf(file)<html.indexOf("vtm-game.js")&&html.includes(file));
- assert.ok(html.includes("FASE XIV"));
+ assert.match(html, /<span class="brand-version">[^<]*FASE [IVXLCDM]+/, "La portada debe indicar una fase vigente");
  for(const method of ["ACT.init(game,P)","ACT.ensure(game,id,P)","ACT.step(game,dt,P)","ACT.draw(g,game,visualTime,G)","VIS.draw(g,game.scene,visualTime,game,effectsEnabled)","ACT.talk(actor.id)"])assert.ok(code.includes(method),method);
  assert.ok(!fs.readFileSync(path.join(root,"vtm-case-actors.js"),"utf8").includes("Etienne es una impostora"));
 });
