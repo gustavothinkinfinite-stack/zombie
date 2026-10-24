@@ -1008,11 +1008,16 @@
   textPixel("EXAMINAR",130,138,"#ebd7b1",9,"center");
   textPixel("OBSERVAR",366,132,"#dbc0b0",9,"center");
   // Sprite distinguible por el atuendo y la paleta del PNJ.
-  portrait(240,104,"master",npc.color);
-  pixel(238,93,5,3,npc.hair);pixel(235,90,11,4,npc.hair);
-  pixel(236,101,3,2,npc.skin);pixel(243,101,3,2,npc.skin);
-  if(["isabelle","guardiana","marcus"].includes(npc.id)){pixel(229,110,6,11,"#c9a885");pixel(246,110,6,11,"#c9a885");}
-  textPixel(npc.name.toUpperCase(),240,66,"#f3dcb4",Math.min(9,480/(npc.name.length+12)),"center");
+  if(npcIsPresent(npc.id)){
+    portrait(240,104,"master",npc.color);
+    pixel(238,93,5,3,npc.hair);pixel(235,90,11,4,npc.hair);
+    pixel(236,101,3,2,npc.skin);pixel(243,101,3,2,npc.skin);
+    if(["isabelle","guardiana","marcus"].includes(npc.id)){pixel(229,110,6,11,"#c9a885");pixel(246,110,6,11,"#c9a885");}
+    textPixel(npc.name.toUpperCase(),240,66,"#f3dcb4",Math.min(9,480/(npc.name.length+12)),"center");
+  }else{
+    pixel(219,113,42,9,"#55404b");pixel(223,99,34,15,"#2c222f");
+    textPixel("AUSENTE",240,67,"#d1a7a3",9,"center");
+  }
   pixel(207,265,66,35,"#19141f");pixel(216,271,48,29,env.accent);
   textPixel("SALIR",240,286,"#f0d3b1",9,"center");
   portrait(game.x,game.y,"player",game.embraced?"#ac5f6c":"#889b98");
@@ -1116,7 +1121,7 @@
   if(room==="venue"){
    if(Math.hypot(game.x-240,game.y-270)<42)return "E · Regresar a las calles";
    if(Math.hypot(game.x-130,game.y-143)<55)return "E · "+(game.activeQuest&&questObj(game.activeQuest).place===game.venue?"Investigar el encargo":"Examinar archivos");
-   if(Math.hypot(game.x-240,game.y-104)<60)return "E · Hablar con "+N.byLocation[game.venue].name;
+   if(Math.hypot(game.x-240,game.y-104)<60)return npcIsPresent(N.byLocation[game.venue].id)?"E · Hablar con "+N.byLocation[game.venue].name:"E · Consultar cuándo regresa "+N.byLocation[game.venue].name;
    if(Math.hypot(game.x-350,game.y-146)<55)return "E · Observar el entorno";
    return "";
   }
