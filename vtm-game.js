@@ -257,6 +257,7 @@
  function questObj(id){return D.quests.find(q=>q.id===id);}
  function askMenu(title,text,choices,label="CONVERSACIÓN"){
   dialogOpen=true;$("dialog").classList.remove("hidden");$("dialogEyebrow").textContent=label;$("dialogTitle").textContent=title;$("dialogText").textContent=text;
+  $("portraitPanel").classList.add("hidden");
   const target=$("dialogOptions");target.innerHTML="";
   for(const choice of choices){
    const b=document.createElement("button");b.textContent=choice.label;
@@ -343,6 +344,31 @@
  }
 
 
+ function renderNpcPortrait(npc){
+  const portrait=$("npcPortrait"),ctx=portrait.getContext("2d");
+  ctx.imageSmoothingEnabled=false;
+  const p=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const bg="#1b1825",hair=npc.hair||"#30242c",skin=npc.skin||"#cba99a",cloth=npc.color||"#6a5365";
+  p(0,0,72,72,bg);
+  for(let i=0;i<72;i+=8){p(i,0,2,72,"#28212d");p(0,i,72,1,"#372c38");}
+  p(8,55,56,17,"#231d28");p(12,47,48,25,cloth);
+  p(16,54,40,18,"#33232b");p(21,56,30,16,cloth);
+  p(25,33,22,25,skin);p(21,19,30,28,skin);
+  p(20,22,31,7,hair);p(16,25,9,24,hair);p(48,25,7,24,hair);
+  p(26,38,6,3,"#201922");p(40,38,6,3,"#201922");
+  p(30,43,3,3,"#9e7670");p(35,49,8,2,"#6c434b");
+  p(34,54,5,8,"#a18c80");p(26,62,20,10,cloth);
+  if(npc.id==="ingrid"){p(18,26,9,11,"#6c8276");p(45,24,10,9,"#6c8276");p(24,43,3,3,"#151b1b");}
+  if(npc.id==="marcus"){p(20,20,32,8,"#b8b0b6");p(16,35,8,19,"#9a8e98");}
+  if(npc.id==="lucien"){p(23,23,27,5,"#17151a");p(21,46,10,3,"#70504b");}
+  if(npc.id==="dupont"){p(17,56,39,12,"#777168");p(36,36,5,3,"#161319");p(32,49,13,2,"#56403a");}
+  if(npc.id==="guardiana"){p(18,21,34,6,"#3a232f");p(19,27,4,31,"#30202d");p(49,27,5,31,"#30202d");}
+  if(npc.id==="john"){p(19,23,34,5,"#2d2525");p(25,61,22,9,"#485568");}
+  if(npc.id==="isabelle"){p(17,25,7,38,hair);p(49,24,8,35,hair);p(20,62,31,7,"#987aa8");}
+  p(2,2,68,2,"#ad8b79");p(2,68,68,2,"#ad8b79");
+  $("portraitClan").textContent=npc.clan.toUpperCase()+" · "+npc.role;
+  $("portraitPanel").classList.remove("hidden");
+ }
  function npcState(id){
   if(!game.npcFlags[id])game.npcFlags[id]={};
   if(!Number.isFinite(game.npcRelations[id]))game.npcRelations[id]=0;
@@ -414,6 +440,7 @@
   hud();save();
   askMenu(npc.name,npc.greeting+"\n\n"+npc.role+"\nRelación actual: "+trust+" (−3 a +3)",opts,
    npc.clan.toUpperCase()+" · ENCUENTRO");
+  renderNpcPortrait(npc);
  }
  function elyseeGate(){
   if(game.access.elysee){enterVenue(D.locations.find(l=>l.id==="elysee"));return;}
