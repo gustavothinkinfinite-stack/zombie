@@ -313,7 +313,10 @@
     {label:"Todavía no estoy listo",action:()=>{}}],"MISIÓN · "+q.kind.toUpperCase());
  }
  function dicePool(attribute,skill,difficulty){
-  const c=game.character;const count=Math.max(1,c.attr[attribute]+(c.skills[skill]||0));
+  const c=game.character;
+  const buffs={"Callejeo":"tunnelContact","Pelea":"brujahContact","Política":"sheriffWarning","Ocultismo":"tremereReference","Empatía":"pressContact","Investigación":"policeReference","Etiqueta":"courtProtocol"};
+  const bonus=game.access?.[buffs[skill]]?1:0;
+  const count=Math.max(1,c.attr[attribute]+(c.skills[skill]||0)+bonus);
   const dice=Array.from({length:count},()=>Math.floor(Math.random()*10)+1);
   const hits=dice.filter(d=>d>=difficulty).length,ones=dice.filter(d=>d===1).length;
   const net=Math.max(0,hits-ones),botch=hits===0&&ones>0;
@@ -339,6 +342,114 @@
   enterVenue(location);
  }
 
+
+ function npcState(id){
+  if(!game.npcFlags[id])game.npcFlags[id]={};
+  if(!Number.isFinite(game.npcRelations[id]))game.npcRelations[id]=0;
+  return game.npcFlags[id];
+ }
+ function favorDescription(id){
+  const texts={
+   courtReferral:"Te expidieron una referencia que la Guardiana del Elíseo puede reconocer.",
+   tunnelContact:"Disponés de un contacto en la red subterránea. (+1 dado en Callejeo)",
+   brujahContact:"Tenés a quién recurrir en Bastilla. (+1 dado en Pelea)",
+   sheriffWarning:"Conocés un enlace del Sheriff. (+1 dado en Política)",
+   tremereReference:"Contás con una referencia Tremere. (+1 dado en Ocultismo)",
+   pressContact:"Conservás el teléfono de un informante de prensa. (+1 dado en Empatía)",
+   policeReference:"Tenés una referencia para consultar los archivos. (+1 dado en Investigación)",
+   courtProtocol:"Aprendiste las normas de la corte. (+1 dado en Etiqueta)"
+  };
+  return texts[id]||"Se registró una nueva relación.";
+ }
+ function meetNPC(npc){
+  const state=npcState(npc.id);
+  if(!game.knownNpcs.includes(npc.id)){
+    game.knownNpcs.push(npc.id);
+    log("Conociste a "+npc.name+".");
+  }
+  const trust=game.npcRelations[npc.id];
+  const opts=[];
+  if(!state.impression){
+   opts.push({label:"Presentarte con respeto · "+npc.check.attr+" + "+npc.check.skill,action:()=>{
+    state.impression=true;
+    const roll=dicePool(npc.check.attr,npc.check.skill,npc.check.difficulty);
+    const shift=roll.success?1:-1;
+    game.npcRelations[npc.id]=clamp(game.npcRelations[npc.id]+shift,-3,3);
+    if(npc.id==="dupont")game.relations.dupont=clamp(game.relations.dupont+shift,-5,5);
+    log((roll.success?"Buena":"Mala")+" primera impresión ante "+npc.name+".");
+    hud();save();
+    askMenu("Primera impresión",roll.success?
+     "La cautela inicial cede un poco. "+npc.name+" parece dispuesto a escucharte.":
+     npc.rebuke,
+     [{label:"Continuar",action:()=>{}}],
+     "TIRADA · "+npc.check.attr+" + "+npc.check.skill+" · "+roll.dice.join(", "));
+   }});
+  }
+  opts.push({label:"Preguntar por los rumores de París",action:()=>{
+   if(!state.rumor){
+    state.rumor=true;log("Rumor de "+npc.name+": "+npc.rumor);save();
+   }
+   askMenu("Rumores de la noche",npc.rumor,[{label:"Tomar nota",action:()=>{}}],"INFORMACIÓN");
+  }});
+  if(!state.aid){
+   opts.push({label:"Solicitar una ayuda o referencia ("+(trust>=1?"confianza suficiente":"requiere confianza +1")+")",disabled:trust<1,action:()=>{
+    state.aid=true;game.access[npc.aidKey]=true;
+    if(npc.id==="dupont")game.relations.dupont=clamp(game.relations.dupont+1,-5,5);
+    log(npc.name+" te debe un pequeño favor.");hud();save();
+    askMenu("Un favor limitado",npc.aid+"\n\n"+favorDescription(npc.aidKey),
+      [{label:"Agradecer la ayuda",action:()=>{}}],"FAVOR DEBIDO");
+   }});
+  }
+  if(npc.id==="dupont"&&game.activeQuest==="archivos"&&!game.readyReport&&game.arc.clues.length>=2){
+    opts.unshift({label:"Confrontar a Dupont sobre sus documentos",action:confrontDupont});
+  }
+  if(npc.id==="isabelle"&&!state.stjulyWarning){
+   opts.push({label:"Preguntar por la autoridad Tremere en París",action:()=>{
+     state.stjulyWarning=true;log("Isabelle mencionó la autoridad del Regente Marcus von Württemberg.");
+     save();askMenu("La casa Tremere","El Alto Regente Marcus von Württemberg mantiene un férreo control del clan. Aquí no conviene tomar partido entre sus subordinados.",
+      [{label:"Comprendido",action:()=>{}}],"POLÍTICA DEL CLAN");
+   }});
+  }
+  opts.push({label:"Despedirte",action:()=>{}});
+  hud();save();
+  askMenu(npc.name,npc.greeting+"\n\n"+npc.role+"\nRelación actual: "+trust+" (−3 a +3)",opts,
+   npc.clan.toUpperCase()+" · ENCUENTRO");
+ }
+ function elyseeGate(){
+  if(game.access.elysee){enterVenue(D.locations.find(l=>l.id==="elysee"));return;}
+  const opts=[];
+  if(game.observed.invitation||game.access.courtReferral){
+   opts.push({label:"Presentar una recomendación reconocible",action:()=>{
+    game.access.elysee=true;log("El personal del Elíseo autorizó tu entrada.");
+    hud();save();enterVenue(D.locations.find(l=>l.id==="elysee"));
+   }});
+  }
+  if(!game.npcFlags.elyseeAttempted){
+   opts.push({label:"Solicitar acceso mediante Carisma + Etiqueta (dificultad 7)",action:()=>{
+    game.npcFlags.elyseeAttempted=true;
+    const roll=dicePool("Carisma","Etiqueta",7);
+    if(roll.success){
+      game.access.elysee=true;log("Te autorizaron a entrar al Elíseo tras verificar tu presentación.");
+      hud();save();enterVenue(D.locations.find(l=>l.id==="elysee"));
+      notice("Tu petición fue aceptada.");
+    }else{
+      log("El Elíseo rechazó tu solicitud de acceso.");save();
+      askMenu("Acceso denegado","No figurás en la lista. Consultá las cartas de tu residencia o ganate un contacto que pueda recomendarte. Tu solicitud quedó registrada.",
+        [{label:"Retirarte",action:()=>{}}],"PROTOCOLO DE LA CORTE · DADOS "+roll.dice.join(", "));
+    }
+   }});
+  }
+  opts.push({label:"Volver a la ciudad",action:()=>{}});
+  askMenu("Las puertas del Elíseo","Una guardia discreta custodia la entrada. No basta con conocer el nombre del príncipe Pierre Duvalier para presentarse ante la corte.",opts,"ACCESO RESTRINGIDO");
+ }
+ function resolveStandardQuest(q){
+  const choices=[
+   {label:"Proceder con "+q.attr+" + "+q.skill+" (dificultad "+q.difficulty+")",action:()=>questAction(q,false)},
+   {label:"Intentar una aproximación discreta · Astucia + Sigilo (dif. "+(q.difficulty+1)+")",action:()=>questAction(q,true)},
+   {label:"Posponer el encargo",action:()=>{}}
+  ];
+  askMenu(q.title,q.summary+"\n\nTu maestro evaluará tanto el resultado como la discreción.",choices,"OBJETIVO DEL DOMITOR");
+ }
  function exposure(delta,reason){
   game.exposure=clamp(game.exposure+delta,0,100);
   if(delta)log((delta>0?"+":"")+delta+" exposición · "+reason);
