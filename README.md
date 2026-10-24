@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.8 · rediseño visual 2.0, fase IX)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.8 · rediseño visual 2.0, fase X)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -10,6 +10,29 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
 
+
+## Fase X — Memoria social y consecuencias entre noches (octubre de 2026)
+
+Se desarrolló un sistema de relaciones con los **16 encargados de los comercios secundarios**. Los personajes recuerdan cómo se los trató y pueden reaccionar en noches posteriores. No altera el canon de los personajes principales ni sustituye las misiones existentes.
+
+### Novedades jugables
+
+- **Relaciones persistentes:** después de ayudar, investigar o intimidar, cada contacto registra la acción, nivel de confianza, noche de la decisión y consecuencias aún pendientes.
+- **Consecuencias diferidas:** desde la siguiente noche, ayudar puede habilitar un favor para reducir hasta 6 puntos de exposición o recibir una presentación para otro establecimiento. Una investigación exitosa puede generar una referencia comercial adicional; una fallida permite aclarar el malentendido. Amenazar causa una consecuencia adicional sobre la exposición (una sola vez) y mantiene la hostilidad.
+- **Efectos entre negocios:** la colaboración o las amenazas en un local modifican la predisposición de los demás comerciantes del mismo barrio. Las presentaciones y referencias pueden modificar ligeramente la dificultad de investigar en el local relacionado; nunca garantizan un éxito automático.
+- **Rumores nocturnos:** los contactos pueden compartir novedades ambientales en noches posteriores, como máximo una vez por contacto y por noche. Son texto contextual, no pruebas concluyentes del caso central.
+- **Paso del tiempo:** botón **Descansar hasta la próxima noche**, disponible sólo en el refugio. Es una acción voluntaria, confirmada mediante diálogo, que actualiza la noche y permite activar acontecimientos sociales pendientes.
+- **Información visible:** contador de contactos con novedades en el HUD, indicadores sobre sus locales, y resumen de contactos y referencias en el diario.
+
+### Compatibilidad, persistencia y pruebas
+
+El nuevo módulo es \`vtm-contacts.js\`. Sus datos se guardan con la partida en \`contactMemory\`, \`contactIntroductions\` y \`contactLeads\`. Los eventos y favores son consumibles una sola vez y no se duplican al cargar una partida.
+
+La migración reconoce decisiones previas de la fase IX como ya resueltas, **sin volver a cobrar sus recompensas**. El resto de la ficha (Atributos, Disciplinas, combate, aprecio, misiones, facciones y estado ghoul/Vástago) se preserva.
+
+Se realizaron pruebas del módulo de relaciones (ayuda, amenazas, investigación, migración y consecuencias no repetibles) y una prueba integrada de juego para el flujo: elegir ayuda → descansar en el refugio → volver al comercio al día siguiente → recibir una presentación → intentar reclamarla de nuevo. La presentación se reclamó exactamente una vez.
+
+**Límites actuales:** los encargados no tienen todavía desplazamiento físico autónomo por toda la ciudad ni IA conversacional libre. La memoria social es un sistema narrativo determinista diseñado para el prototipo. La validación en navegador real y el despliegue público de esta fase siguen siendo tareas separadas.
 
 ## Fase IX — Dieciséis locales secundarios visitables (octubre de 2026)
 
