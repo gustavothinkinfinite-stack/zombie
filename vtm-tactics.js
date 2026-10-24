@@ -182,6 +182,7 @@ window.VTM_TACTICS=(()=>{
   };
   const npc=()=>{
    if(done)return;
+   if(e.skipAttack){e.skipAttack=false;log.push("El adversario pierde su acción por un poder sobrenatural.");return;}
    const attack=dice(e.dex+e.skill,6,rng);outcome.enemyRoll=attack;
    if(!attack.success){log.push("El adversario falló su ataque.");return;}
    const dodge=dodging?dice(rank(g,"Destreza")+skill(g,"Esquivar")+wounds(g),6,rng):{net:0,dice:[]};
