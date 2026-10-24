@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–X incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–XI incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -158,6 +158,14 @@ Los locales que tienen información pendiente muestran un indicador visual \`!\`
 Se añadió un botón para descansar desde el refugio: esta función permite avanzar una noche cuando el jugador desea comprobar las consecuencias de una decisión. La acción exige confirmación para evitar que un clic accidental haga progresar el reloj.
 
 Los PNJ principales, sus secretos y el sistema de tiradas de tercera edición siguen separados. Las interacciones comerciales son secundarias; su memoria no debe contradecir los hechos de la campaña.
+
+## Fase XI — Investigaciones secundarias entre barrios
+
+Cuatro expedientes enlazan los 16 locales previamente ilustrados: entregas, documentos, automóviles y objetos. El jugador contrasta fuentes en orden mediante tiradas, dispone de información del siguiente destino en el diario y puede cerrar cada caso con una decisión política, discreta o social. Los finales son acotados y no resuelven la intriga de la Senescal.
+
+La interfaz incorpora dos contadores de progreso: expedientes resueltos y pruebas contrastadas. En los diálogos de los encargados aparece **Contrastar indicios** cuando corresponde y **Cerrar expediente** cuando las cuatro pruebas están reunidas; las conversaciones originales siguen disponibles.
+
+El módulo \`vtm-local-cases.js\` administra estado y compatibilidad. Las pruebas de regresión están en \`tests/local-cases.test.js\`. No se añadieron recursos gráficos externos ni se modificaron las colisiones; esta fase es principalmente narrativa y sistémica.
 
 ## Próximos entregables de arte
 
