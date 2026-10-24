@@ -428,7 +428,12 @@
   $("questTitle").textContent=game.activeQuest?questObj(game.activeQuest).title:"Sin encargo activo";
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
-  if(H)$("contactReadyCount").textContent=H.summary(game).ready+"";
+  if(H){
+    const contacts=H.summary(game);
+    $("contactReadyCount").textContent=String(contacts.ready);
+    $("contactRumorsCount").textContent=String(contacts.rumors);
+    $("contactTrustedCount").textContent=String(contacts.friendly);
+  }
   if(K){
     $("shopProgress").textContent=Object.keys(game.localPlaces||{}).filter(id=>K.byId[id]).length+" / "+K.definitions.length;
     $("shopClueCount").textContent=(game.localClues||[]).length+" / "+K.definitions.length;
@@ -709,9 +714,8 @@
      askMenu("Una colaboración discreta",shop.keeper+" agradece la ayuda. Has ganado una pequeña referencia local, aunque todavía no conocés todo lo que ocurre en este negocio.",
       [{label:"Continuar",action:()=>{}}],"CONSECUENCIAS DEL BARRIO");
    }else if(choice==="inquire"){
-     const introduction=!!game.contactIntroductions?.[shop.id];
-     const lead=(game.contactLeads||[]).some(item=>item.endsWith("->"+shop.id));
-     const roll=dicePool("Percepción","Investigación",introduction||lead?6:7);
+     const difficulty=H?.inquiryDifficulty(game,shop)||7;
+     const roll=dicePool("Percepción","Investigación",difficulty);
      const success=!!roll.success;
      H?.remember(game,shop,choice,success);
      if(success){
@@ -742,6 +746,15 @@
    if(!target){notice("Acercate al mostrador, al encargado, a la estantería o a la salida.");return;}
    if(target.type==="exit"){exitShop();return;}
    const state=shopStatus(shop);
+   const newsChoice=()=>({
+      label:"Escuchar qué se comenta esta noche",action:()=>{
+        const rumor=H?.hearNews(game,shop);
+        if(!rumor)return;
+        log(shop.keeper+": "+rumor);hud();save();
+        askMenu("Rumores del barrio",rumor,
+          [{label:"Tomar nota",action:()=>{}}],"NOVEDADES NOCTURNAS");
+      }
+   });
    if(target.type==="clerk"){
      if(!state.met){state.met=true;log("Conociste a "+shop.keeper+", encargado de "+shop.name+".");save();}
      if(state.decision){
@@ -749,7 +762,7 @@
        if(follow){
          const labels={cover:"Pedir discreción sobre tus movimientos",introduction:"Solicitar una presentación en el barrio",
            lead:"Registrar la nueva conexión comercial",apologize:"Aclarar el malentendido",acknowledge:"Aceptar las consecuencias"};
-         askMenu(shop.keeper,follow.text,follow.options.map(choice=>({label:labels[choice],action:()=>{
+         const options=follow.options.map(choice=>({label:labels[choice],action:()=>{
            const effect=H.resolve(game,shop,choice);
            if(!effect)return;
            if(effect.lead){
@@ -759,19 +772,33 @@
            log(effect.text);
            hud();save();
            askMenu(follow.title,effect.text,[{label:"Continuar",action:()=>{}}],"CONSECUENCIAS ENTRE NOCHES");
-         }})),"CONTACTO · NOCHE "+game.clock.night);
+         }}));
+         if(H?.nightNews(game,shop))options.push(newsChoice());
+         options.push({label:"Despedirte",action:()=>{}});
+         askMenu(shop.keeper,follow.text+"\n\n"+(H?.districtContext(game,shop).label||""),
+           options,"CONTACTO · NOCHE "+game.clock.night);
          return;
        }
        const mood=H?.mood(game,shop)||"neutral";
+       const neighbors=H?.districtContext(game,shop).label||"";
+       const opts=[];
+       if(H?.nightNews(game,shop))opts.push(newsChoice());
+       opts.push({label:"Despedirte",action:()=>{}});
        askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?
-          "Te reconoce y agradece tu colaboración.":"Recuerda tu curiosidad y evita nuevas preguntas.")+
+          "Te reconoce y agradece tu colaboración.":state.decision==="pressure"?
+          "Aún recuerda tus amenazas y mide cada palabra.":"Recuerda tu curiosidad y evita nuevas preguntas.")+
           (mood==="hostil"?" Su actitud sigue siendo abiertamente hostil.":"")+
-          (game.contactIntroductions?.[shop.id]?"\n\nLlegaste con una presentación de otro contacto del distrito. Eso puede facilitar investigaciones aquí.":""),
-        [{label:"Despedirte",action:()=>{}}],"CONTACTO · "+mood.toUpperCase());return;
+          (neighbors?"\n\n"+neighbors:"")+
+          (game.contactIntroductions?.[shop.id]?"\n\nLlegaste con una presentación de otro contacto del distrito.":""),
+        opts,"CONTACTO · "+mood.toUpperCase());return;
      }
-     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+(game.contactIntroductions?.[shop.id]?"\n\nTraés una presentación personal: tu próxima investigación será ligeramente más sencilla.":(game.contactLeads||[]).some(item=>item.endsWith("->"+shop.id))?"\n\nConocés una referencia comercial que puede facilitar tus preguntas.":""),
+     const localContext=H?.districtContext(game,shop).label||"";
+     const difficulty=H?.inquiryDifficulty(game,shop)||7;
+     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+
+       (localContext?"\n\n"+localContext:"")+
+       (game.contactIntroductions?.[shop.id]?"\n\nTraés una presentación personal.":(game.contactLeads||[]).some(item=>item.endsWith("->"+shop.id))?"\n\nConocés una referencia comercial.":""),
        [{label:"Ofrecer ayuda y ganar confianza",action:()=>localAction(shop,"help")},
-        {label:"Preguntar con discreción (Percepción + Investigación)",action:()=>localAction(shop,"inquire")},
+        {label:"Preguntar con discreción (Percepción + Investigación · dificultad "+difficulty+")",action:()=>localAction(shop,"inquire")},
         {label:"Presionar al encargado (riesgo para la Mascarada)",action:()=>localAction(shop,"pressure")},
         {label:"No intervenir",action:()=>{}}],"CONTACTO SECUNDARIO");
      return;
@@ -1804,7 +1831,7 @@
   if(H){
     const summary=H.summary(game);
     const p=document.createElement("p");
-    p.textContent="Red secundaria: "+summary.known+" contactos conocidos · "+summary.ready+" novedades de noches anteriores · "+summary.introductions+" presentaciones · "+summary.leads+" referencias comerciales.";
+    p.textContent="Red secundaria: "+summary.known+" contactos conocidos · "+summary.ready+" novedades de noches anteriores · "+summary.introductions+" presentaciones · "+summary.leads+" referencias comerciales · "+summary.rumors+" rumores escuchados · "+summary.friendly+" contactos cordiales · "+summary.hostile+" contactos recelosos.";
     root.appendChild(p);
     const outstanding=Object.entries(game.contactMemory||{}).filter(([id,e])=>e.followup==="ready"&&K?.byId[id])
       .map(([id])=>K.byId[id].keeper+" ("+K.byId[id].name+")").slice(0,5);
