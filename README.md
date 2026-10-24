@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XIX)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XX)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,40 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XX — La Sangre, la Bestia y los siete clanes (octubre de 2026)
+
+Amplía la interpretación de **Vampiro: La Mascarada, tercera edición** ya existente en Crónicas de París. Se revisaron páginas de referencia del manual básico escaneado adjunto al proyecto. Este PDF no ofrece texto seleccionable; las reglas aquí programadas son **abstracciones originales de videojuego**, no transcripciones, ni pretenden reemplazar los procedimientos completos del libro.
+
+### Vitae, voluntad y Humanidad
+
+- **Gasto nocturno:** al despertar cada noche, un Vástago consume un punto de su Reserva de Sangre si tiene disponible; un ghoul no lo hace. \`vtm-vitae.js\` cuenta las noches transcurridas sin aplicar cargos duplicados al guardar, recargar o abrir diálogos. Una partida anterior no pierde sangre retroactivamente al migrar.
+- **Escasez de vitae:** con 2 puntos o menos, la Bestia presiona al personaje. Una caza desesperada puede solicitar una tirada de **Autocontrol**; las tiradas existentes de alimentación mantienen su límite de una vez por lugar y noche, su exposición y sus costes.
+- **Frenesí:** un fracaso crea un estado persistente para la noche: dificulta ciertas acciones sociales y puede causar consecuencias por clan. Es posible recuperar el control gastando **un punto de Voluntad**, como acción de contención adaptada al videojuego; una vez por noche. Las heridas graves de combate pueden precipitar la comprobación cuando la Sangre escasea.
+- **Rötschreck:** estado de miedo sobrenatural y tirada de **Coraje** previsto específicamente para fuentes como fuego o luz solar. Las escenas genéricas de inquietud ocultista siguen usando su propia tirada de Coraje y **no desencadenan Rötschreck automáticamente**. Los episodios aún deben conectarse con futuras escenas ambientales apropiadas.
+- **Humanidad:** el sistema original de Conciencia, decisiones morales y degeneración sigue activo. La implementación no transforma todo combate ni todos los indicios sobrenaturales en una pérdida automática de Humanidad.
+- **Persistencia:** la nueva estructura \`vitae\` contiene la última noche procesada, estados, marcas, tensión, restricciones de alimentación e historial. No se ha cambiado la clave \`cronicas-paris-ghoul-v1\`.
+
+### Debilidades y diferencias de clan
+
+| Clan | Consecuencia jugable de la Fase XX |
+| --- | --- |
+| Brujah | Mayor dificultad de Autocontrol frente al Frenesí |
+| Gangrel | Las pérdidas de control dejan marcas bestiales persistentes y afectan encuentros sociales |
+| Malkavian | Intuición puntual en Empatía/Alerta y tensión que puede dificultar la concentración |
+| Nosferatu | Penalización en trato social directo y experiencia adicional para Sigilo; no se borran los atributos de creación |
+| Toreador | La contemplación de belleza en determinadas sedes puede retrasar la acción una vez por noche |
+| Tremere | Ventaja contextual para Ocultismo en Passy y obligaciones rituales registradas al usar Taumaturgia |
+| Ventrue | Restricción persistente del tipo de presa, seleccionable una sola vez en el menú y vinculada a un ambiente donde cazar |
+
+Las Disciplinas del clan permanecen disponibles mediante las mecánicas anteriores de Sangre, ataques, efectos pasivos, sentidos y resistencias. Las debilidades se aplican mediante modificadores de tiradas cuando corresponde y no reescriben personajes creados antes de esta actualización.
+
+### Controles, alcance y pruebas
+
+- **Acciones → La Sangre y la Bestia** muestra el estado, las debilidades, opciones de contención con Voluntad y la preferencia de alimentación Ventrue. El diario y el HUD también presentan este estado.
+- **Archivos:** \`vtm-vitae.js\`; regresiones \`tests/vitae-phase20.test.js\`. También se mantienen \`tests/phase19.test.js\`, \`tests/reactive-city.test.js\`, \`tests/reactive-districts.test.js\` y las restantes pruebas de la base.
+- **Validación:** completar la ejecución real de Chromium sobre Hostinger antes de afirmar que el despliegue de Fase XX está funcionando en producción.
+- **Siguiente núcleo narrativo:** la conspiración del Principado de París. La investigación debe partir de evidencias, testimonios, expedientes y relaciones ya jugables, sin anunciar al jugador la identidad, los motivos ni los secretos de la Senescal hasta que la trama los justifique.
 
 ## Fase XIX — Combate táctico, persecuciones y sigilo (octubre de 2026)
 
