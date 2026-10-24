@@ -1,0 +1,46 @@
+name: Prueba de navegador — Crónicas de París
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium:
+    name: Recorrer el juego en Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Descargar el juego
+        uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright para el navegador de pruebas
+        run: npm install --no-save --no-package-lock playwright@1.55.0
+      - name: Instalar Chromium y sus bibliotecas
+        run: npx playwright install chromium --with-deps
+      - name: Ejecutar prueba interactiva del juego
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/cronicas-paris-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" || true' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/browser-smoke.cjs
+      - name: Guardar captura en caso de error
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captura-error-cronicas-paris
+          path: browser-smoke-failure.png
+          if-no-files-found: ignore
