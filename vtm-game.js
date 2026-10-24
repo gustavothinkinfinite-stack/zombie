@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -334,6 +334,7 @@
   if(CITY){CITY.init(game);CITY.tick(game);}
   if(REACT){REACT.init(game);REACT.tick(game);}
   if(REGION){REGION.init(game);REGION.tick(game);}
+  if(CIV){CIV.init(game);CIV.tick(game);}
   M.init(game);
   ST.init(game);
   TACT.init(game);
@@ -398,6 +399,7 @@
   if(!game)return;
   if(REACT)for(const event of REACT.tick(game,complete))log("Bastilla: "+event.text);
   if(REGION)for(const event of REGION.tick(game,complete))log(event.district+": "+event.text);
+  if(CIV)for(const event of CIV.tick(game))log(event);
  }
  function advanceClock(amount){
    game.clock.minutes+=Math.max(0,Math.round(amount));
@@ -536,6 +538,9 @@
     const cases=CASES.summary(game);
     $("casesProgress").textContent=cases.completed+" / "+cases.total;
     $("caseEvidence").textContent=cases.evidence+" / "+cases.maxEvidence;
+  }
+  if(CIV){const summary=CIV.summary(game),line=$("consequencesStatus");
+   if(line)line.textContent="Vigilancia en "+(summary.district||"París")+": "+summary.local+"/100 · testigos: "+summary.witnesses;
   }
   if(REGION){
    const summary=REGION.overview(game),line=$("regionalReactiveStatus");
@@ -739,6 +744,7 @@
      ...(CITY?[{label:"París nocturno · sucesos, tránsito y horarios comerciales",action:()=>askMenu("Pulso de la ciudad",CITY.bulletin(game),[{label:"Continuar",action:()=>{}}],"ACTIVIDAD NOCTURNA")}]:[]),
      ...(REACT?[{label:"París reactivo · investigar el robo de Bastilla",action:REACT.menu}]:[]),
      ...(REGION?[{label:"París reactivo · investigar los otros siete barrios",action:REGION.menu}]:[]),
+     ...(CIV?[{label:"Mascarada y vigilancia policial · La ciudad recuerda",action:CIV.menu}]:[]),
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      ...(game.embraced?[{label:"Política · libro de favores y deudas",action:POLUI.ledger}]:[]),
@@ -1028,6 +1034,7 @@
    if(!found){
      if(REACT?.interact(game))return;
      if(REGION?.interact(game))return;
+     if(CIV?.interact(game))return;
      if(CITY?.interact(game,visualTime))return;
      notice("Acercate a una puerta, un transeúnte, un suceso señalado o una salida.");return;
    }
@@ -1429,6 +1436,7 @@
  function exposure(delta,reason){
   if(delta>0&&game.mechanics?.tokens?.cobertura>0){game.mechanics.tokens.cobertura--;delta=Math.max(0,delta-5);log("Una cobertura preparada redujo el riesgo de exposición.");}
   game.exposure=clamp(game.exposure+delta,0,100);
+  if(delta>0&&CIV)CIV.exposure(game,delta,reason);
    // Un punto de cobertura ganado con la ficha amortigua una exposición peligrosa.
   if(delta)log((delta>0?"+":"")+delta+" exposición · "+reason);
   if(game.exposure>=60&&!game.flags.marquedMasquerade){
@@ -1942,6 +1950,7 @@
    if(CITY)CITY.districtDraw(g,game,visualTime,effectsEnabled);
    if(REACT)REACT.draw(g,game,visualTime);
    if(REGION)REGION.draw(g,game,visualTime);
+   if(CIV)CIV.draw(g,game,visualTime);
    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
  function drawParis(){
@@ -2076,6 +2085,10 @@
     }
     if(!spot&&REGION){
      const situation=REGION.near(game);
+     if(situation)return "E · "+situation.title;
+    }
+    if(!spot&&CIV){
+     const situation=CIV.near(game);
      if(situation)return "E · "+situation.title;
     }
 
@@ -2258,6 +2271,14 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(CIV){
+   const summary=CIV.summary(game),line=document.createElement("p");
+   line.textContent="Mascarada y policía: "+(summary.district||"París")+" · vigilancia "+summary.local+"/100 · testigos "+summary.witnesses;
+   root.appendChild(line);
+   for(const text of summary.logs){
+    const note=document.createElement("p");note.textContent="• "+text;root.appendChild(note);
+   }
+  }
   if(REGION){
    for(const item of REGION.overview(game)){
     const row=document.createElement("p");
@@ -2299,7 +2320,7 @@
   COURTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock});
   POLUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   ECONUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
-  WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu});
+  WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu,observedPower:(name,result)=>CIV?.power(game,name,result)});
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
@@ -2307,11 +2328,14 @@
   if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
   if(REACT)REACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(REGION)REGION.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
+  if(CIV)CIV.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,faction:increaseFaction});
   if(CITY){const line=document.createElement("p");line.id="cityLifeStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(REACT){const line=document.createElement("p");line.id="reactiveStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(REGION){const line=document.createElement("p");line.id="regionalReactiveStatus";line.className="caption";
+    document.querySelector(".exploration-panel")?.appendChild(line);}
+  if(CIV){const line=document.createElement("p");line.id="consequencesStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
