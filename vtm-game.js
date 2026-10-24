@@ -353,11 +353,11 @@
   if(game.exposure>=60)notice("Tu actividad está atrayendo miradas peligrosas.");
   hud();save();
  }
- function rememberClue(location,success,description,roll){
+ function rememberClue(locationId,success,description,roll){
   const arc=game.arc;
-  if(!arc.clues.includes(location.id))arc.clues.push(location.id);
+  if(!arc.clues.includes(locationId))arc.clues.push(locationId);
   if(!success)exposure(9,"Tu investigación dejó un rastro.");
-  log("Pista: "+C.investigation.sources[location.id].name+". "+description);
+  log("Pista: "+C.investigation.sources[locationId].name+". "+description);
   const extra="Tirada: "+roll.dice.join(", ")+" · Éxitos netos "+roll.net+".";
   askMenu("Una nueva pista",description+"\n\n"+extra+"\n\nPruebas reunidas: "+arc.clues.length+" de 2 necesarias."+
     (arc.clues.length>=2?" Ahora podés enfrentar a Pierre Dupont en la hemeroteca.":" Investigá otra fuente."),
