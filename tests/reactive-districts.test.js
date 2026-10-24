@@ -88,7 +88,7 @@ test("Un testigo intimidado desaparece y las consecuencias persisten",()=>{
  assert.equal(finish(g,def).outcome,"unresolved");
 });
 test("Rumores externos no se confunden con las pruebas del barrio receptor",()=>{
- const def=R.byId.passy,g=fresh("stjuly");at(g,def,def.start+2);
+ const def=R.byId.passy,g=fresh("stjuly");at(g,def,def.report+2);
  const shop=K.byId["stjuly-cafe"],out=R.shopChoices(g,shop);
  assert.ok(out.some(a=>a.label.includes("Passy")));
  assert.equal(out.some(a=>a.label.includes("Contrastar registros")),false);
