@@ -31,7 +31,7 @@ const furniture={
  ],
  paris:[]
 };
-const sceneKey=(scene)=>["house","study","quarters","venue","district"].includes(scene)?scene:"paris";
+const sceneKey=(scene)=>["house","study","quarters","venue","sidevenue","district"].includes(scene)?(scene==="sidevenue"?"venue":scene):"paris";
 function obstacles(scene){return furniture[sceneKey(scene)]||[];}
 function canStand(scene,x,y,r=R){
  if(!Number.isFinite(x)||!Number.isFinite(y))return false;
