@@ -273,8 +273,8 @@
   game.districtVisited=Array.isArray(game.districtVisited)?[...new Set(game.districtVisited.filter(id=>T?.byId[id]))]:[];
   game.districtNotes=(game.districtNotes&&typeof game.districtNotes==="object"&&!Array.isArray(game.districtNotes))?game.districtNotes:{};
   if(K)K.normalize(game);
-  if(CASES)CASES.init(game);
   else if(game.scene==="sidevenue"){game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;}
+  if(CASES)CASES.init(game);
   game.localPlaces=game.localPlaces||{};
   game.localClues=game.localClues||[];
   if(H)H.init(game);
