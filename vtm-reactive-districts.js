@@ -11,7 +11,7 @@ window.VTM_REACTIVE_DISTRICTS=(()=>{
    event:"Se encontró una valija olvidada frente a una residencia privada.",
    response:"El portero pide ayuda y solicita que nadie abra la valija sin testigos.",
    searchText:"Un servicio de mensajería reclama la valija; sus datos no coinciden con el recibo.",
-   witness:"Portera Adèle",authority:"Encargado de la finca",person:"Repartidor nervioso",shops:["passy-antiguedades"],
+   witness:"Portera Adèle",authority:"Encargado de la finca",person:"Repartidor nervioso",shops:["passy-anticuario"],
    heard:"Se comenta que un mensajero desapareció mientras hacía una entrega.",
    evidence:"Anotás una numeración de entrega que no coincide con la guía.",
    help:"Apartás la valija del tránsito antes de que alguien la retire sin permiso.",
