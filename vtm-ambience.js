@@ -143,7 +143,38 @@ window.VTM_AMBIENCE=(()=>{
    if(Math.sin(time*1.2)>0)rect(c,x+5,172,9,1,"#a3d2c25c");
   }
  }
- function foreground(c,scene,id,time,enabled=true){
+ function foreground(c,scene,id,time,enabled=true,player=null){
+  if(scene==="district"){
+   // Capa de profundidad DESPUÉS del sprite: ramas y farolas pueden quedar
+   // entre el jugador y la cámara, sin crear obstáculos o colisiones.
+   rect(c,0,0,7,HEIGHT,"#09111a45");
+   rect(c,WIDTH-7,0,7,HEIGHT,"#09111a45");
+   if(enabled){
+    const cold=id==="policia"?"158,207,233":id==="tuneles"?"113,186,157":
+      id==="stjuly"?"229,118,173":id==="bastilla"?"240,154,119":
+      id==="passy"||id==="elysee"?"235,200,155":"229,180,126";
+    for(const [x,y] of [[189,112],[295,179],[30,137],[452,181]]){
+     // Halos situados sobre el poste (primer plano de iluminación).
+     glow(c,x,y-12,25,cold,.033+.009*Math.sin(time*1.1+x));
+     rect(c,x-1,y-16,2,11,"#dfc49f44");
+    }
+    for(const [x,y] of [[65,147],[350,169],[234,210],[338,249]]){
+     const wobble=Math.sin(time*1.2+x)*.3;
+     glow(c,x,y,20,cold,.024+wobble*.01);
+     rect(c,x-8,y+8,16,1,"#bdc9c02d");
+    }
+   }
+   // La copa está por delante únicamente cuando el personaje pasa detrás.
+   for(const x of [77,392]){
+    if(!player||Math.abs(player.x-x)>19||player.y<234||player.y>274)continue;
+    rect(c,x-14,244,30,14,"#253d36e8");
+    rect(c,x-11,240,24,11,"#3e6454ef");
+    rect(c,x-6,237,14,6,"#587b67ec");
+    rect(c,x-12,251,7,3,"#688a74c5");
+    rect(c,x+5,248,7,3,"#72947ac5");
+   }
+   return;
+  }
   if(scene==="paris"){
    // Viñeta por capas sólo en los extremos. El centro y los destinos siguen libres.
    rect(c,0,0,10,HEIGHT,"#0b101b4f");
