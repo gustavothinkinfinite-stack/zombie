@@ -33,10 +33,30 @@ const furniture={
  ],
  paris:[]
 };
+// Los tres interiores del caso Elizabeth utilizan geometrías propias.
+furniture["case-apartment"]=[
+ {x:70,y:85,w:115,h:65,id:"escritorio"},
+ {x:295,y:70,w:130,h:75,id:"cama"},
+ {x:210,y:160,w:65,h:40,id:"mesa"},
+ {x:30,y:182,w:109,h:42,id:"armario"},
+ {x:300,y:190,w:118,h:35,id:"aparador"}
+];
+furniture["case-garage"]=[
+ {x:70,y:85,w:150,h:90,id:"coche"},
+ {x:320,y:75,w:120,h:75,id:"taller"},
+ {x:285,y:180,w:130,h:45,id:"archivos"}
+];
+furniture["case-hideout"]=[
+ {x:40,y:101,w:110,h:70,id:"cajas-izq"},
+ {x:325,y:94,w:120,h:69,id:"cajas-der"},
+ {x:49,y:203,w:95,h:50,id:"cajas-sur-izq"},
+ {x:338,y:209,w:94,h:41,id:"cajas-sur-der"},
+ {x:178,y:188,w:125,h:30,id:"mesa"}
+];
 // Los comercios secundarios tienen además un mostrador central dibujado
 // en vtm-shops.js; no se debe poder caminar a través de él.
 furniture.sidevenue=[...furniture.venue,{x:202,y:191,w:76,h:42,id:"mostrador-central"}];
-const sceneKey=(scene)=>["house","study","quarters","venue","sidevenue","district"].includes(scene)?scene:"paris";
+const sceneKey=(scene)=>furniture[scene]?scene:"paris";
 function obstacles(scene){return furniture[sceneKey(scene)]||[];}
 function canStand(scene,x,y,r=R){
  if(!Number.isFinite(x)||!Number.isFinite(y))return false;
