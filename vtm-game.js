@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -273,6 +273,7 @@
   game.districtVisited=Array.isArray(game.districtVisited)?[...new Set(game.districtVisited.filter(id=>T?.byId[id]))]:[];
   game.districtNotes=(game.districtNotes&&typeof game.districtNotes==="object"&&!Array.isArray(game.districtNotes))?game.districtNotes:{};
   if(K)K.normalize(game);
+  if(CASES)CASES.init(game);
   else if(game.scene==="sidevenue"){game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;}
   game.localPlaces=game.localPlaces||{};
   game.localClues=game.localClues||[];
@@ -322,7 +323,7 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,sidevenue:null,sideReturn:null,localPlaces:{},localClues:[],contactMemory:{},contactIntroductions:{},contactLeads:[],flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,sidevenue:null,sideReturn:null,localPlaces:{},localClues:[],localCases:{},contactMemory:{},contactIntroductions:{},contactLeads:[],flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -437,6 +438,11 @@
     $("contactReadyCount").textContent=String(contacts.ready);
     $("contactRumorsCount").textContent=String(contacts.rumors);
     $("contactTrustedCount").textContent=String(contacts.friendly);
+  }
+  if(CASES){
+    const cases=CASES.summary(game);
+    $("casesProgress").textContent=cases.completed+" / "+cases.total;
+    $("caseEvidence").textContent=cases.evidence+" / "+cases.maxEvidence;
   }
   if(K){
     $("shopProgress").textContent=Object.keys(game.localPlaces||{}).filter(id=>K.byId[id]).length+" / "+K.definitions.length;
@@ -747,6 +753,68 @@
    }
    advanceClock(9);hud();save();
  }
+ function resolveLocalCase(id,choice){
+   if(!CASES)return;
+   const outcome=CASES.resolve(game,id,choice);
+   if(!outcome)return;
+   log("Expediente secundario resuelto: "+outcome.title+".");
+   if(outcome.standing)increaseFaction(outcome.faction,outcome.standing,"Informe local: "+outcome.title+".");
+   if(outcome.exposure)exposure(outcome.exposure,"Consecuencias de cerrar "+outcome.title+".");
+   advanceClock(12);hud();save();
+   askMenu("Caso cerrado: "+outcome.title,outcome.conclusion+"\n\n"+outcome.text,
+     [{label:"Guardar el expediente",action:()=>{}}],"INVESTIGACIÓN SECUNDARIA · RESOLUCIÓN");
+ }
+ function localCaseConclusions(id){
+   const c=CASES?.progress(game,id);
+   if(!c?.ready)return;
+   askMenu(c.title,c.conclusion+"\n\nLas cuatro fuentes están contrastadas. Elegí qué hacer con la información. La decisión será definitiva.",
+    CASES.choices.map(choice=>({label:choice.label,action:()=>resolveLocalCase(id,choice.id)}))
+      .concat([{label:"Decidir más adelante",action:()=>{}}]),"EXPEDIENTE · "+c.count+"/"+c.total);
+ }
+ function investigateLocalCase(shop){
+   if(!CASES)return;
+   const status=CASES.atShop(game,shop);
+   if(!status?.eligible||status.blockedUntil)return;
+   const prior=status.priorEvidence;
+   const difficulty=H?.inquiryDifficulty(game,shop)||7;
+   const roll=prior?null:dicePool("Percepción","Investigación",difficulty);
+   const result=CASES.attempt(game,shop,prior||!!roll?.success);
+   if(!result)return;
+   if(result.success){
+     log("Expediente "+result.title+": pista "+result.count+"/"+result.total+" en "+shop.name+".");
+     advanceClock(prior?3:8);hud();save();
+     const direction=result.next
+       ?"\n\nPróxima fuente: "+result.next.name+", barrio de "+(T?.byId[result.next.district]?.name||result.next.district)+"."
+       :"\n\nYa reuniste las cuatro piezas del expediente.";
+     const opts=result.ready
+       ?[{label:"Revisar conclusiones y resolver el expediente",action:()=>localCaseConclusions(result.id)},
+          {label:"Resolver más adelante",action:()=>{}}]
+       :[{label:"Seguir la pista cuando estés preparado",action:()=>{}}];
+     askMenu("Nueva conexión: "+result.title,result.message+direction+
+       (prior?"\n\nEste indicio ya figuraba entre tus notas; no necesitaste repetir la tirada.":"\n\nTirada: "+roll.dice.join(", ")+"."),
+       opts,"INVESTIGACIÓN ENCADENADA");
+   }else{
+     exposure(3,"Tu inspección en "+shop.name+" despertó suspicacias.");
+     advanceClock(8);hud();save();
+     askMenu("Un indicio sin verificar",result.message+
+       "\n\nTirada: "+roll.dice.join(", ")+".",
+       [{label:"Regresar otra noche",action:()=>{}}],"INVESTIGACIÓN ENCADENADA");
+   }
+ }
+ function shopCaseChoices(shop){
+   if(!CASES)return[];
+   const p=CASES.atShop(game,shop);
+   if(!p||p.complete)return[];
+   if(p.ready&&p.steps[p.steps.length-1]===shop.id)return [
+     {label:"Cerrar expediente: "+p.title,action:()=>localCaseConclusions(p.id)}
+   ];
+   if(p.eligible)return [
+     {label:"Contrastar indicios: "+p.title+" ("+(p.count+1)+"/"+p.total+")",
+       disabled:p.blockedUntil,action:()=>investigateLocalCase(shop)}
+   ];
+   return[];
+ }
+
  function shopInteract(){
    const shop=K?.byId[game.sidevenue];if(!shop)return;
    const target=K.nearest(game);
@@ -782,6 +850,7 @@
          }}));
          options.unshift({label:"Consultar el mostrador y comprar o vender",action:()=>ECONUI.market(shop)});
          if(game.embraced)options.unshift({label:"Usar un poder sobrenatural ante el encargado",action:WORLDUI.menu});
+         options.push(...shopCaseChoices(shop));
          if(H?.nightNews(game,shop))options.push(newsChoice());
          options.push({label:"Despedirte",action:()=>{}});
          askMenu(shop.keeper,follow.text+"\n\n"+(H?.districtContext(game,shop).label||""),
@@ -792,6 +861,7 @@
        const neighbors=H?.districtContext(game,shop).label||"";
        const opts=[{label:"Comprar o vender al encargado",action:()=>ECONUI.market(shop)}];
        if(game.embraced)opts.push({label:"Usar una Disciplina ante el mortal",action:WORLDUI.menu});
+       opts.push(...shopCaseChoices(shop));
        if(H?.nightNews(game,shop))opts.push(newsChoice());
        opts.push({label:"Despedirte",action:()=>{}});
        askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?
@@ -812,6 +882,7 @@
         {label:"Presionar al encargado (riesgo para la Mascarada)",action:()=>localAction(shop,"pressure")},
         {label:"Comprar o vender artículos",action:()=>ECONUI.market(shop)},
         ...(game.embraced?[{label:"Utilizar una Disciplina sobre este lugar",action:WORLDUI.menu}]:[]),
+        ...shopCaseChoices(shop),
         {label:"No intervenir",action:()=>{}}],"CONTACTO SECUNDARIO");
      return;
    }
@@ -820,7 +891,7 @@
    }
    askMenu(target.type==="clue"?"Objetos del mostrador":"Detalles del establecimiento",
      target.type==="clue"?shop.description+"\n\n"+shop.rumor:shop.description+"\n\nEl mobiliario guarda huellas de actividad nocturna, pero no permite sacar conclusiones sobre quién las dejó.",
-     [{label:"Continuar la visita",action:()=>{}}],"EXPLORACIÓN INTERIOR");
+     [...shopCaseChoices(shop),{label:"Continuar la visita",action:()=>{}}],"EXPLORACIÓN INTERIOR");
  }
 
  function districtInteract(){
@@ -1856,6 +1927,20 @@
       const row=document.createElement("p");
       row.textContent="Contactos que esperan una conversación: "+outstanding.join("; ")+".";
       root.appendChild(row);
+    }
+  }
+  if(CASES){
+    const cases=CASES.summary(game);
+    const caption=document.createElement("p");
+    caption.textContent="Expedientes locales: "+cases.completed+"/"+cases.total+" resueltos · "+cases.evidence+"/"+cases.maxEvidence+" pruebas contrastadas.";
+    root.appendChild(caption);
+    for(const c of cases.cases){
+      const line=document.createElement("p");
+      line.textContent=c.title+" · "+c.count+"/"+c.total+" fuentes · "+(c.complete?"Cerrado ("+c.mode+")":
+         c.ready?"Listo para resolver; regresá a "+K.byId[c.steps[c.steps.length-1]].name:
+         "Siguiente: "+(c.nextShop?.name||"Por descubrir")+
+           " ("+(T?.byId[c.nextShop?.district]?.name||c.nextShop?.district||"París")+")")+".";
+      root.appendChild(line);
     }
   }
   const contacts=document.createElement("p");
