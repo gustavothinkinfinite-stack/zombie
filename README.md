@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fase I)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–II)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,23 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Rediseño visual 2.0 — Fase II (23 de octubre de 2026)
+
+**Nueva implementación del mundo 2D:**
+
+- \`vtm-graphics.js\` es un módulo Canvas 2D nuevo. Dibuja escenarios por procedimientos y reutiliza los fondos estáticos en memoria para no regenerar toda la ciudad y las habitaciones en cada fotograma.
+- **París renovado:** calles y fachadas con detalles, ventanas iluminadas, farolas, Sena, puentes, árboles, vehículos y marcadores de misión.
+- **Residencias por clan:** todas las combinaciones de siete clanes por salón, estudio y aposentos (21 vistas) usan nuevas texturas y decoraciones. Las coordenadas de interacción siguen siendo las mismas.
+- **Interiores:** ocho localizaciones con arquitectura y objetos según el tipo de establecimiento; presentes físicamente en las escenas de investigación.
+- **Sprites actualizados:** protagonista y PNJ con rasgos y colores por clan, cuatro direcciones de orientación y animación sencilla de marcha, más etiquetas discretas para personajes cercanos.
+- **Atmósfera:** lluvia y partículas ambientales, halos luminosos en faroles y señalización sutil de objetos.
+- **Opción FX:** botón para activar/desactivar lluvia y partículas; se guarda la preferencia de manera independiente de la partida y usa inicialmente \`prefers-reduced-motion\` del navegador.
+- **Compatibilidad:** el sistema de aprecio, diálogos, misiones, fichas y guardado no cambia; el motor previo queda como reserva.
+
+**Comprobaciones:** sintaxis de los archivos JS, referencias HTML, ejecución simulada de 21 habitaciones, ocho interiores, movimiento en París y guardado de una partida de la etapa anterior. La preferencia de FX también se probó activada y desactivada.
+
+**Alcance real:** estos son fondos/sprites detallados **dibujados por código**, no un tileset ilustrado definitivo. No se han incorporado colisiones con mobiliario, animaciones completas con hojas de sprites ni mapas desplazables extensos. La publicación pública sigue dependiendo de completar el despliegue en Hostinger.
 
 ## Rediseño visual 2.0 — Fase I (23 de octubre de 2026)
 
