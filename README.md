@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.9 · rediseño visual 2.0, fase XI)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.9 · rediseño visual 2.0, fase XII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
