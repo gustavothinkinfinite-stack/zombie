@@ -45,4 +45,95 @@ function drawCity(c,game,D,N,time){
  rect(c,4,241,85,55,"#171b27");rect(c,10,248,72,45,"#927b7b");rect(c,17,254,58,33,"#2e2c3b");text(c,"RESIDENCIA",45,273,8);
 }
 
-// Continúa: escenas y sprites.
+
+function residenceBase(c,room,clan,data){
+ const nos=clan==="Nosferatu",trem=clan==="Tremere";
+ cobbles(c,data.floor,clan.length);
+ if(["Toreador","Brujah","Gangrel"].includes(clan)){
+  for(let y=40;y<300;y+=17){rect(c,0,y,480,2,"#15141d55");for(let x=y%2?0:40;x<480;x+=72)rect(c,x,y+2,1,14,"#14172055");}
+ }
+ rect(c,0,0,480,39,data.wall);rect(c,0,37,480,3,data.metal);
+ rect(c,0,0,17,300,"#171720");rect(c,463,0,17,300,"#171720");
+ for(let x=18;x<470;x+=85){rect(c,x,0,8,208,"#1b1822");rect(c,x+2,0,4,200,data.furniture);rect(c,x-7,37,21,6,data.metal);}
+ if(nos){for(let y of [60,110]){rect(c,28,y,424,8,"#3e5956");rect(c,28,y+2,422,2,"#99ad9f");}}
+ else{windowPane(c,57,46,47,63);windowPane(c,368,46,47,63);}
+ lamp(c,22,110);lamp(c,458,110);
+ rect(c,148,181,185,94,"#251c29");rect(c,153,185,176,85,data.rug);rect(c,161,193,160,68,"#302332");rect(c,167,198,149,59,data.rug);
+ for(let y=201;y<253;y+=15)for(let x=176;x<310;x+=21)rect(c,x,y,6,2,"#ceb7a35c");
+ if(room==="house"){
+  rect(c,180,68,120,69,data.furniture);rect(c,189,76,103,51,"#211d2b");rect(c,197,85,88,29,data.rug);
+  rect(c,24,143,129,69,data.furniture);rect(c,30,148,117,56,"#3e2c39");
+  rect(c,81,146,60,28,"#e7d3b7");rect(c,89,151,44,18,"#b59f8b");rect(c,93,155,30,2,"#6b535c");
+  rect(c,329,130,127,81,data.furniture);rect(c,336,136,113,66,"#2e2531");rect(c,343,140,93,48,data.rug);
+  rect(c,356,144,66,35,"#d6bea6");rect(c,362,150,54,24,"#423146");
+  door(c,38,260,"DESPACHO");door(c,443,260,"HABITACIONES");door(c,240,296,"PARÍS");
+ }else if(room==="study"){
+  shelves(c,34,106,137,82,data.furniture);shelves(c,309,108,142,81,data.furniture);
+  rect(c,119,119,60,43,"#d6bea1");rect(c,126,125,46,30,"#e7d6b7");
+  rect(c,314,126,59,47,"#251c2b");rect(c,321,132,45,35,data.metal);
+  rect(c,180,193,120,51,data.furniture);rect(c,188,198,104,39,"#a68a75");rect(c,204,203,71,28,"#e0c7a4");
+  rect(c,211,208,50,2,"#65545a");rect(c,211,217,44,2,"#8b6a69");
+  door(c,240,296,"SALÓN");
+ }else{
+  rect(c,41,117,151,89,data.furniture);rect(c,49,122,134,75,"#d5c5ad");rect(c,58,131,55,27,"#aa9f9f");
+  rect(c,286,110,154,90,data.furniture);rect(c,294,118,136,72,data.rug);rect(c,302,126,120,56,"#342b37");
+  rect(c,319,134,81,27,"#d0bda8");
+  rect(c,114,121,60,32,"#826558");rect(c,119,125,50,23,"#b68f76");
+  rect(c,306,128,61,27,"#e1d1b7");rect(c,316,132,40,18,"#635367");
+  windowPane(c,218,73,45,49);door(c,240,296,"SALÓN");
+ }
+ if(trem)for(const x of [49,401]){rect(c,x,211,18,22,"#695274");text(c,"◇",x+9,228,14,"#d5bcd3");}
+ if(clan==="Brujah")for(let i=0;i<4;i++){rect(c,32+i*34,42,26,17,"#68454b");rect(c,37+i*34,46,15,2,"#a67770");}
+ if(clan==="Malkavian"){rect(c,218,9,45,23,"#67586e");rect(c,224,15,32,14,"#b7a5b7");}
+ if(clan==="Toreador"){rect(c,230,6,30,28,"#b18b7d");rect(c,237,12,17,16,"#543446");}
+ if(clan==="Ventrue")for(const x of [161,307]){rect(c,x,15,26,27,"#b7aba9");rect(c,x+4,20,18,15,"#4d5363");}
+}
+function drawResidence(c,room,clan,C,game,time){
+ const d=C.residences[clan];if(!d)return;
+ drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
+ for(const obj of C.residenceObjects[room]||[]){
+  const seen=!!game.observed[obj.id],pulse=.55+.25*Math.sin(time*3+obj.x);
+  rect(c,obj.x-7,obj.y-38,14,14,"#111420d0");rect(c,obj.x-5,obj.y-36,10,10,seen?"#5e8276":"#c3a17f");
+  rect(c,obj.x-2,obj.y-33,4,4,seen?"#d2d9c6":"#f1d6a9");
+  if(!seen)glow(c,obj.x,obj.y-30,16,"242,184,130",.08*pulse);
+ }
+ text(c,(room==="house"?d.name:room==="study"?d.study:d.quarters).toUpperCase(),240,23,10,d.metal);
+}
+function venueBase(c,id,env){
+ const dark=id==="tuneles",club=id==="stjuly",court=id==="elysee",archive=["hemeroteca","policia"].includes(id);
+ cobbles(c,env.room,id.length);
+ rect(c,0,0,480,39,"#171722");rect(c,0,37,480,3,env.accent);
+ rect(c,0,39,17,261,"#18151f");rect(c,463,39,17,261,"#18151f");
+ for(let x=20;x<461;x+=84){rect(c,x,41,13,170,"#201b29");rect(c,x+3,43,5,163,env.accent);}
+ if(dark){
+  for(let y of [54,80,117]){rect(c,24,y,432,7,"#3d5b57");rect(c,24,y+2,430,2,"#819d97");}
+  for(let x=30;x<446;x+=39)rect(c,x,67,3,106,"#34514d");
+ }else{windowPane(c,55,63,58,80);windowPane(c,366,63,58,80);}
+ if(club){
+  rect(c,44,159,163,75,"#392936");rect(c,51,166,150,14,"#b28b79");rect(c,56,182,139,42,"#2c2734");
+  for(let i=0;i<7;i++)rect(c,59+i*18,148,7,22,i%2?"#b69e8c":"#897696");
+ }else if(dark){
+  rect(c,48,154,152,77,"#213332");
+  for(let i=0;i<5;i++){rect(c,54+i*28,164,22,38,"#111d24");rect(c,57+i*28,167,16,22,"#5a8d81");}
+ }else if(court){
+  rect(c,55,161,370,89,"#9e8a88");rect(c,62,167,356,75,"#5d4555");rect(c,75,178,322,55,"#332936");
+ }else if(archive){
+  shelves(c,50,154,158,77,id==="policia"?"#676d7b":"#78605b");
+  rect(c,56,166,139,57,"#988675");
+  for(let i=0;i<6;i++)rect(c,67+i*20,174,15,34,i%2?"#d7c4a7":"#8e7c77");
+ }else{
+  rect(c,53,160,155,75,"#5d4a53");rect(c,58,168,145,60,"#987d75");
+ }
+ rect(c,302,156,130,73,"#352c39");rect(c,312,163,112,58,env.accent);rect(c,321,171,93,41,"#2f2836");
+ lamp(c,24,100);lamp(c,456,100);door(c,240,298,"SALIR");
+}
+function drawVenue(c,id,N,game,time){
+ const env=N.environments[id];if(!env)return;
+ drawCached(c,"venue:"+id,ctx=>venueBase(ctx,id,env));
+ text(c,env.label.toUpperCase(),240,24,12);
+ if(game.activeQuest||Object.values(game.sideQuests||{}).some(q=>q.status==="active")){
+  const pul=.1+.05*Math.sin(time*3);glow(c,130,140,25,"236,183,121",pul);
+ }
+}
+
+// Continúa: sprites y efectos.
