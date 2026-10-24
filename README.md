@@ -23,6 +23,16 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 ## Fase XVII — Siete barrios reactivos y regresión de navegador (octubre de 2026)
 
+### Estabilización posterior a la Fase XVII
+
+- **Verificación de Hostinger:** una pestaña del navegador conectado mostró `EXPLORACIÓN · FASE XVII` con una partida de Nosferatu existente y su progreso visible. Esto confirma que esa versión aparece en dicha sesión, **no** que todas las pruebas de Chromium hayan aprobado ni que todos los assets coincidan con el último commit.
+- **Espera de contactos corregida:** `waitForNPC` ya distingue una espera dentro de la misma noche de otra hasta la noche siguiente. Sincroniza la simulación reactiva y los sucesos comerciales antes de adelantar el reloj, y concede ingresos/renueva condiciones nocturnas sólo si realmente cambió de noche.
+- **Nueva regresión:** `node tests/npc-wait-reactivity.test.js` cubre ambas esperas y un salto desde la madrugada.
+- **Prueba de navegador reforzada:** `tests/browser-smoke.cjs` comprueba ahora el **título preciso del incidente** correspondiente a cada uno de los siete barrios.
+- **Canal de producción preparado:** `.github/workflows/production-smoke.yml`, lanzable manualmente desde GitHub Actions, ejecuta el recorrido Playwright sobre `https://wheat-chough-542895.hostingersite.com/` con un perfil aislado y una partida de prueba en almacenamiento local. **No usa ni modifica partidas de jugadores reales.** Su éxito debe consultarse en GitHub Actions una vez ejecutado; crear el workflow no equivale a ejecutarlo.
+
+
+
 La lógica de **Bastilla** sigue en \`vtm-reactive-city.js\`. Se agregó el módulo independiente \`vtm-reactive-districts.js\`, que extiende el sistema narrativo reactivo a los siete barrios restantes con hechos distintos, testigos, responsables, pistas verificables, memoria social y rumores que circulan entre barrios. Es una extensión de primera escala: **ocho casos reactivos en total**, uno por barrio, además de los dieciséis sucesos ambientales recurrentes de Fase XV.
 
 | Barrio | Incidente reactivo | Actores / repercusiones |
