@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.6 · rediseño visual 2.0, fase VIII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.6 · rediseño visual 2.0, fase IX)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -10,6 +10,42 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
 
+
+## Fase IX — Dieciséis locales secundarios visitables (octubre de 2026)
+
+Se añadieron **dos establecimientos secundarios por cada uno de los ocho barrios**. En cada barrio se muestran dos puertas nuevas, independientes del edificio principal y de los rincones de observación.
+
+### Lugares por barrio
+
+| Barrio | Local 1 | Local 2 |
+|---|---|---|
+| Passy | Anticuario de Passy | Conserjería nocturna |
+| St. July | Floristería de madrugada | Café des Lanternes |
+| Elíseo | Galería Saint-Honoré | Estudio de documentos |
+| Hemeroteca | Librería de la Rue des Archives | Taller de encuadernación |
+| Bastilla | Le Verre Fêlé | Estudio de música |
+| Saint-Denis | Lavandería Saint-Denis | Taller de reparaciones |
+| Archivo policial | Cafetería del turno de noche | Copistería de expedientes |
+| Acceso a los túneles | Almacén subterráneo | Reparación de aparatos usados |
+
+### Interacción
+
+- Cada local dispone de interior 2D procedimental, encargado secundario con nombre, punto de conversación, objetos, observaciones y puerta de salida.
+- En la conversación inicial se puede ofrecer ayuda (aumenta ligeramente la reputación de una facción local), investigar con **Percepción + Investigación, dificultad 7** (si hay éxito, se registra una información) o presionar al encargado (obtiene información pero genera exposición de la Mascarada y empeora la reputación).
+- Las decisiones tienen resultado persistente y **sólo pueden ejecutarse una vez por local**. La inspección ambiental no concede pistas sin la investigación correspondiente.
+- Se conserva el punto de entrada al abandonar el local. Hay 16 posibilidades de información secundaria, registradas aparte de la investigación principal.
+- El diario y el panel lateral indican los locales visitados y las informaciones conseguidas.
+- Se pueden visitar como ghoul o como Vástago sin alterar las reglas del Abrazo.
+
+### Implementación y límites
+
+\`vtm-shops.js\` registra los 16 establecimientos, descripciones, dueños, rumores, diseños interiores y estado. \`vtm-districts.js\` muestra las entradas y detecta la proximidad; \`vtm-game.js\` incorpora la escena \`sidevenue\`, los diálogos y las consecuencias; \`vtm-physics.js\` reutiliza las colisiones de interiores. El guardado incorpora \`localPlaces\`, \`localClues\` y \`sideReturn\`, con migración para partidas anteriores.
+
+Los rumores de estos comercios **son contenido ambiental original**, no pruebas que revelen automáticamente a la Senescal impostora ni cambien los secretos preestablecidos de la crónica.
+
+Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de acceso a los 16 locales, renderizado de 16 interiores y de sus puntos de interacción; ejecución completa de una visita con conversación, recompensa no repetible, guardado y retorno a la misma calle.
+
+**Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 ## Versión 0.6 — Los rasgos determinan cómo jugás
 
