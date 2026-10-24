@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–V incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–VI incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -106,6 +106,16 @@ Iluminación ambiental: luz sobre libros y escritorio en el despacho, reflejos f
 La compatibilidad de colisiones requiere mantener accesibles estos puntos: despacho `(145,137)`, `(338,137)`, `(240,212)`, dormitorio `(142,135)`, `(334,135)`, `(239,102)`, salida `(240,270)`. Cada fondo corresponde a un lienzo lógico de 480 × 300.
 
 **Pruebas:** 14 recursos SVG existentes; 21 estancias y ocho locales renderizados; fallback con carga retrasada y fallida; guardado, movimiento y opción FX verificados por simulación del motor. Queda pendiente una revisión visual real en navegador y completar arte y animación ilustrados profesionalmente.
+
+## Fase VI — Apariencia y evolución visual
+
+Se añadió `vtm-appearance.js` como módulo independiente, con cinco tonos de piel, cinco colores de cabello, cinco vestimentas, tres peinados y cuatro accesorios. El creador de personaje muestra una vista previa en Canvas, y durante la partida se pueden guardar o descartar cambios de apariencia desde un modal.
+
+Las selecciones se incorporan a `game.character.appearance`; las partidas antiguas se migran mediante `normalize()`. Ninguna elección tiene coste en puntos ni afecta reglas. El sprite se compone superponiendo capas cromáticas sobre la hoja base; la ropa y la cara personalizadas se conservan después del Abrazo. Se atenúa ligeramente el tono de piel y se añaden detalles cromáticos según clan. Nosferatu adquiere marcas adicionales. Los acentos son símbolos visuales del prototipo, no nuevos poderes.
+
+`assets/personajes-paris-v3.svg` contiene ahora **256 cuadros** (16 filas × cuatro direcciones × cuatro cuadros). Dimensiones: 512 × 768 px. Cada celda conserva 32 × 48 px, garantizando continuidad del motor y del fallback. El movimiento intercala cuatro cuadros de marcha; hay parpadeo y detalles de reposo. El Abrazo tiene un efecto breve condicionado por FX.
+
+La interfaz actualiza inmediatamente la condición del jugador tras el Abrazo. Quedan pendientes hojas de sprites hechas a mano, mayor variedad de siluetas y vestuario y revisiones visuales reales en distintos dispositivos.
 
 ## Próximos entregables de arte
 
