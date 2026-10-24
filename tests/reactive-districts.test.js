@@ -71,7 +71,7 @@ test("Cada distrito puede resolver su caso entregando pruebas válidas",()=>{
 test("Prestar ayuda, no informar y ocultar datos producen tres consecuencias diferentes",()=>{
  const [def]=R.defs;
  for(const [action,expected] of [["Auxiliar","aided"],["Examinar","lost"],["Ocultar","hidden"]]){
-  const g=fresh(def.id),ui=harness(g);at(g,def,def.search+2);
+  const g=fresh(def.id),ui=harness(g);at(g,def,action==="Auxiliar"?def.start+2:def.search+2);
   if(action==="Auxiliar"){g.x=238;g.y=159;R.interact(g);ui.pick("Auxiliar");}
   else {
    g.x=236;g.y=216;R.interact(g);ui.pick("Examinar");
