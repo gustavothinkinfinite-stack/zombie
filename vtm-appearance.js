@@ -82,8 +82,9 @@ window.VTM_APPEARANCE=(()=>{
   if(facing==="up"){
    px(ctx,dx+11,dy+9,13,10,hair);
   }else if(facing==="down"){
-   px(ctx,dx+13,dy+12,2,2,"#252530");
-   px(ctx,dx+20,dy+12,2,2,"#252530");
+   const blinking=!walking&&time>0&&time%5.8<.15;
+   px(ctx,dx+13,dy+12,2,blinking?1:2,"#252530");
+   px(ctx,dx+20,dy+12,2,blinking?1:2,"#252530");
    px(ctx,dx+16,dy+17,4,1,embraced?"#7b515c":"#9c746a");
    if(look.detail==="lentes"){
     px(ctx,dx+11,dy+10,6,5,"#34333d");px(ctx,dx+18,dy+10,6,5,"#34333d");
@@ -94,9 +95,10 @@ window.VTM_APPEARANCE=(()=>{
    const ex=facing==="right"?21:12;
    px(ctx,dx+ex,dy+12,2,2,"#252530");
   }
+  if(!walking){px(ctx,dx+16,dy+34+Math.round(Math.sin(time*1.8)),3,1,coat.trim);}
   if(look.detail==="bufanda"){
    px(ctx,dx+12,dy+21,13,5,"#b39a9e");
-   px(ctx,dx+21,dy+24,4,13,"#8e6372");
+   px(ctx,dx+21+(walking?Math.round(Math.sin(cycle*10)):0),dy+24,4,13,"#8e6372");
   }else if(look.detail==="broche"){
    px(ctx,dx+21,dy+24,4,4,embraced?(accents[clan]||"#ba9a92"):"#cbb99d");
    px(ctx,dx+22,dy+25,2,2,"#282a32");
