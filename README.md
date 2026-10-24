@@ -32,6 +32,8 @@ La migración reconoce decisiones previas de la fase IX como ya resueltas, **sin
 
 Se realizaron pruebas del módulo de relaciones (ayuda, amenazas, investigación, migración y consecuencias no repetibles) y una prueba integrada de juego para el flujo: elegir ayuda → descansar en el refugio → volver al comercio al día siguiente → recibir una presentación → intentar reclamarla de nuevo. La presentación se reclamó exactamente una vez.
 
+Las regresiones de migración, favores, rumores, intimidación, dificultad vecinal y persistencia del guardado también están documentadas en `tests/social-relationships.test.js`, que puede ejecutarse desde la raíz del proyecto con `node tests/social-relationships.test.js`. Las comprobaciones de integración de esta actualización se hicieron con Canvas y DOM simulados.
+
 **Límites actuales:** los encargados no tienen todavía desplazamiento físico autónomo por toda la ciudad ni IA conversacional libre. La memoria social es un sistema narrativo determinista diseñado para el prototipo. La validación en navegador real y el despliegue público de esta fase siguen siendo tareas separadas.
 
 ## Fase IX — Dieciséis locales secundarios visitables (octubre de 2026)
