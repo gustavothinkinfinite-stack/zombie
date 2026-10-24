@@ -2108,6 +2108,7 @@
     const ep=ELI.summary(game);const line=document.createElement("p");
     line.textContent="Elizabeth Parker: "+(ep.status==="dormant"?"Encargo pendiente en Passy":ep.status==="reported"?"Informe entregado":"Investigación abierta")+" · "+ep.count+"/"+ep.total+" pistas · alerta "+ep.alert+"/6.";
     root.appendChild(line);
+    if(ep.bapthisteOutcome){const b=document.createElement("p");b.textContent="Bapthiste: "+({captured:"capturado con vida",escaped:"escapó del refugio"})[ep.bapthisteOutcome];root.appendChild(b);}
     for(const clue of ep.clues){const entry=document.createElement("p");entry.textContent="• Prueba Elizabeth: "+clue;root.appendChild(entry);}
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
