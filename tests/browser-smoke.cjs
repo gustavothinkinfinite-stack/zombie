@@ -71,6 +71,24 @@ const key="cronicas-paris-ghoul-v1";
    assert.match(body,/Saint-Denis/);
    await page.locator("#journalClose").click();
   });
+  await check("El mapa ilustrado SVG se carga en Chromium sin alterar la partida",async()=>{
+   const isolated=await browser.newContext({viewport:{width:1759,height:900},reducedMotion:"reduce"});
+   try{
+    const mapPage=await isolated.newPage();
+    const saved=await page.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey)),key);
+    saved.scene="paris";saved.x=46;saved.y=267;saved.cityPos={x:46,y:267};
+    await mapPage.addInitScript(({saveKey,game})=>{
+     localStorage.setItem(saveKey,JSON.stringify(game));
+    },{saveKey:key,game:saved});
+    await mapPage.goto(base,{waitUntil:"load"});
+    await mapPage.locator("#continueGame").click();
+    await mapPage.waitForFunction(()=>window.VTM_GRAPHICS?.backgroundStatus().ready>0,null,{timeout:12000});
+    const image=await mapPage.request.get(new URL("assets/paris-nocturno.svg",base).href);
+    assert.equal(image.status(),200,"El arte SVG debe estar disponible en el servidor");
+    assert.equal(await mapPage.locator("#world").getAttribute("width"),"960");
+    await mapPage.locator("#world").screenshot({path:"paris-map-preview.png"});
+   }finally{await isolated.close();}
+  });
   await check("Los menús de ocho barrios reactivos aparecen",async()=>{
    await page.locator("#actionsBtn").click();
    const menu=await page.locator("#dialogOptions").innerText();
