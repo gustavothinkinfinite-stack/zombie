@@ -2080,6 +2080,7 @@
  }
  function drawWorld(){
   if(!game)return;
+  canvas.classList.toggle("map-illustrated",game.scene==="paris");
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else if(CI?.byId(game.scene))drawCaseInterior();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,(game.scene==="paris"||game.scene==="district")?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
