@@ -13,7 +13,7 @@ const localCI=fs.readFileSync(path.join(root,".github/workflows/browser-smoke.ym
 const prodCI=fs.readFileSync(path.join(root,".github/workflows/production-smoke.yml"),"utf8");
 const regional=fs.readFileSync(path.join(root,"vtm-reactive-districts.js"),"utf8");
 const run=(label,check)=>{check();console.log("OK:",label);};
-run("La página identifica la Fase XVII y tiene los controles del recorrido",()=>{
+run("La página identifica la Fase XXI y tiene los controles del recorrido",()=>{
  assert.ok(html.includes("EXPLORACIÓN · FASE XXI"));
  for(const id of ["startNew","nextStep","stepMark","continueGame","play","world",
   "journalBtn","journalModal","journalDetail","journalClose","dialog",
