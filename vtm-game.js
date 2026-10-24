@@ -449,7 +449,7 @@
    }
    const target=$("sideQuestList");target.innerHTML="";
    const active=Object.values(game.sideQuests).filter(q=>q.status==="active"||q.status==="ready");
-   if(!active.length)target.textContent="Visitá a Ingrid, Lucien o Isabelle para conseguir encargos personales.";
+   if(!active.length&&(!ELI||ELI.summary(game).status==="dormant"))target.textContent="Visitá a Ingrid, Lucien o Isabelle para conseguir encargos personales.";
    if(ELI){
      const ep=ELI.summary(game);
      if(ep.status!=="dormant"){
