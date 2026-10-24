@@ -56,7 +56,7 @@ test("Rutas de peatones, vehículos y visitantes de negocios se pueden renderiza
  assert.ok(trial.customers>0&&first===shopGame.clock.night);
 });
 test("Sucesos y transeúntes permiten interacción una vez por noche",()=>{
- const game=g(),messages=[];game.clock.minutes=1425;C.tick(game);
+ const game=g(),messages=[];game.clock.minutes=21*60+35;C.tick(game);
  C.bind({ask:(title,body,options)=>{messages.push({title,body,options})},save:()=>{},log:()=>{},refresh:()=>{}});
  const event=C.active(game,"bastilla")[0];
  assert.ok(event);
