@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -331,6 +331,7 @@
   game.clock=game.clock||{night:1,minutes:20*60+15};
   game.clock.night=Math.max(1,Math.floor(Number(game.clock.night)||1));
   game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
+  if(CITY){CITY.init(game);CITY.tick(game);}
   M.init(game);
   ST.init(game);
   TACT.init(game);
@@ -396,12 +397,14 @@
    if(game.clock.minutes>=1440)game.clock.minutes-=1440;
    // El prototipo sólo representa actividad nocturna; se omiten las horas de sol.
    if(game.clock.minutes>=360&&game.clock.minutes<1080){
+     if(CITY)CITY.tick(game,true);
      game.clock.minutes=1200;game.clock.night++;
      log("La noche siguiente cae sobre París.");
       M.nextNight(game);
       const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
       processContactNight();processPoliticalNight();
    }
+   if(CITY)CITY.tick(game);
    hud();save();
  }
  function restUntilTomorrow(){
@@ -409,7 +412,9 @@
    askMenu("Descansar hasta la próxima noche",
      "Podés retirarte al refugio y dejar pasar las horas de luz. Los personajes de París continuarán sus actividades. Algunas relaciones podrán cambiar durante tu ausencia.",
      [{label:"Descansar y avanzar una noche",action:()=>{
+       if(CITY)CITY.tick(game,true);
        game.clock.night++;game.clock.minutes=1215;
+       if(CITY)CITY.tick(game);
        M.nextNight(game);const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");processContactNight();processPoliticalNight();
        log("Descansaste hasta el inicio de la noche "+game.clock.night+".");
        hud();save();
@@ -508,6 +513,10 @@
     const cases=CASES.summary(game);
     $("casesProgress").textContent=cases.completed+" / "+cases.total;
     $("caseEvidence").textContent=cases.evidence+" / "+cases.maxEvidence;
+  }
+  if(CITY){
+    const pulse=CITY.summary(game),line=$("cityLifeStatus");
+    if(line)line.textContent="Sucesos esta noche: "+pulse.events+" · comercios abiertos: "+pulse.shopsOpen+"/"+pulse.totalShops;
   }
   if(K){
     $("shopProgress").textContent=Object.keys(game.localPlaces||{}).filter(id=>K.byId[id]).length+" / "+K.definitions.length;
@@ -696,6 +705,7 @@
    if(game.combat?.active){TACTUI.battleMenu();return;}
    const m=M.init(game),choices=[
      ...(ELI?[{label:"Expediente Elizabeth Parker · investigación principal",action:ELI.menu}]:[]),
+     ...(CITY?[{label:"París nocturno · sucesos, tránsito y horarios comerciales",action:()=>askMenu("Pulso de la ciudad",CITY.bulletin(game),[{label:"Continuar",action:()=>{}}],"ACTIVIDAD NOCTURNA")}]:[]),
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      ...(game.embraced?[{label:"Política · libro de favores y deudas",action:POLUI.ledger}]:[]),
@@ -972,7 +982,10 @@
  function districtInteract(){
    if(!T)return;
    const found=T.nearby(game);
-   if(!found){notice("Acercate a una puerta, un rincón señalado o una salida del barrio.");return;}
+   if(!found){
+     if(CITY?.interact(game,visualTime))return;
+     notice("Acercate a una puerta, un transeúnte, un suceso señalado o una salida.");return;
+   }
    if(found.type==="map"){leaveDistrict();return;}
    if(found.type==="shop"){enterShop(found.shop);return;}
    if(found.type==="neighbour"){
@@ -1870,6 +1883,7 @@
    if(!K)return;
    const shop=K.byId[game.sidevenue];if(!shop)return;
    K.draw(g,game,visualTime,effectsEnabled);
+   if(CITY)CITY.shopDraw(g,game,visualTime);
    if(G){
      G.character(g,240,104,{npc:{id:"keeper-"+shop.id,name:shop.keeper,color:"#746176",skin:"#caa691",hair:"#3b313b"},clan:"Toreador",facing:"down",walking:false});
    }
@@ -1878,6 +1892,7 @@
  function drawDistrict(){
    if(!T){drawParis();return;}
    T.draw(g,game,visualTime,effectsEnabled);
+   if(CITY)CITY.districtDraw(g,game,visualTime,effectsEnabled);
    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
  function drawParis(){
