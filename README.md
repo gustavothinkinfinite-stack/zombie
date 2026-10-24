@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XVII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XVIII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,30 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XVIII — La ciudad recuerda: sospecha policial, testigos y Mascarada (octubre de 2026)
+
+La Fase XVIII conecta la exposición, los acontecimientos de los ocho barrios, la alimentación y las Disciplinas con un **sistema persistente de consecuencias**, sin sustituir los módulos de corte, política, comercio, combate o investigación anteriores.
+
+### Qué es jugable
+
+- **Vigilancia policial por barrio:** los ocho distritos disponen de una escala de atención de 0 a 100. Las amenazas e incidentes observados elevan la vigilancia; los reportes de testigos pueden reforzarla a la noche siguiente. La presión disminuye gradualmente con el paso de las noches. Una denuncia no equivale a una condena.
+- **Patrullas y testigos:** cuando la atención alcanza el umbral de 20, aparece una patrulla de barrio con la que se puede conversar pulsando **E**. Los testigos de situaciones observadas se recuerdan y se puede intentar escuchar su relato; su presencia visible se limita a las noches recientes, pero su memoria no se borra de la partida.
+- **Acciones jugables:** se puede explicar la propia presencia a una patrulla mediante **Carisma + Etiqueta**, aclarar rumores con **Manipulación + Subterfugio** y, teniendo un contacto confiable o reputación positiva con los Brujah/Nosferatu, solicitar ayuda mediante **Inteligencia + Investigación**. Cada alternativa permite un intento por noche y distrito.
+- **Causa y efecto entre misiones:** intimidar testigos u ocultar pruebas en las investigaciones reactivas ahora produce un aviso policial **una sola vez** por incidente; colaborar y presentar informes puede reducir la atención del barrio.
+- **Disciplinas visibles:** se conecta el uso de **Dominación, Dementación, Taumaturgia, Potencia, Celeridad y Protean** desde \`vtm-world-powers-ui.js\` a indicios sobrenaturales potenciales. Los poderes discretos, como Auspex, no crean automáticamente testimonios. Los gastos de Sangre y resultados existentes no se modifican.
+- **Justicia de la Camarilla:** cuando se acumulan al menos dos referencias independientes y corroboradas relacionadas con poderes sobrenaturales, el sistema existente \`vtm-court.js\` abre **un expediente preliminar de la Primera Tradición**. La corte debe determinar su validez; no se dicta sentencia automática ni se revela ninguna conspiración oculta.
+- **Memoria y persistencia:** el estado se guarda en \`cityConsequences\` (niveles de sospecha, reportes, testigos, intentos, recuerdos y cronología). Usa la misma clave \`cronicas-paris-ghoul-v1\` y carga partidas previas sin eliminar campos ni reiniciar tramas.
+
+### Acceso y limitaciones
+
+En **Acciones → Mascarada y vigilancia policial · La ciudad recuerda** puede consultarse la actividad y se pueden resolver algunas tensiones del barrio. Las patrullas y testigos aparecen en calles cuando cumplen sus condiciones; en el diario figuran las novedades.
+
+Esto **no es** una simulación policial integral: las patrullas tienen interacciones sociales contextualizadas, pero todavía no hay persecuciones físicas, red de cámaras funcional ni arresto y traslado a comisaría. La credibilidad de los testigos y las sanciones vampíricas se mantienen separadas. Las tiradas y umbrales son una adaptación original del videojuego, no una transcripción literal de Vampiro tercera edición.
+
+- Archivos nuevos: \`vtm-city-consequences.js\`, \`tests/city-consequences.test.js\`.
+- Pruebas: \`node tests/city-consequences.test.js\` y \`node tests/browser-contract.test.js\`; \`tests/browser-smoke.cjs\` requiere Chromium en GitHub Actions.
+- **Producción:** el commit en GitHub no demuestra que Hostinger tenga Fase XVIII. Confirmar publicación y resultado del workflow Chromium antes de declararla validada en navegador real.
 
 ## Fase XVII — Siete barrios reactivos y regresión de navegador (octubre de 2026)
 
