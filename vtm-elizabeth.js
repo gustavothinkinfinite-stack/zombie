@@ -262,7 +262,7 @@ window.VTM_ELIZABETH=(()=>{
     options.push({label:d.label+(reason?" · "+reason:""),disabled:!!reason,action:()=>investigate(d.id)});
    }
    if(place==="stjuly"&&s.evidence.length>=2&&!s.interviewedEtienne)options.push({label:"Hablar con Etienne Moreau",action:meeting});
-   if(place==="bastilla"&&s.status==="active")options.push({label:"Confrontar a Bapthiste"+(canConfront(g)?" · "+canConfront(g):""),disabled:!!canConfront(g),action:confrontation});
+   if(place==="bastilla"&&s.status!=="dormant")options.push({label:"Confrontar a Bapthiste"+(canConfront(g)?" · "+canConfront(g):""),disabled:!!canConfront(g),action:confrontation});
    if(place==="passy"&&s.status==="active")options.push({label:"Presentar el informe al Principado"+(canReport(g)?"":" · Requiere cuatro pruebas y el garaje"),disabled:!canReport(g),action:submit});
    if(place==="elysee"&&s.status==="reported"&&!s.court)options.push({label:"Intervenir en la audiencia ante Pierre Duvalier",action:hearing});
    if(place==="tuneles"&&s.status==="reported"&&!s.hunters)options.push({label:"Investigar la vigilancia humana",action:watchHunters});
@@ -277,7 +277,7 @@ window.VTM_ELIZABETH=(()=>{
   return s.status==="dormant"?id==="passy":
    scenes.some(d=>d.place===id&&!has(s,d.id))||
    (id==="stjuly"&&s.evidence.length>=2&&!s.interviewedEtienne)||
-   (id==="bastilla"&&s.status==="active")||
+   (id==="bastilla"&&s.status!=="dormant")||
    (id==="passy"&&s.status==="active")||
    (id==="elysee"&&s.status==="reported"&&!s.court)||
    (id==="tuneles"&&s.status==="reported"&&!s.hunters);
