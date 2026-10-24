@@ -203,6 +203,94 @@ window.VTM_DISTRICTS=(()=>{
     policia:"ARCHIVO POLICIAL",tuneles:"ACCESO A LOS TÚNELES"};
   return "PARÍS NOCTURNO  /  "+(labels[d.id]||d.name.toUpperCase());
  }
+
+ // Capa estática de ornamentación: detalles pixel art sobre la fachada
+ // sin alterar puntos navegables ni áreas de interacción.
+ function architecturalTrim(c,d){
+  const noble=d.id==="passy"||d.id==="elysee",official=d.id==="policia",
+        underground=d.id==="tuneles",industrial=d.id==="saintdenis",
+        festive=d.id==="stjuly"||d.id==="bastilla";
+  for(const [bx,by,bw,bh] of [[19,51,151,70],[310,51,151,70],[19,198,151,50],[310,198,151,50]]){
+   const pale=noble?"#d1bbb0":official?"#acb7bd":industrial?"#756a70":"#9a8994";
+   // Banda de piedra por pisos, con ménsulas bajo la cornisa.
+   rect(c,bx+5,by+8,bw-10,1,pale+"70");
+   rect(c,bx+6,by+bh-11,bw-12,2,"#272532");
+   for(let x=bx+10;x<bx+bw-12;x+=16){
+    rect(c,x,by+8,6,2,pale+"90");
+    if(noble){
+     rect(c,x+1,by+12,2,3,"#d1c3b8");
+     rect(c,x-1,by+bh-16,8,2,"#b8aaa2");
+     rect(c,x+1,by+bh-14,2,3,"#746e77");
+    }else if(official){
+     rect(c,x,by+bh-14,5,1,"#a4bac5");
+     rect(c,x+1,by+bh-13,1,3,"#515f70");
+    }else if(festive){
+     rect(c,x+1,by+bh-12,9,2,"#ad7186");
+     rect(c,x+3,by+bh-10,6,1,"#cb9b8b");
+    }else if(industrial){
+     rect(c,x+1,by+12,2,4,"#353841");
+     rect(c,x+1,by+bh-10,8,1,"#9b7573");
+    }
+   }
+   // Letreros de taller y cajas de ventilación que rompen la silueta.
+   if(industrial||underground){
+    for(const dx of [20,bw-32]){
+     rect(c,bx+dx,by-2,15,6,"#303d43");
+     for(let k=0;k<4;k++)rect(c,bx+dx+2+k*3,by,1,2,"#70858a");
+    }
+   }
+   if(noble){
+    rect(c,bx+Math.floor(bw/2)-10,by-4,20,5,"#77707a");
+    rect(c,bx+Math.floor(bw/2)-6,by-7,12,3,"#a7a0a2");
+    rect(c,bx+Math.floor(bw/2)-1,by-11,2,4,"#403843");
+   }
+  }
+  // Pórticos: el acceso E permanece exactamente centrado en 240,122.
+  for(const x of [207,270]){
+   rect(c,x,78,3,41,noble?"#c7b8af":official?"#aab8c0":"#72616d");
+   rect(c,x+1,83,1,32,"#302d39");
+  }
+  if(noble||official){
+   rect(c,204,70,72,4,noble?"#b9aca7":"#909ca7");
+   for(let x=212;x<272;x+=10)rect(c,x,71,4,2,"#dfd0bf");
+   for(let i=0;i<3;i++)rect(c,226-i*3,123+i*2,28+i*6,2,"#8e858b");
+  }else if(festive){
+   rect(c,208,75,64,2,"#a97c95");
+   for(let x=210;x<271;x+=8)rect(c,x,79,3,3,x%3?"#d89a8c":"#754f68");
+  }else if(underground){
+   for(let x=212;x<270;x+=8)rect(c,x,120,5,1,"#7c9588");
+   rect(c,220,123,40,3,"#27383a");
+  }
+ }
+ // Iluminación dinámica sobre el fondo cacheado. Sin impacto en juego.
+ function nightIllumination(c,d,time){
+  const mood={elysee:"232,204,152",passy:"211,189,156",stjuly:"208,112,165",
+    bastilla:"230,146,115",policia:"140,188,224",hemeroteca:"226,182,119",
+    saintdenis:"225,159,109",tuneles:"115,175,158"}[d.id]||"224,180,143";
+  const flicker=.90+.08*Math.sin(time*.83+d.x*5)+.025*Math.sin(time*3.1+d.y);
+  const sources=[[29,114],[450,114],[184,135],[295,183],[220,83],[260,83]];
+  for(let i=0;i<sources.length;i++){
+   const [x,y]=sources[i],strength=(i>=4?.09:.072)*flicker;
+   light(c,x,y,i>=4?26:37,mood,strength);
+   if(i<4){
+    // Proyección cálida en el asfalto húmedo, desdoblada en segmentos.
+    for(let j=0;j<3;j++){
+     const yy=y+15+j*6;
+     rect(c,x-13+j*3,yy,26-j*6,1,"rgba("+mood+","+(strength*(.38-j*.07)).toFixed(3)+")");
+    }
+   }
+  }
+  if(d.id==="stjuly"||d.id==="bastilla"){
+   const a=.06+.035*(.5+.5*Math.sin(time*1.45));
+   light(c,240,106,54,mood,a);
+   for(let i=0;i<5;i++)rect(c,222+i*9,121,6,1,"rgba("+mood+","+(a*.9).toFixed(3)+")");
+  }else if(d.id==="policia"){
+   light(c,240,109,40,"162,208,232",.09+.015*Math.sin(time*.9));
+   rect(c,216,126,48,1,"#779cb63b");
+  }else if(d.id==="tuneles"){
+   light(c,239,111,35,"109,187,152",.065+.03*Math.sin(time*1.1));
+  }
+ }
  function base(c,d){
   rect(c,0,0,W,H,"#242a37");
   // Cuatro manzanas dejan avenidas centrales transitables y aceras laterales.
@@ -330,6 +418,7 @@ window.VTM_DISTRICTS=(()=>{
    rect(c,x-11,y-32,22,10,"#587c6b");
    rect(c,x-6,y-35,12,6,"#698674");
   }
+  architecturalTrim(c,d);
   rect(c,0,0,480,39,"#151b28d8");
   text(c,districtCaption(d),240,24,8,"#dfc6ab");
  }
@@ -361,6 +450,7 @@ window.VTM_DISTRICTS=(()=>{
    text(c,"!",shop.x,y-3,10,"#261d2b");
   }
   if(fx){
+   nightIllumination(c,d,time);
    for(let i=0;i<25;i++){
     const x=(i*71+Math.floor(time*28))%W,y=(i*53+Math.floor(time*64))%H;
     rect(c,x,y,1,3+i%3,"#b3c4d65a");
