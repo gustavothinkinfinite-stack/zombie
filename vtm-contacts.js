@@ -42,8 +42,9 @@ window.VTM_CONTACTS=(()=>{
   }
  }
  function remember(game,shop,choice,success=false){
-  init(game);
-  if(!shop||!validIds.has(shop.id)||!validChoice.has(choice))return null;
+  if(!game||!shop||!validIds.has(shop.id)||!validChoice.has(choice))return null;
+  // El juego ya normalizó al cargar. No migrar aquí una decisión que se acaba de tomar.
+  if(!game.contactMemory||typeof game.contactMemory!=="object")game.contactMemory={};
   const previous=game.contactMemory[shop.id];
   if(previous?.choice)return previous; // protección ante repeticiones, incluso tras recargar
   const current=nightOf(game),e=defaultEntry(current);
