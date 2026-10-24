@@ -524,13 +524,13 @@ function character(c,x,y,opts={}){
  // En el mapa general una persona ocupa menos de una manzana. Mantener los
  // sprites a escala normal en interiores y barrios visitables.
  if(opts.mapScale){
-  const k=0.58;
+  const k=0.46;
   c.save();c.translate(Math.round(x),Math.round(y));c.scale(k,k);
   character(c,0,0,{...opts,mapScale:false});
   c.restore();
   if(!opts.npc&&!opts.master){
-   rect(c,x-6,y+17,12,2,"#dfc09c");
-   rect(c,x-2,y+16,4,1,"#f2dab7");
+   rect(c,x-5,y+12,10,2,"#dfc09c");
+   rect(c,x-2,y+11,4,1,"#f2dab7");
   }
   return;
  }
