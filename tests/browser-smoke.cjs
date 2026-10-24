@@ -12,9 +12,23 @@ const key="cronicas-paris-ghoul-v1";
  const browser=await chromium.launch({headless:true});
  const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:"reduce"});
  const page=await context.newPage();
- const errors=[];
+ const errors=[],httpFailures=[],checks=[];
+ const startedAt=new Date().toISOString();
  page.on("pageerror",e=>errors.push(String(e)));
- const check=async(label,fn)=>{await fn();console.log("OK: "+label);};
+ page.on("response",response=>{
+   if(response.status()>=400&&/\.(?:js|css)(?:\?|$)/.test(response.url()))
+     httpFailures.push(response.status()+" "+response.url());
+ });
+ await context.tracing.start({screenshots:true,snapshots:true,sources:true});
+ const check=async(label,fn)=>{
+   await fn();
+   checks.push({label,status:"passed"});
+   console.log("OK: "+label);
+ };
+ const report=(status,error=null)=>({
+   result:status,url:base,startedAt,finishedAt:new Date().toISOString(),
+   checks,errors,httpFailures,error:error?String(error):null
+ });
  try{
   await page.goto(base,{waitUntil:"load"});
   await check("La portada carga la Fase XVII",async()=>{
@@ -116,10 +130,18 @@ const key="cronicas-paris-ghoul-v1";
    await page.reload({waitUntil:"load"});
    assert.equal(await page.locator("#continueGame").isDisabled(),false);
   });
+  assert.equal(errors.length,0,"Excepciones del juego:\n"+errors.join("\n"));
+  assert.equal(httpFailures.length,0,"Recursos no disponibles:\n"+httpFailures.join("\n"));
+  fs.writeFileSync("browser-smoke-report.json",JSON.stringify(report("passed"),null,2)+"\n");
+  await context.tracing.stop({path:"browser-smoke-trace.zip"});
   console.log("PASS: Smoke test real Chromium — Crónicas de París Fase XVII");
  }catch(e){
+  checks.push({label:"Fallo observado",status:"failed",message:String(e)});
   try{await page.screenshot({path:"browser-smoke-failure.png",fullPage:true});}catch(_){}
-  console.error(errors.join("\n"));
+  try{await context.tracing.stop({path:"browser-smoke-trace.zip"});}catch(_){}
+  try{fs.writeFileSync("browser-smoke-report.json",JSON.stringify(report("failed",e),null,2)+"\n");}catch(_){}
+  console.error("Errores de página:",errors.join("\n"));
+  console.error("Errores HTTP:",httpFailures.join("\n"));
   throw e;
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
