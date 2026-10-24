@@ -1,7 +1,7 @@
 "use strict";
 /* Control de combate, sangre y poderes en las escenas. Requiere VTM_TACTICS y VTM_STORY. */
 window.VTM_TACTICS_UI=(()=>{
- const E=window.VTM_TACTICS,S=window.VTM_STORY,M=window.VTM_MECHANICS,G=window.VTM_EQUIPMENT;
+ const E=window.VTM_TACTICS,S=window.VTM_STORY,M=window.VTM_MECHANICS,G=window.VTM_EQUIPMENT,ADV=window.VTM_ADVANCED_TACTICS||null;
  let bridge=null;
  function bind(api){bridge=api;}
  function g(){return bridge?.getGame();}
@@ -47,14 +47,21 @@ window.VTM_TACTICS_UI=(()=>{
    {label:"Disparar · "+G.init(game).magazine+" cartuchos en cargador",id:"disparo",blocked:!!G.moveAllowed(game,"disparo")},
    {label:"Recargar pistola (consume turno)",id:"recargar",blocked:!(G.init(game).equipped==="pistola"&&G.init(game).ammo>0&&G.init(game).magazine<6)},
    {label:"Defender y esquivar · Destreza + Esquivar",id:"esquiva"},
-   {label:"Intentar huir · Destreza + Atletismo",id:"huida"}
+   {label:"Intentar huir · Destreza + Atletismo",id:"huida"},
+   ...(ADV?[
+    {label:"Buscar cobertura · protegerte de ataques",id:"cubrirse"},
+    {label:"Avanzar · cerrar distancias",id:"avanzar"},
+    {label:"Retroceder · ganar distancia",id:"retroceder"},
+    {label:"Apuntar · preparar el siguiente disparo",id:"apuntar"},
+    {label:"Flanquear · Destreza + Atletismo",id:"flanquear"}
+   ]:[])
   ];
-  const options=actions.map(a=>({label:a.label,disabled:a.blocked,action:()=>battleRound(a.id)}));
+  const options=actions.map(a=>({label:a.label,disabled:!!a.blocked||!!ADV?.valid(game,a.id),action:()=>battleRound(a.id)}));
   if(game.embraced)options.push({label:"Activar una Disciplina antes del siguiente intercambio",action:powersMenu});
   options.push({label:"Consultar inventario (equipar fuera del combate)",action:equipmentMenu});
   detail("Combate · turno "+combat.round,
    combat.enemy.name+" · Salud enemiga "+combat.enemy.health+"/"+combat.enemy.max+" · Voluntad "+(combat.enemy.willpower||2)+" · estilo "+(combat.enemy.style||"normal")+
-   "\nIniciativa: Destreza + Astucia + d10. Los ataques se resuelven contra dificultad 6 (7 con armas de fuego), seguidos de daño y absorción.\n\n"+
+   "\nIniciativa: Destreza + Astucia + d10. Ataque y daño se resuelven con cobertura, posición y absorción.\n"+(ADV?"\n"+ADV.summary(game)+"\n":"")+"\n"+
    body(),options,"COMBATE POR TURNOS");
  }
  function battleRound(move){
