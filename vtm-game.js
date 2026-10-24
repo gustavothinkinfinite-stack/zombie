@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -300,6 +300,10 @@
   }
   game.venueReturn=game.venueReturn||null;
   game.venue=game.venue||null;
+  game.caseReturn=game.caseReturn||null;
+  if(game.scene?.startsWith("case-")&&!CI?.byId(game.scene)){
+   game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.caseReturn=null;
+  }
   // Una partida antigua puede señalar un interior retirado en una actualización.
   // Recuperar el barrio de origen, si existe, antes de dibujar o interactuar.
   if(game.scene==="venue"&&!D.locations.some(location=>location.id===game.venue)){
@@ -513,6 +517,11 @@
   const houseScene=["house","study","quarters"].includes(game.scene);
   $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="district"?"BARRIO · "+(T?.byId[game.district]?.name||"PARÍS").toUpperCase():game.scene==="sidevenue"?"COMERCIO · "+(K?.byId[game.sidevenue]?.name||"PARÍS").toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
   $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":game.scene==="sidevenue"?"Un local de París":game.scene==="district"?"Explorando "+(T?.byId[game.district]?.name||"París"):"Las calles después del anochecer";
+  if(CI?.byId(game.scene)){
+   const where=CI.byId(game.scene);
+   $("sceneLabel").textContent="EXPEDIENTE ELIZABETH · "+where.district.toUpperCase();
+   $("sceneTitle").textContent=where.title;
+  }
   $("floatingHint").textContent=houseScene?"E: examinar objetos, hablar o salir":"E: interactuar con objetos y personajes";
   $("exposureText").textContent=game.exposure+" / 100";
   $("exposureBar").style.width=game.exposure+"%";
@@ -1417,6 +1426,89 @@
   askMenu("Pierre Dupont","El periodista abre una carpeta repleta de fotografías y testimonios. Tenés "+game.arc.clues.length+
    " fuentes contrastadas. ¿Qué precio estás dispuesto a pagar para proteger la Mascarada?",options,"DECISIÓN IMPORTANTE");
  }
+ function enterCaseInterior(id){
+  const p=CI?.byId(id),caseState=ELI?.summary(game);
+  if(!p||caseState?.status==="dormant")return;
+  if(id==="case-garage"&&!["mathieu","lucien","erebos"].some(key=>game.elizabeth.evidence.includes(key)))return;
+  if(id==="case-hideout"&&!(game.elizabeth.evidence.includes("garage")&&game.elizabeth.evidence.length>=4))return;
+  if(CI.byId(game.scene))return;
+  game.caseReturn={scene:game.scene,venue:game.venue,district:game.district,x:game.x,y:game.y};
+  game.scene=id;game.x=p.start.x;game.y=p.start.y;walkTarget=null;walkRoute=[];keys.clear();
+  advanceClock(8);log("Entraste a "+p.title+".");hud();save();
+ }
+ function leaveCaseInterior(){
+  const ret=game.caseReturn||{};
+  if(ret.scene==="venue"&&D.locations.some(l=>l.id===ret.venue)){
+    game.scene="venue";game.venue=ret.venue;
+  }else if(ret.scene==="district"&&T?.byId[ret.district]){
+    game.scene="district";game.district=ret.district;
+  }else{
+    game.scene="paris";game.venue=null;
+  }
+  game.x=Number.isFinite(ret.x)?ret.x:game.cityPos.x;
+  game.y=Number.isFinite(ret.y)?ret.y:game.cityPos.y;
+  if(P){const safe=P.nearestFree(game.scene,game.x,game.y);game.x=safe.x;game.y=safe.y;}
+  game.caseReturn=null;keys.clear();walkTarget=null;walkRoute=[];
+  advanceClock(5);hud();save();
+ }
+ function caseAfterBattle(){
+  if(!game||game.combat?.records?.bapthiste!=="won")return;
+  const state=ELI?.init(game);
+  if(!state||["captured","escaped"].includes(state.bapthisteOutcome))return;
+  askMenu("Bapthiste ha sido reducido",
+   "El Brujah está incapacitado. Derrotarlo no permite asumir que su destrucción esté autorizada. La custodia corresponde a la autoridad del Principado.",
+   [{label:"Entregarlo vivo a Lord Thomas Wyndham",action:()=>{
+      state.bapthisteOutcome="captured";
+      state.history.push("Noche "+game.clock.night+": Bapthiste fue capturado con vida.");
+      increaseFaction("camarilla",3,"El acusado fue entregado vivo al Sheriff.");
+      log("Bapthiste está bajo custodia del Sheriff.");hud();save();
+      askMenu("La custodia del Sheriff","Wyndham recibe a Bapthiste. Pierre Duvalier debe decidir sus responsabilidades y el destino del acusado.",[{label:"Continuar",action:()=>{}}],"JUSTICIA DEL PRINCIPADO");
+    }},
+    {label:"Retirarte sin custodiarlo",action:()=>{
+      state.bapthisteOutcome="escaped";state.alert=Math.min(6,state.alert+1);
+      state.history.push("Noche "+game.clock.night+": Bapthiste escapó después de recuperarse.");
+      log("Bapthiste logró escapar después del enfrentamiento.");hud();save();
+      askMenu("Un enemigo libre","El Brujah consigue escapar después de recuperar fuerzas. Las pruebas de la investigación permanecen.",[{label:"Continuar",action:()=>{}}],"CONSECUENCIAS");
+    }}],"RESULTADO · BAPTHISTE");
+ }
+ function caseInteriorInteract(){
+  const spot=CI?.nearest(game);
+  if(!spot){notice("Acercate a una pista, a una persona o a la salida.");return;}
+  if(spot.id==="exit"){leaveCaseInterior();return;}
+  if(game.scene==="case-apartment"&&spot.id==="desk"&&!ELI.canAttempt(game,"apartment")){ELI.investigate("apartment");return;}
+  if(game.scene==="case-garage"&&spot.id==="ledger"&&!ELI.canAttempt(game,"garage")){ELI.investigate("garage");return;}
+  if(game.scene==="case-hideout"&&spot.id==="bapthiste"){
+    if(game.combat?.records?.bapthiste==="won"){
+      if(!game.elizabeth.bapthisteOutcome)caseAfterBattle();
+      else askMenu("Refugio de Bapthiste","El encuentro ya terminó. Consultá el diario para conocer sus consecuencias.",[{label:"Continuar",action:()=>{}}],"EXPEDIENTE");
+      return;
+    }
+    const reason=ELI.canConfront(game);
+    askMenu("Bapthiste","El Brujah intenta desacreditar al Sheriff. Podés intentar una confrontación documentada, un combate o retirarte.",
+      [{label:"Confrontarlo con las pruebas"+(reason?" · "+reason:""),disabled:!!reason,action:ELI.confrontation},
+       {label:"Intentar reducirlo en combate",action:()=>TACTUI.battleEntry("bapthiste")},
+       {label:"Retirarte",action:()=>{}}],"ENCUENTRO · BRUJAH");return;
+  }
+  const clues={
+    desk:"En la agenda aparecen anotaciones sobre contactos insistentes y un recibo de transporte. Ya contrastaste este lugar.",
+    phone:"Los mensajes indican que Elizabeth quería que una persona dejara de buscarla. Su identidad exige corroboración.",
+    photos:"Fotografías personales muestran a Elizabeth con amigos. Era ajena al mundo de los Vástagos.",
+    window:"Desde la ventana al patio podían oírse discusiones. Un vecino podría aportar información.",
+    car:"El automóvil coincide con la descripción parcial de Mathieu. No basta por sí solo para incriminar al responsable.",
+    ledger:"Los registros del garaje requieren ser contrastados con otros testimonios.",
+    camera:"La cámara apunta al acceso de servicio. Sin una cadena documental, no prueba quién ordenó el asesinato.",
+    service:"Esta puerta sirve como salida secundaria. Vasseur pudo utilizarla para evitar a sus perseguidores.",
+    documents:"Quedan documentos sobre comunicaciones y visitas. No prueban por sí solos quién organizó el asesinato.",
+    escape:"Una ruta de retirada permite escapar del refugio sin utilizar la puerta principal."
+  };
+  if(!game.elizabeth.spotsSeen)game.elizabeth.spotsSeen=[];
+  const key=game.scene+":"+spot.id;
+  if(!game.elizabeth.spotsSeen.includes(key)){
+    game.elizabeth.spotsSeen.push(key);log("Examinaste "+spot.name+".");save();
+  }
+  askMenu(spot.name,clues[spot.id]||"No encontrás nada concluyente.",
+   [{label:"Seguir investigando",action:()=>{}}],"EXPEDIENTE · OBJETO");
+ }
  function enterVenue(location){
    game.venueReturn=game.scene==="district"?{scene:"district",district:game.district,x:game.x,y:game.y}:null;
    game.venue=location.id;if(game.scene==="paris")game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;walkTarget=null;walkRoute=[];
@@ -1504,6 +1596,7 @@
   if(!game||overlayOpen())return;
   if(game.combat?.active){TACTUI.battleMenu();return;}
   const room=game.scene;
+  if(CI?.byId(room)){caseInteriorInteract();return;}
   if(room==="venue"){venueInteract();return;}
   if(room==="sidevenue"){shopInteract();return;}
   if(room==="district"){districtInteract();return;}
@@ -1838,9 +1931,17 @@
    pixel(x,y,1,4,i%5===0?"#afbbcd99":"#7a8a9c60");
   }
  }
+ function drawCaseInterior(){
+  if(!CI?.byId(game.scene))return;
+  CI.draw(g,game.scene,visualTime,game);
+  if(game.scene==="case-hideout"&&game.combat?.records?.bapthiste!=="won"&&G){
+    G.character(g,240,119,{npc:{id:"bapthiste",name:"Bapthiste",color:"#694b55",skin:"#885b49",hair:"#15151b"},clan:"Brujah",facing:"down",walking:false});
+  }
+  portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
+ }
  function drawWorld(){
   if(!game)return;
-  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else if(CI?.byId(game.scene))drawCaseInterior();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,(game.scene==="paris"||game.scene==="district")?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
   if(B&&G)B.foreground(g,game.scene==="district"?"paris":game.scene,game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled);
@@ -1852,6 +1953,7 @@
  function nearInteractive(){
   if(!game)return "";
   const room=game.scene;
+  if(CI?.byId(room)){const spot=CI.nearest(game);return spot?"E · "+spot.name:"";}
   if(room==="sidevenue"){
     const spot=K?.nearest(game);
     return spot?"E · "+spot.name:"";
@@ -2027,9 +2129,9 @@
   POLUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   ECONUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu});
-  TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>SU.openScene(D.locations.find(l=>l.id===id)),actions:traitsMenu});
+  TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
-  if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
+  if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
   // El resumen completo incluye datos de combate y economía: mantenerlo accesible
