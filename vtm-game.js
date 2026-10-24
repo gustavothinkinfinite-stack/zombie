@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -276,6 +276,7 @@
   else if(game.scene==="sidevenue"){game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;}
   game.localPlaces=game.localPlaces||{};
   game.localClues=game.localClues||[];
+  if(H)H.init(game);
   if(game.scene==="district"&&(!T||!T.byId[game.district])){
     game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;
   }
@@ -318,7 +319,7 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,sidevenue:null,sideReturn:null,localPlaces:{},localClues:[],flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,sidevenue:null,sideReturn:null,localPlaces:{},localClues:[],contactMemory:{},contactIntroductions:{},contactLeads:[],flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -326,6 +327,12 @@
  function formatClock(){
    const t=game.clock.minutes;
    return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+ }
+ function processContactNight(){
+   if(!H)return;
+   const alerts=H.tick(game);
+   for(const message of alerts)log(message);
+   if(game.exposure>=60&&!game.flags.marquedMasquerade)exposure(0,"Alertas acumuladas en los barrios.");
  }
  function advanceClock(amount){
    game.clock.minutes+=Math.max(0,Math.round(amount));
@@ -335,6 +342,7 @@
      game.clock.minutes=1200;game.clock.night++;
      log("La noche siguiente cae sobre París.");
       M.nextNight(game);
+      processContactNight();
    }
    hud();save();
  }
@@ -350,6 +358,7 @@
    if(current>=target||current<360)game.clock.night++;
    game.clock.minutes=target;
    M.nextNight(game);
+   processContactNight();
    log("Esperaste hasta que "+npc.name+" regresara al lugar.");
    hud();save();
    meetNPC(npc);
@@ -677,13 +686,16 @@
    if(st.decision)return;
    st.decision=choice;
    if(choice==="help"){
+     H?.remember(game,shop,choice);
      log("Ayudaste a "+shop.keeper+" en "+shop.name+".");
      increaseFaction(shop.faction,2,"Un favor discreto durante una visita a "+shop.name+".");
      askMenu("Una colaboración discreta",shop.keeper+" agradece la ayuda. Has ganado una pequeña referencia local, aunque todavía no conocés todo lo que ocurre en este negocio.",
       [{label:"Continuar",action:()=>{}}],"CONSECUENCIAS DEL BARRIO");
    }else if(choice==="inquire"){
-     const roll=dicePool("Percepción","Investigación",7);
+     const introduction=!!game.contactIntroductions?.[shop.id];
+     const roll=dicePool("Percepción","Investigación",introduction?6:7);
      const success=!!roll.success;
+     H?.remember(game,shop,choice,success);
      if(success){
        if(!game.localClues.includes(shop.id))game.localClues.push(shop.id);
        log("Nueva observación local: "+shop.clue);
@@ -696,6 +708,7 @@
         [{label:"Retirarte con discreción",action:()=>{}}],"INVESTIGACIÓN SECUNDARIA");
      }
    }else{
+     H?.remember(game,shop,choice);
      log("Presionaste al encargado de "+shop.name+".");
      exposure(7,"El encargado de "+shop.name+" denunció tu comportamiento amenazante.");
      increaseFaction(shop.faction,-2,"Tus métodos incomodaron a las personas del barrio.");
@@ -714,10 +727,31 @@
    if(target.type==="clerk"){
      if(!state.met){state.met=true;log("Conociste a "+shop.keeper+", encargado de "+shop.name+".");save();}
      if(state.decision){
-       askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?"Te reconoce y agradece tu colaboración.":state.decision==="inquire"?"Recuerda tu curiosidad y evita nuevas preguntas.":"Te mira con desconfianza después de lo ocurrido."),
-        [{label:"Despedirte",action:()=>{}}],"CONTACTO SECUNDARIO");return;
+       const follow=H?.followup(game,shop);
+       if(follow){
+         const labels={cover:"Pedir discreción sobre tus movimientos",introduction:"Solicitar una presentación en el barrio",
+           lead:"Registrar la nueva conexión comercial",apologize:"Aclarar el malentendido",acknowledge:"Aceptar las consecuencias"};
+         askMenu(shop.keeper,follow.text,follow.options.map(choice=>({label:labels[choice],action:()=>{
+           const effect=H.resolve(game,shop,choice);
+           if(!effect)return;
+           if(effect.lead){
+             const other=K.byId[effect.lead];
+             if(other)log("Nuevo contacto mencionado: "+other.name+".");
+           }
+           log(effect.text);
+           hud();save();
+           askMenu(follow.title,effect.text,[{label:"Continuar",action:()=>{}}],"CONSECUENCIAS ENTRE NOCHES");
+         }})),"CONTACTO · NOCHE "+game.clock.night);
+         return;
+       }
+       const mood=H?.mood(game,shop)||"neutral";
+       askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?
+          "Te reconoce y agradece tu colaboración.":"Recuerda tu curiosidad y evita nuevas preguntas.")+
+          (mood==="hostil"?" Su actitud sigue siendo abiertamente hostil.":"")+
+          (game.contactIntroductions?.[shop.id]?"\n\nLlegaste con una presentación de otro contacto del distrito. Eso puede facilitar investigaciones aquí.":""),
+        [{label:"Despedirte",action:()=>{}}],"CONTACTO · "+mood.toUpperCase());return;
      }
-     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión.",
+     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+(game.contactIntroductions?.[shop.id]?"\n\nTraés una presentación personal: tu próxima investigación será ligeramente más sencilla.":""),
        [{label:"Ofrecer ayuda y ganar confianza",action:()=>localAction(shop,"help")},
         {label:"Preguntar con discreción (Percepción + Investigación)",action:()=>localAction(shop,"inquire")},
         {label:"Presionar al encargado (riesgo para la Mascarada)",action:()=>localAction(shop,"pressure")},
