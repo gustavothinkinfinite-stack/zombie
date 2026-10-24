@@ -73,6 +73,9 @@ test("La intimidación y la ocultación en otras investigaciones producen eco po
  assert.ok(game.cityConsequences.reports.some(x=>x.district==="passy"));
  const before=game.cityConsequences.reports.length;
  C.tick(game);assert.equal(game.cityConsequences.reports.length,before);
+ game.clock.night=2;C.tick(game);
+ game.clock.night=3;C.tick(game);
+ assert.equal(game.cityConsequences.reports.length,before,"Una amenaza antigua no debe denunciarse de nuevo cada noche");
 });
 test("La vigilancia activa una patrulla y sus interacciones se recuerdan por noche",()=>{
  const game=g(),dialogs=[],logs=[];
