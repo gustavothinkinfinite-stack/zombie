@@ -1,7 +1,7 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I y II incorporadas en \`main\` (23 de octubre de 2026).  
-**Alcance:** Interfaz, HUD, diálogos, retratos, sprites de movimiento, ciudad e interiores procedurales.  
+**Estado:** Fases I y II más una primera entrega de Fase III incorporadas en \`main\` (23 de octubre de 2026).  
+**Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
 
@@ -74,6 +74,18 @@ Los valores de la ficha **no deben duplicarse con lógica independiente**. El HT
 ### Pruebas de integración
 
 Se ejecutaron pruebas con contextos Canvas simulados de las 21 combinaciones de salón/despacho/aposentos de siete clanes; ocho interiores; París con movimiento del personaje; persistencia del estado anterior (aprecio y ficha); y preferencias de efectos gráficos. No se detectaron excepciones JavaScript en esos recorridos. Una prueba de Canvas simulada no reemplaza una revisión visual en múltiples navegadores ni un despliegue público comprobado.
+
+## Fase III — Primera entrega integrada
+
+**Sprites como recursos independientes.** La hoja local \`assets/personajes-paris-v2.svg\` contiene 16 filas de personajes y siete clanes, cuatro orientaciones y dos cuadros por dirección. Formato 256 × 768, sprites individuales de 32 × 48. \`vtm-graphics.js\` la carga y recorta mediante \`drawImage\`. Si no carga, se emplean los sprites anteriores como respaldo. [Consultar especificación del asset](assets/README.md).
+
+**Interacción física.** \`vtm-physics.js\` incorpora obstáculos de muebles para los tres espacios de las residencias y los ocho interiores. El movimiento por teclado se desliza sobre los bordes en lugar de atravesarlos. Al pulsar sobre un destino en pantalla, calcula rutas transitables en una rejilla lógica, rodeando las mesas y los muebles. Se preservan las coordenadas de interacción de puertas, Domitores, archivos, documentos y salidas.
+
+**Migración.** Las partidas anteriores que guardaban a un personaje dentro de muebles se reposicionan en el lugar transitable más próximo al cargarse, conservando los valores del personaje, misiones, aprecio, contactos y Abrazo. Las rutas son temporales y no se guardan.
+
+**Verificaciones automatizadas:** 18 rutas hacia puntos principales (puertas, Domitor, archivos, objetos, PNJ y salidas), ejecutadas con movimiento simulado a escala de fotogramas y margen de colisión, sin atascarse. La hoja SVG contiene 16 × 4 × 2 = 128 cuadros y 3544 rectángulos de dibujo. La compatibilidad de las escenas y el guardado se verificó anteriormente.
+
+**Pendiente:** arte de entorno ilustrado manualmente, más fotogramas por animación, personalización estética real del protagonista y profundidad de escenarios mediante colisiones con rutas físicas coherentes. El sistema actual sigue siendo un **prototipo**; el atlas es nuevo y editable, pero no constituye arte comercial definitivo.
 
 ## Próximos entregables de arte
 
