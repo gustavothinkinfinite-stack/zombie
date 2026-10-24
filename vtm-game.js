@@ -6,7 +6,7 @@
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  let creator=null,step=0,game=null,keys=new Set(),lastTime=0,walkTarget=null,walkRoute=[],toastTimer=0;
- let dialogOpen=false,touchMove=null,pendingLook=null,visualTime=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
+ let dialogOpen=false,touchMove=null,pendingLook=null,visualTime=0,embraceFxUntil=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
  let effectsEnabled=true;
  try{
    const preference=localStorage.getItem("cronicas-paris-visual-fx");
@@ -943,7 +943,7 @@
   const m=D.clans[game.character.clan].master;
   askMenu("El precio de la eternidad",m+" ha preparado una ceremonia privada. Aceptar significará dejar atrás tu vida mortal y entrar en el clan "+game.character.clan+". La decisión será irreversible para este personaje.",
   [{label:"Acepto el Abrazo y sus consecuencias",action:()=>{
-    game.embraced=true;game.character.disciplines={};game.character.status="Vástago";
+    game.embraced=true;embraceFxUntil=visualTime+4;game.character.disciplines={};game.character.status="Vástago";
     log("Recibiste el Abrazo. Ya pertenecés al clan "+game.character.clan+".");
     save();hud();disciplineCeremony();
    }},
@@ -1269,6 +1269,7 @@
   if(!game)return;
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
+  if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
