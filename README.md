@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.8 · rediseño visual 2.0, fase X)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.9 · rediseño visual 2.0, fase X)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -71,6 +71,32 @@ Los rumores de estos comercios **son contenido ambiental original**, no pruebas 
 Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de acceso a los 16 locales, renderizado de 16 interiores y de sus puntos de interacción; ejecución completa de una visita con conversación, recompensa no repetible, guardado y retorno a la misma calle.
 
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
+
+
+## Versión 0.9 — Economía nocturna y Disciplinas en el mundo
+
+La economía deja de depender exclusivamente de tiradas abstractas de Trasfondos y conecta los **comercios secundarios ya existentes** con el inventario de equipo. Además, las Disciplinas poseen aplicaciones narrativas fuera de los combates.
+
+**Comercios y dinero.** La partida conserva \`economy.cash\`, historial de pagos y existencias consumidas. Los fondos iniciales se calculan una sola vez a partir del Trasfondo **Recursos** y las partidas previas se migran sin perder equipo ni historia. Recursos otorga un pequeño ingreso al comenzar una noche nueva, nunca dos veces en la misma noche. Completar encargos del Domitor, informes personales y ayudar una vez a cada establecimiento genera honorarios. Los precios son **euros ficticios del videojuego**; no representan una tabla oficial de economía de la tercera edición.
+
+- En tiendas de cada barrio, hablar con el encargado permite **comprar o vender**. Sus mercancías dependen de la clase de local: taller, café, librería, galería, oficina, floristería, almacén o anticuario.
+- Se pueden adquirir objetos persistentes del inventario ya existente —armas cuerpo a cuerpo, chalecos, botiquines y munición— y pagar por **rumores**, **servicios de discreción** o **presentaciones comerciales**. Las compras afectan dinero, inventario o ventajas reales para las tiradas.
+- **Finanzas**, el Trasfondo Recursos y haber ayudado al comerciante modifican los precios. Los objetos equipados no se pueden vender y el valor de reventa evita comprar/vender indefinidamente con ganancia. Existencias y servicios tienen límites por noche o por comercio.
+- El apartado **Acciones → Fondos** permite consultar saldo, ingresos esperados e historial. El saldo también aparece en el panel y en el diario.
+
+**Disciplinas fuera del combate.** Aparece **Acciones → Disciplinas aplicadas a personas y lugares** mientras se exploran espacios compatibles; los locales y escenarios ofrecen acceso contextual. Los ghouls no pueden utilizar estos poderes.
+
+- **Animalismo, Auspex y Protean** pueden revelar indicios ambientales mediante tiradas concretas.
+- **Presencia y Dominación** pueden influir en un encargado mortal y ofrecer mejores condiciones comerciales durante la noche; el objetivo puede resistir, se gasta Sangre y la coacción puede perjudicar Humanidad o Mascarada.
+- **Dementación** puede distraer a un interlocutor, **Ofuscación** reduce exposición y genera cobertura, **Potencia** supera una dificultad física con riesgo, y **Taumaturgia** permite buscar señales ocultas con coste de Sangre.
+- **Celeridad** puede mejorar el desplazamiento por el mapa durante el resto de la noche, mientras que **Fortaleza** permanece pasiva.
+- Cada acción requiere haber adquirido círculos en la Disciplina, verifica el contexto, consume recursos correspondientes y no puede repetirse ilimitadamente en el mismo lugar durante la misma noche.
+
+**Integración, migración y pruebas.** Los nuevos módulos son \`vtm-economy.js\`, \`vtm-economy-ui.js\`, \`vtm-world-powers.js\` y \`vtm-world-powers-ui.js\`. Se cargan antes del motor principal en \`index.html\`. Se realizó una prueba simulada del flujo completo desde una partida previa: conversar con el encargado de un café, abrir su tienda, adquirir información, comprobar el descuento de dinero y guardar una pista; a continuación, activar Auspex fuera de combate, consumir Sangre y verificar el registro persistente. También se comprobaron los límites de compras, el ingreso nocturno único y las condiciones que impiden el uso de poderes por ghouls.
+
+**Limitaciones:** los procedimientos de compra, rentas, precios, efectos comerciales y varias aplicaciones de poderes son **adaptaciones del videojuego**, no reglas reproducidas literalmente del manual de tercera edición. Quedan por diseñar la economía de favores vampíricos, comerciantes con inventarios más variados, tiradas resistidas completas según poder y una gestión más profunda de los efectos narrativos.
+
+**Despliegue:** los archivos de esta versión se subieron a GitHub \`main\`. El despliegue efectivo en Hostinger debe verificarse por separado.
 
 
 ## Versión 0.8 — Inventario real, munición y Disciplinas enfrentadas
