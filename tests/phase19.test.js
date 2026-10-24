@@ -20,6 +20,13 @@ run("Migración: sólo se añade tactical en un combate activo y se conservan ca
  assert.equal(ADV.init(g).distance,1);
  assert.equal(g.combat.records.bastilla,undefined);
 });
+run("Migración de combates activos: conserva el alcance original del cuerpo a cuerpo",()=>{
+ const g=game("venue");
+ g.combat.active={round:3,place:"bastilla",enemy:{name:"Rival antiguo",health:4,max:6,style:"evasivo"},history:[],ended:false};
+ assert.equal(ADV.init(g).distance,0);
+ assert.equal(ADV.valid(g,"golpe"),null);
+ assert.equal(g.combat.active.round,3);
+});
 run("Rango: se impiden los golpes lejanos hasta gastar un turno en avanzar",()=>{
  const g=game("venue");T.start(g,"bastilla");
  assert.match(T.action(g,"golpe",rng).error,/acercarte/);
