@@ -3,6 +3,51 @@
  Los fondos se almacenan en memoria; el estado del juego no cambia. */
 window.VTM_GRAPHICS=(()=>{
 const W=480,H=300,cache=new Map();
+const artScenes={
+ stjuly:"assets/escenarios/stjuly.svg",
+ elysee:"assets/escenarios/elysee.svg",
+ passy:"assets/escenarios/passy.svg",
+ tuneles:"assets/escenarios/tuneles.svg",
+ bastilla:"assets/escenarios/bastilla.svg",
+ saintdenis:"assets/escenarios/saintdenis.svg",
+ hemeroteca:"assets/escenarios/hemeroteca.svg",
+ policia:"assets/escenarios/policia.svg"
+};
+const artResidences={
+ Toreador:"assets/residencias/toreador.svg",
+ Ventrue:"assets/residencias/ventrue.svg",
+ Tremere:"assets/residencias/tremere.svg",
+ Nosferatu:"assets/residencias/nosferatu.svg",
+ Brujah:"assets/residencias/brujah.svg",
+ Gangrel:"assets/residencias/gangrel.svg",
+ Malkavian:"assets/residencias/malkavian.svg"
+};
+const scenePictures={};
+function loadBackplates(items,prefix){
+ if(typeof Image!=="function")return;
+ for(const [name,url] of Object.entries(items)){
+   const entry={ready:false,failed:false,img:new Image()};
+   scenePictures[prefix+name]=entry;
+   entry.img.onload=()=>{entry.ready=!!entry.img.naturalWidth;entry.failed=!entry.ready;};
+   entry.img.onerror=()=>{entry.failed=true;entry.ready=false;};
+   entry.img.src="./"+url+"?v=escenarios-1";
+ }
+}
+loadBackplates(artScenes,"venue:");
+loadBackplates(artResidences,"residence:");
+function renderBackplate(c,key){
+ const entry=scenePictures[key];
+ if(!entry?.ready)return false;
+ try{
+   c.drawImage(entry.img,0,0,480,300);
+   return true;
+ }catch(e){entry.ready=false;entry.failed=true;return false;}
+}
+function backgroundStatus(){
+ const keys=Object.keys(scenePictures);
+ return {total:keys.length,ready:keys.filter(k=>scenePictures[k].ready).length,
+ failed:keys.filter(k=>scenePictures[k].failed).map(k=>k)};
+}
 const atlasRows={Toreador:0,Ventrue:1,Tremere:2,Nosferatu:3,Brujah:4,Gangrel:5,Malkavian:6,Ghoul:7,
  isabelle:8,ingrid:9,lucien:10,john:11,marcus:12,dupont:13,guardiana:14,archivista:15};
 let atlas=null,atlasReady=false,atlasFailed=false;
@@ -114,7 +159,7 @@ function residenceBase(c,room,clan,data){
 }
 function drawResidence(c,room,clan,C,game,time){
  const d=C.residences[clan];if(!d)return;
- drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
+ if(room!=="house"||!renderBackplate(c,"residence:"+clan))drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
  for(const obj of C.residenceObjects[room]||[]){
   const seen=!!game.observed[obj.id],pulse=.55+.25*Math.sin(time*3+obj.x);
   rect(c,obj.x-7,obj.y-38,14,14,"#111420d0");rect(c,obj.x-5,obj.y-36,10,10,seen?"#5e8276":"#c3a17f");
@@ -153,7 +198,7 @@ function venueBase(c,id,env){
 }
 function drawVenue(c,id,N,game,time){
  const env=N.environments[id];if(!env)return;
- drawCached(c,"venue:"+id,ctx=>venueBase(ctx,id,env));
+ if(!renderBackplate(c,"venue:"+id))drawCached(c,"venue:"+id,ctx=>venueBase(ctx,id,env));
  text(c,env.label.toUpperCase(),240,24,12);
  if(game.activeQuest||Object.values(game.sideQuests||{}).some(q=>q.status==="active")){
   const pul=.1+.05*Math.sin(time*3);glow(c,130,140,25,"236,183,121",pul);
@@ -218,5 +263,5 @@ function effects(c,mode,time){
  }
 }
 function clearCache(){cache.clear();}
-return {drawCity,drawResidence,drawVenue,character,effects,clearCache,assetStatus:()=>({atlasReady,atlasFailed}),version:"2.0-phase-III"};
+return {drawCity,drawResidence,drawVenue,character,effects,clearCache,backgroundStatus,assetStatus:()=>({atlasReady,atlasFailed,...backgroundStatus()}),version:"2.0-phase-IV"};
 })();
