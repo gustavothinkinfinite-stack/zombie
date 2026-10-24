@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -335,6 +335,7 @@
   if(REACT){REACT.init(game);REACT.tick(game);}
   if(REGION){REGION.init(game);REGION.tick(game);}
   if(CIV){CIV.init(game);CIV.tick(game);}
+  if(CHASE)CHASE.init(game);
   M.init(game);
   ST.init(game);
   TACT.init(game);
@@ -538,6 +539,11 @@
     const cases=CASES.summary(game);
     $("casesProgress").textContent=cases.completed+" / "+cases.total;
     $("caseEvidence").textContent=cases.evidence+" / "+cases.maxEvidence;
+  }
+  if(CHASE&&game.scene==="district"){
+   const stealth=CHASE.summary(game),line=$("stealthStatus");
+   if(line)line.textContent="Sigilo "+(stealth.crouched?"activo":"inactivo")+
+    " · patrulla: "+stealth.mode+" · alerta "+stealth.alert+"/100 · huidas "+stealth.escapes;
   }
   if(CIV){const summary=CIV.summary(game),line=$("consequencesStatus");
    if(line)line.textContent="Vigilancia en "+(summary.district||"París")+": "+summary.local+"/100 · testigos: "+summary.witnesses;
@@ -745,6 +751,10 @@
      ...(REACT?[{label:"París reactivo · investigar el robo de Bastilla",action:REACT.menu}]:[]),
      ...(REGION?[{label:"París reactivo · investigar los otros siete barrios",action:REGION.menu}]:[]),
      ...(CIV?[{label:"Mascarada y vigilancia policial · La ciudad recuerda",action:CIV.menu}]:[]),
+     ...(CHASE&&game.scene==="district"?[{
+      label:"Sigilo · "+(CHASE.summary(game).crouched?"desactivar postura discreta":"caminar agachado y en silencio"),
+      action:()=>{CHASE.toggle(game);hud();save();traitsMenu();}
+     }]:[]),
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      ...(game.embraced?[{label:"Política · libro de favores y deudas",action:POLUI.ledger}]:[]),
@@ -1034,6 +1044,7 @@
    if(!found){
      if(REACT?.interact(game))return;
      if(REGION?.interact(game))return;
+     if(CHASE?.interact(game))return;
      if(CIV?.interact(game))return;
      if(CITY?.interact(game,visualTime))return;
      notice("Acercate a una puerta, un transeúnte, un suceso señalado o una salida.");return;
@@ -1951,6 +1962,7 @@
    if(REACT)REACT.draw(g,game,visualTime);
    if(REGION)REGION.draw(g,game,visualTime);
    if(CIV)CIV.draw(g,game,visualTime);
+   if(CHASE)CHASE.draw(g,game,visualTime);
    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
  function drawParis(){
@@ -2087,6 +2099,10 @@
      const situation=REGION.near(game);
      if(situation)return "E · "+situation.title;
     }
+    if(!spot&&CHASE){
+     const p=CHASE.init(game)?.patrols?.[game.district];
+     if(p?.mode==="pursuit")return "Una patrulla te persigue · C sigilo · Shift correr";
+    }
     if(!spot&&CIV){
      const situation=CIV.near(game);
      if(situation)return "E · "+situation.title;
@@ -2150,7 +2166,9 @@
    if(Math.abs(dx)>Math.abs(dy))game.facing=dx<0?"left":"right";
    else game.facing=dy<0?"up":"down";
    const accelerated=game.embraced&&game.worldPowers?.sprintNight===game.clock.night;
-   const speed=(70+Math.min(15,3*(game.character.attr.Destreza||1)))*(accelerated?1.35:game.mechanics?.power?.name==="Celeridad"?1.2:1)*dt;
+   const speed=(70+Math.min(15,3*(game.character.attr.Destreza||1)))*
+    (accelerated?1.35:game.mechanics?.power?.name==="Celeridad"?1.2:1)*
+    (CHASE?.speed(game,keys.has("shift"))||1)*dt;
    const mx=dx/length*Math.min(speed,length),my=dy/length*Math.min(speed,length);
    const pos=P?P.slide(game.scene,game.x,game.y,mx,my):{
      x:clamp(game.x+mx,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470),
@@ -2163,7 +2181,7 @@
   const near=nearInteractive();if(near)$("floatingHint").textContent=near;
   else $("floatingHint").textContent=["house","study","quarters"].includes(game.scene)?"WASD: mover · E: explorar la residencia":"WASD: mover · E: investigar / regresar";
  }
- let caseSaveSeconds=0,cityRealSeconds=0;
+ let caseSaveSeconds=0,cityRealSeconds=0,chaseSaveSeconds=0;
  function frame(time){
   const dt=Math.min(.045,(time-lastTime)/1000||0);lastTime=time;
   visualTime+=dt;moveStep(dt);
@@ -2173,6 +2191,16 @@
     cityRealSeconds+=dt;
     if(cityRealSeconds>=30){cityRealSeconds-=30;advanceClock(1);}
   }
+  if(game&&CHASE&&P&&game.scene==="district"&&!overlayOpen()&&!game.combat?.active){
+   const events=CHASE.step(game,dt,P,{moving:!!game.walking,sprinting:keys.has("shift")});
+   for(const event of events){
+    log(event.text);
+    if(event.type==="confrontation")CHASE.encounter(game);
+    hud();save();
+   }
+   chaseSaveSeconds+=dt;
+   if(chaseSaveSeconds>=12){chaseSaveSeconds=0;save();}
+  }else chaseSaveSeconds=0;
   if(game&&ACT&&CI?.byId(game.scene)&&!overlayOpen()&&!game.combat?.active){
    const events=ACT.step(game,dt,P);
    for(const event of events){
@@ -2271,6 +2299,15 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(CHASE){
+   const status=CHASE.summary(game),line=document.createElement("p");
+   line.textContent="Persecución y sigilo: "+(status.crouched?"discreto":"normal")+
+    " · capturas "+status.captures+" · huidas "+status.escapes;
+   root.appendChild(line);
+   for(const fact of status.history){
+    const entry=document.createElement("p");entry.textContent="• "+fact;root.appendChild(entry);
+   }
+  }
   if(CIV){
    const summary=CIV.summary(game),line=document.createElement("p");
    line.textContent="Mascarada y policía: "+(summary.district||"París")+" · vigilancia "+summary.local+"/100 · testigos "+summary.witnesses;
@@ -2329,6 +2366,7 @@
   if(REACT)REACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(REGION)REGION.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(CIV)CIV.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,faction:increaseFaction});
+  if(CHASE)CHASE.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock});
   if(CITY){const line=document.createElement("p");line.id="cityLifeStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(REACT){const line=document.createElement("p");line.id="reactiveStatus";line.className="caption";
@@ -2336,6 +2374,8 @@
   if(REGION){const line=document.createElement("p");line.id="regionalReactiveStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(CIV){const line=document.createElement("p");line.id="consequencesStatus";line.className="caption";
+    document.querySelector(".exploration-panel")?.appendChild(line);}
+  if(CHASE){const line=document.createElement("p");line.id="stealthStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
@@ -2406,6 +2446,7 @@
    if(!game||$("play").classList.contains("hidden")||overlayOpen())return;
    if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();
    keys.add(k);if(e.repeat)return;
+   if(k==="c"&&CHASE&&game.scene==="district"){CHASE.toggle(game);hud();save();notice(CHASE.summary(game).crouched?"Modo sigilo activado.":"Modo sigilo desactivado.");return;}
    if(k==="e"||k===" ")interact();
   });
   window.addEventListener("keyup",e=>keys.delete(e.key.toLowerCase()));
