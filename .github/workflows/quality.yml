@@ -44,3 +44,5 @@ jobs:
         run: node tests/residence-transitions.test.js
       - name: Probar protección de partidas al crear personaje
         run: node tests/new-game-protection.test.js
+      - name: Probar salida segura al menú
+        run: node tests/menu-save-guard.test.js
