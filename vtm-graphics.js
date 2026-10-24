@@ -69,7 +69,7 @@ if(typeof Image==="function"){
  atlas=new Image();
  atlas.onload=()=>{atlasReady=!!atlas.naturalWidth;atlasFailed=!atlasReady;};
  atlas.onerror=()=>{atlasReady=false;atlasFailed=true;};
- atlas.src="./assets/personajes-paris-v3.svg?v=vtm20-f6";
+ atlas.src="./assets/personajes-paris-v4.svg?v=vtm-sprites-v4-20261024";
 }
 function drawSprite(c,x,y,opts){
  if(!atlasReady||!atlas)return false;
