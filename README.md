@@ -23,6 +23,23 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 ## Fase XX — La Sangre, la Bestia y los siete clanes (octubre de 2026)
 
+### Puente a la conspiración del Principado — primer prólogo jugable
+
+Se incorporó un **primer dossier de conexiones documentales** con el módulo independiente \`vtm-principado.js\`. Se accede desde **Acciones → Conspiración del Principado · investigar coincidencias** y desde las novedades del diario.
+
+- **Archivo policial:** localizar una hoja de traslado con horarios contradictorios.
+- **Hemeroteca:** contrastar la fecha original de una crónica con su rectificación.
+- **Club St. July:** reconstruir la ruta incompleta de una correspondencia.
+- **Túneles:** comprobar un itinerario nocturno mencionado por un informante.
+
+El personaje debe visitar físicamente cada destino y superar tiradas basadas en su ficha. Cada pista es única, fracasar permite reintentar otra noche y las pruebas comprobadas otorgan **1 PX por primera vez**, sin premios repetibles.
+
+Con **tres o más fuentes**, el jugador puede solicitar que la Guardiana reciba un dossier en el **Elíseo**, si tiene permiso de acceso. La presentación requiere Etiqueta, y un éxito deja una solicitud formal de verificación con **3 PX una sola vez**. No convierte las coincidencias en culpabilidad, no habilita automáticamente un juicio, no revela la identidad de un conspirador y no altera los expedientes anteriores. Esta etapa es un **prólogo inicial**, no la campaña conspirativa completa.
+
+El progreso queda bajo \`principado\`, sin cambiar \`cronicas-paris-ghoul-v1\`. Regresión automática: \`node tests/principado-prologue.test.js\`, con verificación explícita de ausencia de secretos del Senescal en el texto visible.
+
+
+
 Amplía la interpretación de **Vampiro: La Mascarada, tercera edición** ya existente en Crónicas de París. Se revisaron páginas de referencia del manual básico escaneado adjunto al proyecto. Este PDF no ofrece texto seleccionable; las reglas aquí programadas son **abstracciones originales de videojuego**, no transcripciones, ni pretenden reemplazar los procedimientos completos del libro.
 
 ### Vitae, voluntad y Humanidad
