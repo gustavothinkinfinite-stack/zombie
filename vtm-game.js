@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -952,6 +952,13 @@
   }
  }
  function portrait(x,y,type,accent){
+  if(G){
+    const npc=type==="master"&&game.scene==="venue"?N.byLocation[game.venue]:null;
+    G.character(g,x,y,{master:type==="master",npc,clan:npc?.clan||game.character.clan,
+      embraced:!!game.embraced,facing:type==="player"?(game.facing||"down"):"down",
+      walking:type==="player"&&!!game.walking,cycle:game.walkCycle||0,time:visualTime});
+    return;
+  }
   pixel(x-9,y+5,18,19,type==="master"?"#181722":"#50565c");pixel(x-13,y+10,5,12,type==="master"?"#272431":"#4b5457");
   pixel(x+8,y+10,5,12,type==="master"?"#28232b":"#4f5458");
   pixel(x-5,y-10,10,12,type==="master"?"#c9b6a8":"#c1a389");
@@ -964,6 +971,12 @@
 
  function drawHouse(){drawResidence(game.scene);}
  function drawResidence(room){
+  if(G){
+    G.drawResidence(g,room,game.character.clan,C,game,visualTime);
+    if(room==="house")portrait(240,98,"master",D.clans[game.character.clan].accent);
+    portrait(game.x,game.y,"player",game.embraced?"#9c505e":"#8a8a74");
+    return;
+  }
   const info=C.residences[game.character.clan],walls=info.wall,floor=info.floor,metal=info.metal,wood=info.furniture;
   pixel(0,0,480,300,"#0f0e15");
   // Mosaico de piedra / tablones, con grano pixelado.
@@ -1048,6 +1061,14 @@
   pixel(0,0,480,3,metal);
  }
  function drawVenue(){
+  if(G){
+    const npc=N.byLocation[game.venue];
+    G.drawVenue(g,game.venue,N,game,visualTime);
+    if(npc&&npcIsPresent(npc.id))portrait(240,104,"master",npc.color);
+    else {pixel(216,96,48,25,"#332b36");textPixel("AUSENTE",240,90,"#d0a2a0",9,"center");}
+    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
+    return;
+  }
   const location=D.locations.find(l=>l.id===game.venue);
   const npc=N.byLocation[game.venue],env=N.environments[game.venue];
   if(!location||!env){pixel(0,0,480,300,"#1a1820");return;}
@@ -1103,6 +1124,11 @@
  }
  function textPixel(t,x,y,color,size,align){g.font="bold "+(size||9)+"px monospace";g.fillStyle=color;g.textAlign=align||"left";g.fillText(t,x,y);}
  function drawParis(){
+  if(G){
+    G.drawCity(g,game,D,N,visualTime);
+    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
+    return;
+  }
   pixel(0,0,480,300,"#23232e");
   // Manzanas de París por la noche: techos inclinados, ventanas y chimeneas.
   for(let y=0;y<300;y+=38)for(let x=0;x<480;x+=53){
@@ -1177,7 +1203,8 @@
  }
  function drawWorld(){
   if(!game)return;
-  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();rainOverlay();}
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G)rainOverlay();}
+  if(G)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime);
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
@@ -1211,7 +1238,8 @@
   return "";
  }
  function moveStep(dt){
-  if(!game||dialogOpen)return;
+  if(!game)return;
+  if(dialogOpen){game.walking=false;return;}
   let dx=0,dy=0;
   if(keys.has("w")||keys.has("arrowup")||touchMove==="up")dy--;
   if(keys.has("s")||keys.has("arrowdown")||touchMove==="down")dy++;
@@ -1224,7 +1252,11 @@
    else{dx=walkTarget.x-game.x;dy=walkTarget.y-game.y;}
   }
   const length=Math.hypot(dx,dy);
+  game.walking=length>.01;
   if(length){
+   if(Math.abs(dx)>Math.abs(dy))game.facing=dx<0?"left":"right";
+   else game.facing=dy<0?"up":"down";
+   game.walkCycle=(game.walkCycle||0)+dt*5.1;
    const speed=76*dt;
    game.x=clamp(game.x+dx/length*speed,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470);
    game.y=clamp(game.y+dy/length*speed,["house","study","quarters","venue"].includes(game.scene)?48:13,["house","study","quarters","venue"].includes(game.scene)?280:290);
