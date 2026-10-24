@@ -51,6 +51,8 @@ window.VTM_WORLD_POWERS=(()=>{
   if(g.combat?.active)return "No disponible durante el combate";
   if(rule.mode==="passive")return "Ya está activa de forma permanente";
   if(rule.resist&&ctx.kind!=="shop")return "Requiere un interlocutor mortal";
+  if(rule.resist&&Number.isFinite(g.x)&&Number.isFinite(g.y)&&Math.hypot(g.x-240,g.y-104)>75)return "Acercate primero al encargado";
+  if(rule.mode==="strength"&&!(ctx.kind==="venue"&&["tuneles","passy","saintdenis"].includes(ctx.id))&&!(ctx.kind==="shop"&&["almacen","taller"].includes(ctx.shop.kind)))return "No hay una barrera física que apartar aquí";
   if(rule.mode==="speed"&&init(g).sprintNight===g.clock.night)return "Ya activaste Celeridad esta noche";
   if(init(g).used[key(g,ctx,name)])return "Ya lo intentaste aquí esta noche";
   if((g.mechanics?.blood||0)<rule.cost)return "Reserva de Sangre insuficiente";
