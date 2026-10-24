@@ -2042,7 +2042,7 @@
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else if(CI?.byId(game.scene))drawCaseInterior();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,(game.scene==="paris"||game.scene==="district")?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
-  if(B&&G)B.foreground(g,game.scene==="district"?"paris":game.scene,game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled);
+  if(B&&G)B.foreground(g,game.scene,game.scene==="district"?game.district:game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled,{x:game.x,y:game.y});
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
