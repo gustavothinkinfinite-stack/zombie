@@ -1,11 +1,11 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- let creator=null,step=0,game=null,keys=new Set(),lastTime=0,walkTarget=null,toastTimer=0;
+ let creator=null,step=0,game=null,keys=new Set(),lastTime=0,walkTarget=null,walkRoute=[],toastTimer=0;
  let dialogOpen=false,touchMove=null,visualTime=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
  let effectsEnabled=true;
  try{
@@ -231,10 +231,14 @@
   game.clock=game.clock||{night:1,minutes:20*60+15};
   game.clock.night=Math.max(1,Math.floor(Number(game.clock.night)||1));
   game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
+  if(P){
+   const pos=P.nearestFree(game.scene,game.x,game.y);
+   if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
+  }
  }
  function enterGame(){
   expandSave();
-  show("play");keys.clear();walkTarget=null;closeDialog();
+  show("play");keys.clear();walkTarget=null;walkRoute=[];closeDialog();
   const c=game.character,m=D.clans[c.clan];
   $("masterLabel").textContent=m.master;$("masterRole").textContent=m.title;
   $("playName").textContent=c.name;$("playClan").textContent=c.clan;
@@ -837,7 +841,7 @@
    " fuentes contrastadas. ¿Qué precio estás dispuesto a pagar para proteger la Mascarada?",options,"DECISIÓN IMPORTANTE");
  }
  function enterVenue(location){
-   game.venue=location.id;game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;
+   game.venue=location.id;game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;walkTarget=null;walkRoute=[];
    if(!game.arc.visited.includes(location.id))game.arc.visited.push(location.id);
    log("Visitaste "+location.name+".");advanceClock(12);hud();save();
  }
@@ -942,7 +946,7 @@
   }
  }
  function changeRoom(name){
-  game.scene=name;game.x=240;game.y=name==="house"?222:238;walkTarget=null;hud();save();
+  game.scene=name;game.x=240;game.y=name==="house"?222:name==="study"?260:238;walkTarget=null;walkRoute=[];hud();save();
   const r=C.residences[game.character.clan];
   notice(name==="study"?r.study:name==="quarters"?r.quarters:"Regresaste al salón.");
  }
@@ -1255,21 +1259,28 @@
   if(keys.has("s")||keys.has("arrowdown")||touchMove==="down")dy++;
   if(keys.has("a")||keys.has("arrowleft")||touchMove==="left")dx--;
   if(keys.has("d")||keys.has("arrowright")||touchMove==="right")dx++;
-  if((dx||dy)&&walkTarget)walkTarget=null;
+  if((dx||dy)&&walkTarget){walkTarget=null;walkRoute=[];}
   if(!dx&&!dy&&walkTarget){
    const dd=Math.hypot(walkTarget.x-game.x,walkTarget.y-game.y);
-   if(dd<4)walkTarget=null;
-   else{dx=walkTarget.x-game.x;dy=walkTarget.y-game.y;}
+   if(dd<5){
+    walkTarget=walkRoute.shift()||null;
+    if(walkTarget){dx=walkTarget.x-game.x;dy=walkTarget.y-game.y;}
+   }else{dx=walkTarget.x-game.x;dy=walkTarget.y-game.y;}
   }
   const length=Math.hypot(dx,dy);
   game.walking=length>.01;
   if(length){
    if(Math.abs(dx)>Math.abs(dy))game.facing=dx<0?"left":"right";
    else game.facing=dy<0?"up":"down";
-   game.walkCycle=(game.walkCycle||0)+dt*5.1;
    const speed=76*dt;
-   game.x=clamp(game.x+dx/length*speed,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470);
-   game.y=clamp(game.y+dy/length*speed,["house","study","quarters","venue"].includes(game.scene)?48:13,["house","study","quarters","venue"].includes(game.scene)?280:290);
+   const mx=dx/length*Math.min(speed,length),my=dy/length*Math.min(speed,length);
+   const pos=P?P.slide(game.scene,game.x,game.y,mx,my):{
+     x:clamp(game.x+mx,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470),
+     y:clamp(game.y+my,["house","study","quarters","venue"].includes(game.scene)?48:13,["house","study","quarters","venue"].includes(game.scene)?280:290),
+     moved:true};
+   game.x=pos.x;game.y=pos.y;game.walking=pos.moved;
+   if(pos.moved)game.walkCycle=(game.walkCycle||0)+dt*5.1;
+   if(!pos.moved&&walkTarget){walkTarget=null;walkRoute=[];}
   }
   const near=nearInteractive();if(near)$("floatingHint").textContent=near;
   else $("floatingHint").textContent=["house","study","quarters"].includes(game.scene)?"WASD: mover · E: explorar la residencia":"WASD: mover · E: investigar / regresar";
@@ -1354,7 +1365,12 @@
    if(!game||dialogOpen)return;
    const r=canvas.getBoundingClientRect();
    const x=(e.clientX-r.left)/r.width*480,y=(e.clientY-r.top)/r.height*300;
-   walkTarget={x:clamp(x,12,469),y:clamp(y,25,285)};
+   if(P){
+      const route=P.path(game.scene,{x:game.x,y:game.y},{x,y});
+      walkTarget=route.shift()||null;walkRoute=route;
+   }else{
+      walkTarget={x:clamp(x,12,469),y:clamp(y,25,285)};walkRoute=[];
+   }
   });
   $("continueGame").disabled=!load();window.requestAnimationFrame(frame);
  }
