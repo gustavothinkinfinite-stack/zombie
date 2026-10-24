@@ -148,7 +148,7 @@ window.VTM_ELIZABETH=(()=>{
  function summary(g){
   const s=init(g);
   const next=scenes.filter(d=>!has(s,d.id)).filter(d=>!d.any||d.any.some(k=>has(s,k))).map(d=>d.place+" — "+d.label);
-  return {status:s.status,count:s.evidence.length,total:scenes.length,alert:s.alert,outcome:s.outcome,clues:s.evidence.map(id=>byId[id].label),next:next.slice(0,4),court:s.court,hunters:s.hunters,history:[...s.history]};
+  return {status:s.status,count:s.evidence.length,total:scenes.length,alert:s.alert,outcome:s.outcome,bapthisteOutcome:s.bapthisteOutcome||null,clues:s.evidence.map(id=>byId[id].label),next:next.slice(0,4),court:s.court,hunters:s.hunters,history:[...s.history]};
  }
  function refresh(message){
   if(message)api?.log?.(message);
