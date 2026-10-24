@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XV)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XVI)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,38 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XVI — París reactivo, primer caso jugable en Bastilla (octubre de 2026)
+
+La primera misión sistémica integra **acontecimientos que evolucionan independientemente del jugador, memoria social y consecuencias policiales**. Es una **implementación vertical de prueba**, no una simulación ya extendida a los ocho barrios.
+
+### Robo nocturno de Bastilla
+
+- **22:15:** sucede un robo cerca del cruce. Un sospechoso puede ser perseguido; quedan una testigo y pistas en la vía pública.
+- **22:30:** llega la policía y comienza a recoger testimonios; el sospechoso ya ha abandonado el lugar.
+- **23:00:** la investigación policial prosigue. Los relatos del caso se difunden por comercios de Bastilla, el St. July y el barrio policial.
+- **00:10:** la investigación tiene un desenlace según las acciones realizadas. Si se descansa antes del acontecimiento, el caso también se desarrolla y se resuelve sin intervención del PJ.
+
+### Decisiones que cambian el resultado
+
+- Hablar con la testigo mediante **Carisma + Empatía**, seguir al sospechoso con **Destreza + Atletismo**, revisar las pruebas con **Percepción + Investigación** o pedir una corroboración comercial en **Le Verre Fêlé**.
+- Acercarse al agente, explicar lo que se sabe y **entregar pruebas contrastables** para facilitar una detención. La culpabilidad definitiva sigue sujeta a verificación; no se dicta sentencia automática.
+- Intimidar a la testigo puede hacerla huir y disminuye su confianza y la de la policía; ocultar pruebas perjudica el caso y cambia su desenlace.
+- Son posibles **cinco resultados**: sospechoso detenido, escapado, caso sin resolver, encubrimiento o pertenencias recuperadas sin detención. Los comerciantes y PNJ mantienen memoria de las decisiones en la partida guardada.
+- Los testimonios se intentan una vez por noche, los hitos de la investigación no se duplican y las amenazas dejan consecuencias aunque el jugador cambie de barrio.
+
+### Interfaz y acceso
+
+- En **Bastilla** se muestran la escena, la testigo, la policía y el sospechoso según el horario. Aproximarse a una marca y pulsar **E** permite interactuar. Los nuevos puntos se colocaron en zonas navegables, evitando interferir con edificios y accesos del mapa.
+- Los encargados de comercios de los barrios donde circula el rumor ofrecen una opción relacionada con el caso.
+- **Acciones → París reactivo · investigar el robo de Bastilla** abre el estado del expediente y los efectos de los hechos. El diario incorpora su cronología y el panel de exploración indica el estado del caso.
+
+### Arquitectura y estabilidad
+
+- Nuevo módulo \`vtm-reactive-city.js\` con estado opcional persistido en \`reactiveCity\`, sin cambiar la clave del guardado \`cronicas-paris-ghoul-v1\`.
+- Nuevo conjunto de pruebas \`tests/reactive-city.test.js\`; incluido automáticamente en el flujo existente de GitHub Actions (\`.github/workflows/quality.yml\`), que ejecuta \`tests/*.test.js\`.
+- No se alteraron ni eliminaron las misiones de Elizabeth Parker, los expedientes locales, los contactos, los comercios ni la corte.
+- **Pendientes:** pruebas en navegador real y confirmación del despliegue en Hostinger, profundidad de IA urbana más allá del primer caso, persecución física generalizada y consecuencias sistémicas entre múltiples casos. No anunciar la Fase XVI como publicada en producción hasta verificar Hostinger.
 
 ## Fase XV — París continúa viviendo (octubre de 2026)
 
