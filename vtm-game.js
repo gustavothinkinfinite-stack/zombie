@@ -341,7 +341,18 @@
   $("history").innerHTML="";game.history.slice(0,5).forEach(x=>{const p=document.createElement("p");p.textContent="• "+x;$("history").appendChild(p);});
   hud();save();
  }
+ function confirmNewStory(){
+  // Comprobar incluso partidas antiguas o ilegibles: nunca sobrescribirlas sin permiso.
+  let existing;
+  try{existing=localStorage.getItem(SAVE_KEY);}
+  catch(e){
+   return window.confirm("No se pudo comprobar el guardado anterior. Si continuás, la nueva partida podría reemplazarlo. ¿Querés continuar?");
+  }
+  return !existing||window.confirm("Ya existe una partida guardada. Comenzar una nueva reemplazará su progreso. ¿Querés continuar?");
+ }
  function startStory(){
+  // La cancelación mantiene la ficha en edición y no modifica el guardado previo.
+  if(!confirmNewStory())return;
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
    observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,sidevenue:null,sideReturn:null,localPlaces:{},localClues:[],localCases:{},contactMemory:{},contactIntroductions:{},contactLeads:[],flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
