@@ -10,6 +10,24 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
 
+
+## Versión 0.6 — Los rasgos determinan cómo jugás
+
+**Nueva integración narrativa.** Al examinar el puesto principal de los ocho interiores (Archivo policial, St. July, Elíseo, Saint-Denis, túneles Nosferatu, Passy, Bastilla y Hemeroteca), aparece **«Resolver una situación del lugar según mi ficha»**. Cada escenario ofrece cinco enfoques distintos: **40 rutas** en total, con requisitos de Habilidades, Trasfondos o Disciplinas adquiridas después del Abrazo.
+
+- **Consecuencias concretas:** diferentes caminos producen pruebas para el caso Pierre Dupont, referencias reconocidas en la corte, ayudas Tremere/Nosferatu/Brujah, confianza con interlocutores, reputación de facción, heridas o exposición de la Mascarada. Se almacena qué ruta se intentó, en qué noche y si se resolvió. Un éxito no se puede repetir para obtener PX o favores ilimitados.
+- **Diferenciación de personajes:** un experto en Leyes puede tramitar un expediente; alguien con Informática puede examinar registros; Influencia ofrece alternativas institucionales y un Vástago con Ofuscación puede intentar eludir miradas, gastando Sangre. Las rutas sin requisitos especiales tienen dificultades más altas.
+- **Interacción con las misiones:** un desenlace exitoso en el lugar correspondiente reduce la dificultad y aumenta las recompensas de encargos principales; en los personales prepara la operación y disminuye su riesgo. Las escenas pertinentes también aportan evidencias al caso Dupont sin duplicar pistas.
+- **Virtudes y Humanidad:** decisiones coercitivas o amenazantes pueden requerir Conciencia y reducir Humanidad; el horror puede poner a prueba Coraje; la caza desesperada exige Autocontrol y puede agravar la exposición. La Humanidad actual se muestra en el panel y el diario.
+- **Experiencia:** cada lugar resuelto otorga 2 PX la primera vez. Desde **Ficha → Mejorar rasgos con experiencia** se pueden mejorar Atributos, Habilidades, Virtudes, Humanidad, Voluntad y, tras el Abrazo, Disciplinas propias del clan. Los precios están inspirados en la tabla de experiencia de la tercera edición, con simplificaciones para el prototipo. No se permite superar los límites previstos de rasgos.
+- **Elíseo:** Aliados, Fama o Influencia suficientes abren nuevas formas de negociar el acceso, con tiradas y posibles costes políticos y de exposición.
+- **Continuación de partida:** el guardado sigue usando la misma clave y versión estructural. Los nuevos campos (experiencia, historial de escenas y comprobaciones) se inicializan al cargar partidas anteriores.
+
+**Verificación técnica:** todos los módulos pasan validación sintáctica; prueba simulada de continuación de partida, menú de rutas, condiciones de disponibilidad, tirada, pista ganada, referencia obtenida y persistencia del resultado. El desarrollo de las escenas es contenido original del videojuego. Esta entrega no implementa todavía todas las opciones exactas de cada nivel de Disciplina ni un combate completo con las reglas del manual.
+
+**Publicación:** cambios realizados en la rama \`main\` de GitHub. El despliegue automático en Hostinger es independiente; comprobar su estado antes de darlo por publicado.
+
+
 ## Versión 0.5 — La ficha funciona en el juego (octubre de 2026)
 
 Se incorpora **ACCIONES** junto al botón **Ficha**. Esta versión conserva la creación 7/5/3 de Atributos, 13/9/5 de Habilidades, 5 puntos de Trasfondos mortales, Virtudes, puntos gratuitos, misiones, facciones y guardados de la versión anterior.
