@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–IX incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–X incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -148,6 +148,16 @@ Se utiliza un conjunto de esquemas de decoración y paletas para oficinas, galer
 El módulo de barrios ubica dos entradas a distancia de los rincones observables. El jugador puede decidir ayudar al encargado, investigar o presionarlo. Los cambios de reputación, riesgo y pistas se guardan por local una sola vez. No hay recompensas ilimitadas por repetir conversaciones.
 
 Los fondos y PNJ comerciales son una base funcional para la siguiente fase artística; deben sustituirse progresivamente por assets ilustrados individuales.
+
+## Fase X — Memoria social y señalización de contactos
+
+La ampliación de interacción integra el módulo \`vtm-contacts.js\` con los 16 comercios de la fase IX. La confianza, el tipo de trato, los favores pendientes, las presentaciones y los rumores por noche se guardan en la partida. Cuando llega una nueva noche, el módulo activa consecuencias no repetibles; el panel de exploración muestra los contactos con novedades.
+
+Los locales que tienen información pendiente muestran un indicador visual \`!\` flotante, discreto y dibujado por Canvas, para que el usuario pueda localizarlos sin abrir repetidamente el diario. Las conversaciones reconocen las relaciones creadas en otros locales del mismo barrio.
+
+Se añadió un botón para descansar desde el refugio: esta función permite avanzar una noche cuando el jugador desea comprobar las consecuencias de una decisión. La acción exige confirmación para evitar que un clic accidental haga progresar el reloj.
+
+Los PNJ principales, sus secretos y el sistema de tiradas de tercera edición siguen separados. Las interacciones comerciales son secundarias; su memoria no debe contradecir los hechos de la campaña.
 
 ## Próximos entregables de arte
 
