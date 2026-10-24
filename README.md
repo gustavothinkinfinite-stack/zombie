@@ -333,6 +333,19 @@ Se sustituyó el atlas principal de personajes por **\`assets/personajes-paris-v
 
 **Alcance real:** la nueva hoja es **arte SVG pixelado generado y refinado mediante código a partir de la hoja v3**, no ilustración manual de cada fotograma. Las pruebas son de estructura y renderizado simulado; la apariencia final y el despliegue en Hostinger no se han verificado visualmente en un navegador real.
 
+## Corrección de salida a París — ocho barrios (24 de octubre de 2026)
+
+Se corrigió el problema visible en la captura del Barrio del Archivo Policial: el acceso al mapa general estaba parcialmente tapado por árboles, fachadas y la barra inferior. La misma corrección se aplicó a **los ocho barrios**.
+
+- **Botón flotante persistente:** `index.html` incorpora `#stageMapExit` dentro de `.canvas-wrap` con el texto **«Volver al mapa de París»**, una etiqueta accesible y tamaño utilizable en pantalla táctil. `visual-2.css` lo posiciona sobre la ilustración con prioridad de dibujo alta, bajo el panel de identidad del jugador y sin superposición con la barra inferior.
+- **Visibilidad por escena:** `hud()` lo muestra sólo cuando `game.scene === "district"` y lo oculta al entrar a interiores, residencia o al regresar al mapa general.
+- **Interacción:** al pulsarlo se llama a **`leaveDistrict()`**, exactamente la función utilizada por el botón lateral previo. El acceso mediante `E` sigue funcionando en el punto anterior `(83,263)`; no se alteraron los tiempos, destinos, rutas, colisiones ni guardados.
+- **Señal en el mundo:** `vtm-districts.js` retira el pequeño cartel «MAPA» del fondo cacheado, donde lo tapaban las copas y las aceras. Ahora dibuja una señal más clara **«SALIDA / A PARÍS»** después de los objetos de la escena, con una flecha hacia el punto de interacción. La señal también aparece con FX desactivados.
+- **Caché:** se versionaron HTML, CSS y JavaScript para evitar mezclar capas nuevas con archivos viejos.
+- **Prueba automática:** `node tests/district-exit-ui-smoke.js` comprueba, en los ocho barrios, presencia y legibilidad de la señal, visibilidad condicionada del botón, conexión con `leaveDistrict()`, caché, persistencia del hotspot clásico y ausencia de mutaciones de estado de juego.
+
+**Estado:** cambios confirmados en GitHub `main`; el despliegue efectivo en Hostinger y su aspecto en un navegador real no están verificados.
+
 ## Renovación visual — Personajes e interiores (24 de octubre de 2026)
 
 Esta etapa añade **acabados gráficos a los personajes y escenarios reales**, conservando la lógica y el formato de las partidas. Se creó el módulo puramente visual \`vtm-art-polish.js\`.
