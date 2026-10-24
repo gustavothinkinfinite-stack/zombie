@@ -24,14 +24,14 @@ window.VTM_TACTICS=(()=>{
    ["Telepatía","read",2,"Percibís pensamientos superficiales en un intercambio breve."],
    ["Proyección Psíquica","intel",3,"Tu conciencia contempla una zona distante, dejando el cuerpo vulnerable."]],
   Celeridad:[
-   ["Reflejos Sobrenaturales","speed",1,"Tu velocidad te permite actuar antes que adversarios comunes."],
-   ["Desplazamiento Fugaz","speed",1,"Cubrís un trayecto con rapidez inhumana."],
-   ["Acción Relámpago","speed",1,"Realizás una maniobra táctica adicional."],
-   ["Torbellino","speed",2,"Una sucesión de desplazamientos evita una encerrona."],
-   ["Velocidad Imposible","speed",2,"Superás durante unos instantes a casi cualquier perseguidor."]],
+   ["Celeridad 1","speed",1,"Gastás un punto de Sangre para realizar una acción física adicional durante el turno."],
+   ["Celeridad 2","speed",1,"Podés realizar dos acciones físicas adicionales al activar Celeridad."],
+   ["Celeridad 3","speed",1,"Podés realizar tres acciones físicas adicionales al activar Celeridad."],
+   ["Celeridad 4","speed",1,"Podés realizar cuatro acciones físicas adicionales al activar Celeridad."],
+   ["Celeridad 5","speed",1,"Podés realizar cinco acciones físicas adicionales al activar Celeridad."]],
   Dementación:[
    ["Pasión","social",1,"Intensificás la emoción dominante de un interlocutor."],
-   ["El Encantamiento","social",1,"La víctima se distrae ante percepciones perturbadoras."],
+   ["Hechizar","social",1,"La víctima se distrae ante percepciones perturbadoras."],
    ["Los Ojos del Caos","intel",1,"Descubrís patrones desordenados que ocultan indicios."],
    ["La Voz de la Locura","terror",2,"Sembrás una conmoción emocional muy difícil de ocultar."],
    ["Locura Total","terror",2,"Provocás un episodio de desorientación de consecuencias impredecibles."]],
@@ -42,11 +42,11 @@ window.VTM_TACTICS=(()=>{
    ["Condicionamiento","social",2,"Moldeás progresivamente la obediencia en una relación previa."],
    ["Posesión","command",3,"Intentás dirigir temporalmente el cuerpo de un mortal." ]],
   Fortaleza:[
-   ["Resistencia Sobrenatural","guard",1,"Tu sangre amortigua el siguiente ataque."],
-   ["Cuerpo Inamovible","guard",1,"Tu vigor hace retroceder a quien intenta derribarte."],
-   ["Blindaje de la Sangre","guard",1,"Tu resistencia física supera la de un mortal."],
-   ["Soportar el Castigo","guard",1,"Sobrevivís a un daño que parecería incapacitante."],
-   ["Fortaleza Absoluta","guard",2,"Concentrás toda tu fortaleza en una defensa extraordinaria."]],
+   ["Fortaleza 1","passive",0,"Recibís un dado permanente de absorción adicional."],
+   ["Fortaleza 2","passive",0,"Recibís dos dados permanentes de absorción adicional."],
+   ["Fortaleza 3","passive",0,"Recibís tres dados permanentes de absorción adicional."],
+   ["Fortaleza 4","passive",0,"Recibís cuatro dados permanentes de absorción adicional."],
+   ["Fortaleza 5","passive",0,"Recibís cinco dados permanentes de absorción adicional."]],
   Ofuscación:[
    ["Capa de Sombras","cover",1,"Permanecés inmóvil en un lugar poco visible."],
    ["Presencia Invisible","escape",1,"Pasás inadvertido mientras evitás llamar la atención."],
@@ -54,11 +54,11 @@ window.VTM_TACTICS=(()=>{
    ["Desvanecimiento del Ojo Mental","escape",2,"Desaparecés de la percepción ordinaria de un perseguidor."],
    ["Encubrir a los Reunidos","cover",2,"Extendés el disimulo sobrenatural a tus acompañantes."]],
   Potencia:[
-   ["Fuerza Inhumana","strength",0,"Tu fuerza supera los límites humanos."],
-   ["Golpe Demoledor","strength",0,"Un impacto puede apartar a un oponente peligroso."],
-   ["Poder Aplastante","strength",0,"La fuerza de tu sangre rompe una barrera menor."],
-   ["Proeza Descomunal","strength",1,"Ejecutás una maniobra que ningún mortal normal podría realizar."],
-   ["Poder Titánico","strength",1,"Tu fuerza alcanza una magnitud temible."]],
+   ["Potencia 1","passive",0,"Sumás un éxito automático de fuerza en el daño."],
+   ["Potencia 2","passive",0,"Sumás dos éxitos automáticos de fuerza en el daño."],
+   ["Potencia 3","passive",0,"Sumás tres éxitos automáticos de fuerza en el daño."],
+   ["Potencia 4","passive",0,"Sumás cuatro éxitos automáticos de fuerza en el daño."],
+   ["Potencia 5","passive",0,"Sumás cinco éxitos automáticos de fuerza en el daño."]],
   Presencia:[
    ["Fascinación","social",1,"Tu carisma provoca interés inmediato."],
    ["Mirada Aterradora","terror",1,"Intimidás con una presencia sobrenatural."],
@@ -201,7 +201,10 @@ window.VTM_TACTICS=(()=>{
   // La defensa se declara antes del ataque enemigo. Iniciativa determina quién ejecuta primero.
   if(playerInit>=enemyInit){player();npc();}
   else{npc();if(!done)player();}
-  if(g.mechanics.battleSpeed>0&&choice!=="huida"&&choice!=="esquiva")g.mechanics.battleSpeed--;
+  // En el manual, las acciones extra de Celeridad suceden al final del turno.
+  const extra=(choice==="golpe"||choice==="arma"||choice==="disparo")?g.mechanics.battleSpeed:0;
+  for(let i=0;i<extra&&!done;i++){log.push("Acción física adicional "+(i+1)+" por Celeridad.");player();}
+  g.mechanics.battleSpeed=0;
   if(g.mechanics.claws&&choice==="golpe")g.mechanics.claws=false;
   encounter.history.push({round:encounter.round,choice,log:[...log]});
   encounter.history=encounter.history.slice(-10);
@@ -226,6 +229,16 @@ window.VTM_TACTICS=(()=>{
  }
  function catalog(g,name){
   if(!known(g,name))return [];
+  if(name==="Fortaleza"||name==="Potencia"){
+   const level=Math.min(5,power(g,name)),label=name+" "+level,description=POWERS[name][level-1][3];
+   return [{name,level,label,effect:"passive",cost:0,description,available:false,used:true,passive:true}];
+  }
+  if(name==="Celeridad"){
+   const level=Math.min(5,power(g,name)),label="Celeridad "+level,description=POWERS[name][level-1][3];
+   const k=g.clock.night+"|celerity|"+(g.combat.active?.round||0);
+   return [{name,level,label,effect:"speed",cost:1,description,available:!!g.combat.active&&(g.mechanics?.blood||0)>0,
+      used:!!g.mechanics?.powerHistory?.[k]}];
+  }
   return POWERS[name].slice(0,Math.min(5,power(g,name))).map(([label,effect,cost,description],i)=>({
    name,level:i+1,label,effect,cost,description,
    available:(g.mechanics?.blood||0)>=cost,
@@ -235,6 +248,18 @@ window.VTM_TACTICS=(()=>{
  function cast(g,name,index){
   init(g);
   if(!known(g,name))return {error:"No adquiriste esa Disciplina."};
+  if(name==="Fortaleza"||name==="Potencia")return {error:"Esta Disciplina es pasiva: sus círculos ya funcionan automáticamente."};
+  if(name==="Celeridad"){
+   if(!g.combat.active)return {error:"Celeridad se activa durante un turno de combate."};
+   const m=g.mechanics,level=Math.min(5,power(g,name)),day=g.clock.night+"|celerity|"+g.combat.active.round;
+   m.powerHistory=m.powerHistory||{};
+   if(m.powerHistory[day])return {error:"Ya utilizaste Celeridad este turno."};
+   if((m.blood||0)<1)return {error:"Reserva de Sangre insuficiente."};
+   m.powerHistory[day]=true;m.blood--;m.battleSpeed=level;
+   return {name,label:"Celeridad "+level,level,cost:1,effect:"speed",risk:0,
+      description:"Preparaste "+level+" acciones físicas adicionales para este turno.",
+      changed:{battleSpeed:level}};
+  }
   const [label,effect,cost,description]=POWERS[name][index]||[];
   if(!label||index>=power(g,name))return {error:"No tenés suficientes círculos para ese poder."};
   const m=g.mechanics,day=g.clock.night+"|"+name+"|"+(index+1);
