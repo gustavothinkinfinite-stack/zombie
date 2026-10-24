@@ -442,6 +442,107 @@
   $("portraitClan").textContent=npc.clan.toUpperCase()+" · "+npc.role;
   $("portraitPanel").classList.remove("hidden");
  }
+
+ function offerPersonalQuest(npc){
+   const arc=A.personal[npc.id];
+   if(!arc||game.sideQuests[npc.id])return;
+   askMenu(arc.title,arc.offer+"\n\n"+arc.objective,[
+    {label:"Aceptar el encargo personal",action:()=>{
+      game.sideQuests[npc.id]={id:npc.id,status:"active",result:null};
+      log("Nuevo encargo de "+npc.name+": "+arc.title+".");
+      advanceClock(4);hud();save();
+      notice("Encargo agregado al diario: "+arc.title+".");
+    }},
+    {label:"Todavía no aceptar",action:()=>{}}
+   ],"ENCARGO PERSONAL · "+npc.name.toUpperCase());
+ }
+ function personalAtLocation(id){
+   return Object.values(game.sideQuests).filter(sq=>sq.status==="active"&&A.personal[sq.id]?.target===id);
+ }
+ function resolvePersonalAtTarget(arc){
+   const quest=game.sideQuests[arc.id];
+   if(!quest||quest.status!=="active")return;
+   const choices=arc.options.map(option=>({
+    label:option.label+" · "+option.attr+" + "+option.skill+" (dif. "+option.difficulty+")",
+    action:()=>{
+     const dice=dicePool(option.attr,option.skill,option.difficulty);
+     const successful=dice.success;
+     const result={
+       success:successful,method:option.key,exposure:successful?option.exposure:option.exposure+9,
+       bonus:successful?option.bonus:0,dice:dice.dice,net:dice.net,
+       description:successful?option.success:option.failure
+     };
+     quest.result=result;quest.status="ready";
+     if(result.exposure)exposure(result.exposure,"Consecuencias del encargo de "+N.byLocation[arc.origin].name+".");
+     log("Completaste la investigación para "+N.byLocation[arc.origin].name+".");
+     advanceClock(16);hud();save();
+     askMenu("El resultado de "+arc.title,result.description+
+      "\n\nTirada: ["+dice.dice.join(", ")+"] · éxitos netos "+dice.net+"."+
+      "\n\nRegresá con "+N.byLocation[arc.origin].name+" para presentar el informe.",
+      [{label:"Regresar con el resultado",action:()=>{}}],successful?"INVESTIGACIÓN RESUELTA":"RESULTADO COMPLICADO");
+    }
+   }));
+   choices.push({label:"No intervenir todavía",action:()=>{}});
+   askMenu(arc.title,arc.objective+"\n\n¿Cómo vas a proceder?",choices,"INVESTIGACIÓN SECUNDARIA");
+ }
+ function reportPersonal(npc){
+   const arc=A.personal[npc.id],quest=game.sideQuests[npc.id];
+   if(!arc||quest?.status!=="ready")return;
+   const result=quest.result;
+   const options=[
+    {label:"Entregar un informe honesto",action:()=>completePersonal(npc,arc,result,true)},
+    {label:"Exagerar tus logros · Manipulación + Subterfugio (dif. 7)",action:()=>{
+      const check=dicePool("Manipulación","Subterfugio",7);
+      if(!check.success){exposure(6,"Una mentira mal construida llamó la atención.");}
+      completePersonal(npc,arc,result,check.success);
+    }},
+    {label:"Posponer la entrega",action:()=>{}}
+   ];
+   askMenu("Un informe para "+npc.name,arc.report+"\n\n"+result.description,options,"FINAL DE ENCARGO");
+ }
+ function completePersonal(npc,arc,result,credible){
+   const quest=game.sideQuests[arc.id];
+   if(quest?.status!=="ready")return;
+   quest.status="done";quest.reported=true;
+   const excellent=result.success&&credible;
+   const factionPoints=excellent?10+result.bonus:credible?-5:-10;
+   game.npcRelations[npc.id]=clamp((game.npcRelations[npc.id]||0)+(excellent?2:-1),-3,3);
+   increaseFaction(arc.faction,factionPoints,"El informe de "+arc.title+".");
+   if(arc.id==="lucien"){
+     increaseFaction("camarilla",excellent?4:-5,"Tensión controlada en Saint-Denis.");
+   }
+   if(arc.id==="isabelle"){
+     increaseFaction("camarilla",excellent?3:-4,"Cuidado del protocolo de Passy.");
+   }
+   if(arc.id==="ingrid"&&excellent)game.access.tunnelContact=true;
+   if(excellent&&D.clans[game.character.clan].master===npc.name)addAppreciation(3,"Tu Domitor apreció un trabajo adicional.");
+   log("Encargo personal concluido: "+arc.title+".");
+   advanceClock(5);hud();save();
+   askMenu(npc.name,excellent?
+     "«Cumpliste con discreción. Recordaré lo que hiciste.»\n\nReputación con "+A.factions[arc.faction].name+" +"+factionPoints+".":
+     "«Escuché tu informe. Tendremos que lidiar con las consecuencias.»\n\nReputación con "+A.factions[arc.faction].name+" "+factionPoints+".",
+     [{label:"Continuar mi camino",action:()=>{}}],"CONSECUENCIAS POLÍTICAS");
+ }
+ function inspectLocationActions(location){
+   const tasks=personalAtLocation(location.id);
+   const q=game.activeQuest?questObj(game.activeQuest):null;
+   const mainHere=!!q&&q.place===location.id&&!game.readyReport;
+   const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
+   const actions=[];
+   if(dupontHere)actions.push({label:"Investigar el caso Pierre Dupont",action:()=>researchLead(location)});
+   else if(mainHere)actions.push({label:"Investigar el encargo de tu Domitor",action:()=>resolveStandardQuest(q)});
+   for(const quest of tasks){
+      const arc=A.personal[quest.id];
+      actions.push({label:"Investigar: "+arc.title,action:()=>resolvePersonalAtTarget(arc)});
+   }
+   actions.push({label:"Examinar el lugar sin intervenir",action:()=>{
+    const src=C.investigation.sources[location.id],env=N.environments[location.id];
+    askMenu("Un vistazo a "+location.name,(src?.hint||env.description)+"\n\n"+location.detail,
+     [{label:"Seguir explorando",action:()=>{}}],"OBSERVACIÓN");
+   }});
+   if(actions.length===1){actions[0].action();return;}
+   askMenu("¿Qué vas a investigar?",location.name+" puede aportar información a más de un encargo.",actions,"TRABAJO DE CAMPO");
+ }
  function npcState(id){
   if(!game.npcFlags[id])game.npcFlags[id]={};
   if(!Number.isFinite(game.npcRelations[id]))game.npcRelations[id]=0;
@@ -501,6 +602,15 @@
   }
   if(npc.id==="dupont"&&game.activeQuest==="archivos"&&!game.readyReport&&game.arc.clues.length>=2){
     opts.unshift({label:"Confrontar a Dupont sobre sus documentos",action:confrontDupont});
+  }
+  const personal=A.personal[npc.id];
+  if(personal){
+    const current=game.sideQuests[npc.id];
+    if(!current)opts.unshift({label:"Preguntar por un encargo personal · "+personal.title,action:()=>offerPersonalQuest(npc)});
+    else if(current.status==="ready")opts.unshift({label:"Entregar el informe: "+personal.title,action:()=>reportPersonal(npc)});
+    else if(current.status==="active")opts.push({label:"Repasar el encargo: "+personal.title,action:()=>{
+      askMenu(personal.title,personal.objective,[{label:"Comprendido",action:()=>{}}],"ENCARGO EN CURSO");
+    }});
   }
   if(npc.id==="isabelle"&&!state.stjulyWarning){
    opts.push({label:"Preguntar por la autoridad Tremere en París",action:()=>{
