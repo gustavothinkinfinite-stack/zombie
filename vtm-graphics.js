@@ -243,7 +243,7 @@ function character(c,x,y,opts={}){
    text(c,"DOMITOR",x,y-24,7,"#edd1b7");
  }
 }
-function effects(c,mode,time){
+function effects(c,mode,time,location){
  if(mode==="paris"){
    // Lluvia en dos capas, sin arrays ni partículas almacenadas en cada fotograma.
    for(let i=0;i<56;i++){
@@ -255,6 +255,17 @@ function effects(c,mode,time){
     rect(c,x,y,1,7,i%2?"#e7cba42e":"#b6b8c120");
    }
  }else{
+   const moods={
+    stjuly:["221,105,158",.10],elysee:["233,207,162",.10],passy:["183,146,224",.08],
+    tuneles:["110,194,166",.11],bastilla:["228,135,118",.08],
+    saintdenis:["145,180,215",.11],hemeroteca:["228,185,135",.07],
+    policia:["151,204,229",.06],Tremere:["171,125,222",.07],
+    Nosferatu:["114,183,150",.08],Toreador:["220,126,162",.07],
+    Malkavian:["183,155,217",.07],Ventrue:["187,185,162",.07],
+    Brujah:["210,122,108",.07],Gangrel:["155,182,133",.07]
+   };
+   const mood=moods[location]||["231,188,140",.05];
+   glow(c,240,100,72,mood[0],mood[1]*(1+Math.sin(time*1.6)*.15));
    for(let i=0;i<15;i++){
     const x=(i*53+Math.floor(Math.sin(time*.5+i)*11)+480)%480;
     const y=(i*61-Math.floor(time*(3+i%4))+3000)%300;
