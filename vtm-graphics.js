@@ -34,6 +34,7 @@ function registerBackplates(items,prefix){
    scenePictures[prefix+name]={url:"./"+url+"?v=escenarios-2",img:null,ready:false,loading:false,failed:false};
  }
 }
+registerBackplates({paris:"assets/paris-nocturno.svg"},"map:");
 registerBackplates(artScenes,"venue:");
 registerBackplates(artResidences,"residence:");
 registerBackplates(artRooms,"room:");
@@ -562,48 +563,73 @@ function cartoSymbol(c,id,x,y,accent){
  }
  c.restore();
 }
-function mapDestination(c,loc,active,color,locked,time){
- const cx=Math.round((loc.x+loc.w/2)/2.1);
- const cy=Math.round((loc.y+loc.h/2)/2);
- const accent=active?"#e5b97c":locked?"#9e818a":"#c4b49d";
- // Sombra difusa, aro de latón y sello individual por institución.
- glow(c,cx,cy,active?31:23,active?"226,159,102":"201,172,133",active?.2:.065);
- cartoCircle(c,cx,cy+2,17,"#0b1520ad","#e7c89c36",1);
- cartoCircle(c,cx,cy,14,"#25313b","#bda58a",1.5);
- cartoCircle(c,cx,cy,11,"#34404a","#796a66",.8);
- cartoSymbol(c,loc.id,cx,cy,accent);
- if(locked){
-  cartoCircle(c,cx+12,cy-12,4,"#5c3344","#c68f9c",.7);
- }
- const label=mapNames[loc.id]||loc.name;
- const width=Math.min(94,Math.max(49,Math.ceil(label.length*5.0+20)));
- const xx=Math.max(5,Math.min(475-width,cx-width/2));
- const yy=cy+17;
- cartoPlate(c,xx,yy,width,16,"#101823ed",active?"#e3b67c":"#9483778c");
- rect(c,xx+6,yy+3,2,10,active?"#dfb786":color||"#a99a87");
- c.save();c.textAlign="center";c.font="600 9px Georgia,serif";
- c.fillStyle=active?"#ffdfac":"#e8ded0";
- c.fillText(label,xx+width/2+2,yy+11.5);
+/* Cartografía editorial: los edificios están ilustrados dentro del SVG.
+   El Canvas dibuja sólo puntos de interacción y rótulos ligeros, sin
+   carteles cuadrados ni edificios duplicados. */
+function mapLabel(c,label,x,y,active=false,locked=false){
+ c.save();
+ c.font="600 9.5px Georgia, serif";
+ c.textAlign="center";
+ c.textBaseline="middle";
+ c.lineWidth=3.8;
+ c.lineJoin="round";
+ c.strokeStyle="#111923";
+ if(typeof c.strokeText==="function")c.strokeText(label,x,y);
+ c.fillStyle=active?"#f4d3a1":locked?"#b5a9a3":"#e6ded1";
+ c.fillText(label,x,y);
  c.restore();
+}
+function mapDestination(c,loc,active,color,locked,time){
+ const x=Math.round((loc.x+loc.w/2)/2.1);
+ const y=Math.round((loc.y+loc.h/2)/2);
+ const label=mapNames[loc.id]||loc.name;
+ // El anillo activo se conserva, pero el hito nunca tapa la arquitectura.
  if(active){
-  cartoCircle(c,cx+12,cy-13,4.5,"#f1cc92","#f9e0b5",.7);
-  c.save();c.font="bold 8px Georgia,serif";c.textAlign="center";c.fillStyle="#30202b";
-  c.fillText("!",cx+12,cy-10);c.restore();
+  glow(c,x,y-1,22,"231,184,120",.15+.035*Math.sin(time*2.5+x));
+  if(typeof c.beginPath==="function"){
+   c.beginPath();c.arc(x,y,13,0,Math.PI*2);
+   c.strokeStyle="#d8ad78ab";c.lineWidth=.85;c.stroke();
+  }
+ }
+ cartoCircle(c,x,y,active?3.2:2.2,active?"#ffe0aa":"#d8c3a2","#101b24",1.1);
+ const upper=loc.id==="passy";
+ const ly=upper?y-27:y+27;
+ const lineY=upper?y-15:y+16;
+ if(typeof c.beginPath==="function"){
+  c.beginPath();c.moveTo(x,y+(upper?-4:5));c.lineTo(x,lineY);
+  c.strokeStyle=active?"#d5ae80a8":"#c6b39b69";
+  c.lineWidth=.75;c.stroke();
+ }
+ mapLabel(c,label,x,ly,active,locked);
+ if(locked){
+  cartoCircle(c,x+11,y-11,3.5,"#51303e","#b7968f",.65);
+ }
+ if(active){
+  cartoCircle(c,x+9,y-13,3.5,"#edc38a","#f9ddae",.8);
+  c.save();c.font="bold 7px Georgia,serif";c.textAlign="center";c.fillStyle="#30252e";
+  c.fillText("!",x+9,y-10.4);c.restore();
  }
 }
 function mapResidence(c){
  const x=43,y=257;
- // Residencia reconocible, sin ocultar el avatar ni mover la puerta.
- glow(c,x,y,23,"215,173,139",.10);
- cartoCircle(c,x,y,13,"#27313c","#d8b792",1.2);
- cartoStroke(c,[[x-7,y-2],[x,y-8],[x+7,y-2]],1.3,"#e2c7a5");
- cartoStroke(c,[[x-6,y-2],[x-6,y+6],[x+6,y+6],[x+6,y-2]],1.2,"#e2c7a5");
- cartoPlate(c,8,220,77,16,"#101823ed","#bca17e");
- c.save();c.textAlign="center";c.font="600 9px Georgia,serif";
- c.fillStyle="#f1d6b7";c.fillText("RESIDENCIA",46,231.5);c.restore();
+ if(typeof c.beginPath==="function"){
+  c.beginPath();c.arc(x,y,11,0,Math.PI*2);
+  c.strokeStyle="#d6b58c86";c.lineWidth=1;c.stroke();
+ }
+ cartoCircle(c,x,y,2.7,"#e7c99d","#1a2330",1);
+ if(typeof c.beginPath==="function"){
+  c.beginPath();c.moveTo(x+4,y+6);c.lineTo(x+20,y+12);
+  c.strokeStyle="#c5b29570";c.lineWidth=.8;c.stroke();
+ }
+ mapLabel(c,"RESIDENCIA",92,276,false,false);
 }
 function drawCity(c,game,D,N,time){
- drawCached(c,"paris",cityBackground);
+ // El fondo vectorial independiente conserva nitidez al ampliar el mapa.
+ // En la primera carga se muestra papel oscuro en vez de la vieja retícula.
+ if(!renderBackplate(c,"map:paris")){
+  if(typeof Image==="function")rect(c,0,0,W,H,"#1c2833");
+  else drawCached(c,"paris",cityBackground);
+ }
  for(const loc of D.locations){
   const active=D.quests.some(q=>q.id===game.activeQuest&&q.place===loc.id)||
    (game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(loc.id))||
