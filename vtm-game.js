@@ -2168,7 +2168,7 @@
    const accelerated=game.embraced&&game.worldPowers?.sprintNight===game.clock.night;
    const speed=(70+Math.min(15,3*(game.character.attr.Destreza||1)))*
     (accelerated?1.35:game.mechanics?.power?.name==="Celeridad"?1.2:1)*
-    (CHASE?.speed(game,keys.has("shift"))||1)*dt;
+    (typeof CHASE!=="undefined"?(CHASE?.speed(game,keys.has("shift"))||1):1)*dt;
    const mx=dx/length*Math.min(speed,length),my=dy/length*Math.min(speed,length);
    const pos=P?P.slide(game.scene,game.x,game.y,mx,my):{
      x:clamp(game.x+mx,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470),
