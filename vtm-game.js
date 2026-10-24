@@ -210,6 +210,7 @@
   game.exposure=Number.isFinite(game.exposure)?clamp(game.exposure,0,100):0;
   game.cityPos=game.cityPos||{x:46,y:267};
   game.venue=game.venue||null;
+  game.flags=game.flags||{};
  }
  function enterGame(){
   expandSave();
@@ -225,7 +226,7 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,flags:{}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -268,13 +269,37 @@
   if(game.readyReport)choices.push({label:"Informar del encargo concluido",action:reportQuest});
   if(!game.activeQuest&&!game.readyReport)choices.push({label:"Solicitar un nuevo encargo",action:requestQuest});
   if(game.activeQuest&&!game.readyReport)choices.push({label:"Pedir instrucciones sobre el encargo",action:()=>{const q=questObj(game.activeQuest);askMenu("Instrucciones",q.summary,[{label:"Entendido. Partiré ahora.",action:()=>{}}],"ENCARGO ACTIVO");}});
-  choices.push({label:"Preguntar por la corte de París",action:()=>askMenu("El Principado de París","Pierre Duvalier rige el Principado. Lord Thomas Wyndham ejerce como Sheriff. La Senescal Etienne Moreau coordina numerosos asuntos de la corte. Tu deber es respetar la Mascarada y obedecer sin atraer miradas.",[{label:"Comprendo.",action:()=>{addAppreciation(1,"Escuchaste atentamente los consejos.");}}],"LA CAMARILLA")});
+  choices.push({label:"Preguntar por la corte de París",action:()=>askMenu("El Principado de París",
+   "Pierre Duvalier rige el Principado. Lord Thomas Wyndham ejerce como Sheriff y Etienne Moreau ocupa el cargo de Senescal. Un comentario a destiempo basta para crear enemigos; respetá la Mascarada.",
+   [{label:"Comprendo las reglas de la corte",action:()=>{
+     if(!game.flags.courtBriefed){game.flags.courtBriefed=true;addAppreciation(1,"Atendiste la primera lección de protocolo.");}
+     else{log("Repasaste el protocolo de la corte.");save();}
+   }}],"LA CAMARILLA")});
+  if(!game.flags.formalGreeting)choices.push({label:"Saludar con el protocolo adecuado · Carisma + Etiqueta",action:()=>{
+   game.flags.formalGreeting=true;
+   const r=dicePool("Carisma","Etiqueta",6);
+   const n=r.success?4:-2;
+   addAppreciation(n,r.success?"Tu saludo fue recibido con aprobación.":"Tu trato resultó demasiado torpe para la corte.");
+   askMenu(D.clans[game.character.clan].master,r.success?
+    "Aprendés deprisa. Prestá atención a las formas; también son armas.":"Antes de hablar de honor o discreción, aprendé cómo dirigirte a un Vástago.",
+    [{label:"Entendido.",action:()=>{}}],"PRUEBA SOCIAL · DADOS: "+r.dice.join(", "));
+  }});
+  if(!game.flags.readTheRoom)choices.push({label:"Observar el ánimo del maestro · Percepción + Empatía",action:()=>{
+   game.flags.readTheRoom=true;
+   const r=dicePool("Percepción","Empatía",6);
+   const text=r.success?"Su silencio oculta preocupación. Los movimientos de la prensa inquietan a la corte; un expediente se ha vuelto importante.":
+    "No conseguís leer su expresión. En vez de una respuesta, recibís una mirada prolongada.";
+   log("Intentaste comprender los motivos de tu Domitor.");save();
+   askMenu("Los gestos del poder",text+"\nTirada: "+r.dice.join(", ")+" · "+r.net+" éxitos netos.",
+     [{label:"Guardar la impresión",action:()=>{}}],"PERCEPCIÓN");
+  }});
   choices.push({label:"Responder de forma desafiante",action:()=>{addAppreciation(-4,"Una insolencia delante del maestro.");askMenu(name,"La confianza se gana. Tus palabras, por ahora, te alejan de ella.",[{label:"Retirarme.",action:()=>{}}],"REPRIMENDA");}});
   askMenu(name,clan.opening,choices,"TU DOMITOR · "+game.character.clan.toUpperCase());
  }
  function requestQuest(){
   const choices=D.quests.filter(q=>q.id!=="archivos"||!game.arc.outcome);
-  const q=choices[game.questIndex%choices.length];
+  const index=game.arc.outcome?Math.max(0,game.questIndex-1):game.questIndex;
+  const q=choices[index%choices.length];
   askMenu("Un encargo para "+game.character.name,
    q.summary+" Deberás desplazarte hasta "+D.locations.find(l=>l.id===q.place).name+". Tu forma de actuar determinará cuánto confiaré en vos.",
    [{label:"Aceptar con respeto (+2 aprecio)",action:()=>{game.activeQuest=q.id;game.readyReport=null;addAppreciation(2,"Aceptaste el encargo con cortesía.");notice("Salí de la residencia y buscá "+q.title+".");}},
@@ -440,11 +465,11 @@
    {label:"Rechazo por ahora. Conservaré mi condición de ghoul",action:()=>{log("Pospusiste el Abrazo. Tu Domitor sigue aguardando tu decisión.");save();}}],"CEREMONIA DEL ABRAZO");
  }
  function disciplineCeremony(){
-  const available=D.clans[game.character.clan].disciplines,disc=game.character.disciplines;
-  const spent=()=>Object.values(disc).reduce((a,b)=>a+b,0);
+  const available=D.clans[game.character.clan].disciplines,disc=()=>game.character.disciplines;
+  const spent=()=>Object.values(disc()).reduce((a,b)=>a+b,0);
   const make=()=>{
    askMenu("Primeros dones de la sangre","Asigná los 3 círculos iniciales entre las Disciplinas de tu clan. Se encuentran disponibles: "+available.join(", ")+". Puntos asignados: "+spent()+"/3.",
-    available.map(name=>({label:name+": "+(disc[name]||0)+" círculos · añadir uno",disabled:spent()>=3||(disc[name]||0)>=3,action:()=>{disc[name]=(disc[name]||0)+1;save();make();}})).concat([
+    available.map(name=>({label:name+": "+(disc()[name]||0)+" círculos · añadir uno",disabled:spent()>=3||(disc()[name]||0)>=3,action:()=>{disc()[name]=(disc()[name]||0)+1;save();make();}})).concat([
       {label:"Reiniciar distribución",action:()=>{game.character.disciplines={};save();make();}},
       {label:"Confirmar Disciplinas y continuar",disabled:spent()!==3,action:()=>{log("Completaste la asignación inicial de Disciplinas.");save();hud();notice("Sos un Vástago del clan "+game.character.clan+".");}}
     ]),"EL ABRAZO · CLAN "+game.character.clan.toUpperCase());
