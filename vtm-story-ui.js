@@ -39,8 +39,8 @@ window.VTM_STORY_UI=(()=>{
    consequence+="\nDaño: perdés "+result.injury+" punto de Salud.";
   }
   if(result.terror){
-   const fear=S.fearTest(g);
-   consequence+="\nCoraje ["+fear.roll.dice.join(", ")+"]: "+(fear.afraid?"el miedo te hace perder Voluntad.":"resistís la inquietud.");
+   const fear=api.vitaeTerror?.("amenaza sobrenatural en "+location.id)||S.fearTest(g);
+   if(fear?.roll)consequence+="\nCoraje ["+fear.roll.dice.join(", ")+"]: "+(fear.afraid?"el temor te obliga a replegarte.":"resistís el temor.");
   }
   if(result.moral){
    const moral=S.moralTest(g,result.moral);
