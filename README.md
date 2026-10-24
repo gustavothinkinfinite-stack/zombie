@@ -287,6 +287,19 @@ Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 
+## Renovación de sprites — Atlas v4 (24 de octubre de 2026)
+
+Se sustituyó el atlas principal de personajes por **\`assets/personajes-paris-v4.svg\`**, una evolución de la hoja pixel art anterior. Se mantienen **512 × 768 píxeles**, **16 personajes/variantes**, cuatro direcciones y cuatro cuadros de marcha por dirección (**256 cuadros de 32 × 48 píxeles**).
+
+- **Vestuario y silueta:** se añadieron miles de detalles geométricos nuevos: solapas, bolsillos, pliegues del abrigo, costuras, puños, cinturones, accesorios y acabados en botas, diferentes por dirección y cuadro de movimiento.
+- **Clanes:** Toreador (velvetón/camafeo), Ventrue (ropa formal y pañuelo), Tremere (ribetes arcanos), Nosferatu (remiendos y cicatrices), Brujah (cuero y parches), Gangrel (capa rústica), Malkavian (costuras y tejido irregular). El ghoul mantiene prendas civiles sin signos vampíricos.
+- **PNJ:** paletas y detalles diferenciados para Isabelle, Ingrid, Lucien, John Winthrop, Marcus, Pierre Dupont, la Guardiana del Elíseo y el archivista. No se modificaron sus apariciones, nombres ni comportamientos.
+- **Continuidad:** la hoja reutiliza el trabajo base del atlas v3; no modifica su orientación, tamaño, coordenadas ni el orden de los sprites. La personalización de Apariencia y los efectos de vestuario superpuestos siguen activos. El motor utiliza v4 y, si falla la carga, prueba v3 antes de usar su sprite procedural.
+- **Compatibilidad:** ningún cambio a \`vtm-game.js\`, sistemas de rol, misiones, colisiones, interacción, guardado o animación lógica. Se modificó la carga visual en \`vtm-graphics.js\` y la versión de caché del archivo en \`index.html\`.
+- **Regresión:** \`node tests/sprite-atlas-v4-smoke.js\` verifica la cuadrícula, contornos de las 256 celdas, formas pixeladas, selección de clanes y PNJ, orientaciones y recuperación al atlas v3. También deben seguir superándose las pruebas de mapa, barrios, iluminación e interiores.
+
+**Alcance real:** la nueva hoja es **arte SVG pixelado generado y refinado mediante código a partir de la hoja v3**, no ilustración manual de cada fotograma. Las pruebas son de estructura y renderizado simulado; la apariencia final y el despliegue en Hostinger no se han verificado visualmente en un navegador real.
+
 ## Renovación visual — Personajes e interiores (24 de octubre de 2026)
 
 Esta etapa añade **acabados gráficos a los personajes y escenarios reales**, conservando la lógica y el formato de las partidas. Se creó el módulo puramente visual \`vtm-art-polish.js\`.
