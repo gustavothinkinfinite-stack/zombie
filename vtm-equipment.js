@@ -55,9 +55,11 @@ window.VTM_EQUIPMENT=(()=>{
  function available(game,offer){
   const e=init(game),item=ITEMS[offer.item];
   if(game.combat?.active)return "No se puede conseguir equipo en combate";
-  if(game.venue!==undefined&&game.scene!=="venue")return "Necesitás visitar un establecimiento";
+  if(game.scene!=="venue"||!(OFFERS[game.venue]||[]).some(x=>x.item===offer.item&&x.skill===offer.skill))return "Necesitás visitar el establecimiento apropiado";
   if(item.type!=="supply"&&e.owned.includes(offer.item))return "Ya lo tenés";
-  if(item.type==="supply"&&e.acquired[game.clock.night+"|"+offer.item])return "Ya obtuviste este suministro esta noche";
+  if(e.acquired[game.clock.night+"|"+offer.item])return "Ya intentaste conseguirlo esta noche";
+  if(offer.item==="botiquin"&&e.kits>=5)return "Ya llevás el máximo de botiquines";
+  if(offer.item==="municion"&&e.ammo>=90)return "Reserva de munición completa";
   if((game.character.skills?.[offer.skill]||0)<offer.rank)return "Requiere "+offer.skill+" "+offer.rank;
   if(offer.background&&(game.character.backgrounds?.[offer.background]||0)<offer.backgroundRank)return "Requiere "+offer.background+" "+offer.backgroundRank;
   if(offer.item==="pistola"&&(game.character.skills?.["Armas de Fuego"]||0)<1)return "Requiere Armas de Fuego 1";
@@ -69,12 +71,13 @@ window.VTM_EQUIPMENT=(()=>{
  function acquire(game,place,id,rolled){
   const offer=(OFFERS[place]||[]).find(x=>x.item===id);
   if(!offer)return {error:"No hay una fuente de equipo aquí."};
+  if(game.scene!=="venue"||game.venue!==place)return {error:"No estás en ese establecimiento."};
   const reason=available(game,offer);
   if(reason)return {error:reason};
   if(!rolled||typeof rolled.success!=="boolean")return {error:"Falta la tirada de adquisición."};
   const e=init(game),item=ITEMS[id];
-  // Un fracaso también gasta la oportunidad de suministro de la noche.
-  if(item.type==="supply")e.acquired[game.clock.night+"|"+id]=true;
+  // Tanto el éxito como el fracaso gastan la oportunidad de la noche; no hay tiradas ilimitadas.
+  e.acquired[game.clock.night+"|"+id]=true;
   const info={success:!!rolled.success,item:id,name:item.name,exposure:rolled.success?offer.risk:offer.risk+6};
   if(rolled.success){
    if(item.type==="weapon"||item.type==="armor")e.owned.push(id);
