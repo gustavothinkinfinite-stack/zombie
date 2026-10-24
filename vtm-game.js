@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -333,6 +333,7 @@
   game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
   if(CITY){CITY.init(game);CITY.tick(game);}
   if(REACT){REACT.init(game);REACT.tick(game);}
+  if(REGION){REGION.init(game);REGION.tick(game);}
   M.init(game);
   ST.init(game);
   TACT.init(game);
@@ -394,8 +395,9 @@
   for(const event of POL.nextNight(game))log(event.description);
  }
  function processReactiveNight(complete=false){
-  if(!REACT||!game)return;
-  for(const event of REACT.tick(game,complete))log("Bastilla: "+event.text);
+  if(!game)return;
+  if(REACT)for(const event of REACT.tick(game,complete))log("Bastilla: "+event.text);
+  if(REGION)for(const event of REGION.tick(game,complete))log(event.district+": "+event.text);
  }
  function advanceClock(amount){
    game.clock.minutes+=Math.max(0,Math.round(amount));
@@ -522,6 +524,10 @@
     const cases=CASES.summary(game);
     $("casesProgress").textContent=cases.completed+" / "+cases.total;
     $("caseEvidence").textContent=cases.evidence+" / "+cases.maxEvidence;
+  }
+  if(REGION){
+   const summary=REGION.overview(game),line=$("regionalReactiveStatus");
+   if(line)line.textContent="Otros barrios: "+summary.filter(v=>!!v.outcome).length+"/7 concluidos · "+summary.filter(v=>v.stage!=="pending"&&!v.outcome).length+" activos";
   }
   if(REACT){
    const pulse=REACT.summary(game),line=$("reactiveStatus");
@@ -720,6 +726,7 @@
      ...(ELI?[{label:"Expediente Elizabeth Parker · investigación principal",action:ELI.menu}]:[]),
      ...(CITY?[{label:"París nocturno · sucesos, tránsito y horarios comerciales",action:()=>askMenu("Pulso de la ciudad",CITY.bulletin(game),[{label:"Continuar",action:()=>{}}],"ACTIVIDAD NOCTURNA")}]:[]),
      ...(REACT?[{label:"París reactivo · investigar el robo de Bastilla",action:REACT.menu}]:[]),
+     ...(REGION?[{label:"París reactivo · investigar los otros siete barrios",action:REGION.menu}]:[]),
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      ...(game.embraced?[{label:"Política · libro de favores y deudas",action:POLUI.ledger}]:[]),
@@ -953,6 +960,7 @@
          if(game.embraced)options.unshift({label:"Usar un poder sobrenatural ante el encargado",action:WORLDUI.menu});
          options.push(...shopCaseChoices(shop));
          if(REACT)options.push(...REACT.shopChoices(game,shop));
+         if(REGION)options.push(...REGION.shopChoices(game,shop));
          if(H?.nightNews(game,shop))options.push(newsChoice());
          options.push({label:"Despedirte",action:()=>{}});
          askMenu(shop.keeper,follow.text+"\n\n"+(H?.districtContext(game,shop).label||""),
@@ -965,6 +973,7 @@
        if(game.embraced)opts.push({label:"Usar una Disciplina ante el mortal",action:WORLDUI.menu});
        opts.push(...shopCaseChoices(shop));
        if(REACT)opts.push(...REACT.shopChoices(game,shop));
+       if(REGION)opts.push(...REGION.shopChoices(game,shop));
        if(H?.nightNews(game,shop))opts.push(newsChoice());
        opts.push({label:"Despedirte",action:()=>{}});
        askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?
@@ -986,6 +995,7 @@
         {label:"Comprar o vender artículos",action:()=>ECONUI.market(shop)},
         ...(game.embraced?[{label:"Utilizar una Disciplina sobre este lugar",action:WORLDUI.menu}]:[]),
         ...((REACT&&REACT.shopChoices(game,shop))||[]),
+        ...((REGION&&REGION.shopChoices(game,shop))||[]),
         ...shopCaseChoices(shop),
         {label:"No intervenir",action:()=>{}}],"CONTACTO SECUNDARIO");
      return;
@@ -996,6 +1006,7 @@
    askMenu(target.type==="clue"?"Objetos del mostrador":"Detalles del establecimiento",
      target.type==="clue"?shop.description+"\n\n"+shop.rumor:shop.description+"\n\nEl mobiliario guarda huellas de actividad nocturna, pero no permite sacar conclusiones sobre quién las dejó.",
      [...((REACT&&REACT.shopChoices(game,shop))||[]),
+        ...((REGION&&REGION.shopChoices(game,shop))||[]),
         ...shopCaseChoices(shop),{label:"Continuar la visita",action:()=>{}}],"EXPLORACIÓN INTERIOR");
  }
 
@@ -1004,6 +1015,7 @@
    const found=T.nearby(game);
    if(!found){
      if(REACT?.interact(game))return;
+     if(REGION?.interact(game))return;
      if(CITY?.interact(game,visualTime))return;
      notice("Acercate a una puerta, un transeúnte, un suceso señalado o una salida.");return;
    }
@@ -1916,6 +1928,7 @@
    T.draw(g,game,visualTime,effectsEnabled);
    if(CITY)CITY.districtDraw(g,game,visualTime,effectsEnabled);
    if(REACT)REACT.draw(g,game,visualTime);
+   if(REGION)REGION.draw(g,game,visualTime);
    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
  function drawParis(){
@@ -2047,6 +2060,10 @@
 
      if(situation)return "E · "+situation.title;
 
+    }
+    if(!spot&&REGION){
+     const situation=REGION.near(game);
+     if(situation)return "E · "+situation.title;
     }
 
     if(!spot&&CITY){
@@ -2228,6 +2245,13 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(REGION){
+   for(const item of REGION.overview(game)){
+    const row=document.createElement("p");
+    row.textContent=item.name+" — "+item.title+": "+(item.outcome||item.stage)+".";
+    root.appendChild(row);
+   }
+  }
   if(REACT){
     const state=REACT.summary(game),row=document.createElement("p");
     row.textContent="París reactivo: robo de Bastilla · "+(state.outcome||state.stage)+" · decisiones: "+state.actions+" · rumores: "+state.rumors;
@@ -2269,9 +2293,12 @@
   if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
   if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
   if(REACT)REACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
+  if(REGION)REGION.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(CITY){const line=document.createElement("p");line.id="cityLifeStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(REACT){const line=document.createElement("p");line.id="reactiveStatus";line.className="caption";
+    document.querySelector(".exploration-panel")?.appendChild(line);}
+  if(REGION){const line=document.createElement("p");line.id="regionalReactiveStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
