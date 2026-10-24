@@ -173,6 +173,8 @@ window.VTM_MECHANICS=(()=>{
  function nextNight(game){
   const m=init(game);
   if(m.lastNight!==game.clock.night){m.lastNight=game.clock.night;m.will=Math.min(game.character.willpower,m.will+1);m.power=null;}
+  // Fase XX: sólo consume vitae si la noche realmente cambió (idempotente).
+  window.VTM_VITAE?.nightly(game);
  }
  function summary(game){
   const m=init(game),t=m.tokens;
