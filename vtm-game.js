@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -280,6 +280,7 @@
   game.clock=game.clock||{night:1,minutes:20*60+15};
   game.clock.night=Math.max(1,Math.floor(Number(game.clock.night)||1));
   game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
+  M.init(game);
   if(P){
    const pos=P.nearestFree(game.scene,game.x,game.y);
    if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
@@ -319,6 +320,7 @@
    if(game.clock.minutes>=360&&game.clock.minutes<1080){
      game.clock.minutes=1200;game.clock.night++;
      log("La noche siguiente cae sobre París.");
+      M.nextNight(game);
    }
    hud();save();
  }
@@ -333,6 +335,7 @@
    const current=game.clock.minutes,target=schedule.start*60;
    if(current>=target||current<360)game.clock.night++;
    game.clock.minutes=target;
+   M.nextNight(game);
    log("Esperaste hasta que "+npc.name+" regresara al lugar.");
    hud();save();
    meetNPC(npc);
@@ -376,6 +379,7 @@
  function hud(){
   if(!game)return;
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
+  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game);
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
   $("playState").textContent=game.embraced?"Vástago":"Ghoul";
@@ -478,11 +482,12 @@
   const faction=patron?(game.factions[patron]||0):0;
   const politicalDie=faction>=25?1:faction<=-25?-1:0;
   const bonus=(game.access?.[buffs[skill]]?1:0)+politicalDie;
-  const count=Math.max(1,c.attr[attribute]+(c.skills[skill]||0)+bonus);
+  const traits=M.modifiers(game,attribute,skill);
+  const count=Math.max(1,(c.attr[attribute]||1)+(c.skills[skill]||0)+bonus+traits.bonus);
   const dice=Array.from({length:count},()=>Math.floor(Math.random()*10)+1);
   const hits=dice.filter(d=>d>=difficulty).length,ones=dice.filter(d=>d===1).length;
   const net=Math.max(0,hits-ones),botch=hits===0&&ones>0;
-  return {dice,success:net>0,net,botch,count};
+  return {dice,success:net>0,net,botch,count,modifiers:traits.description};
  }
  function questAction(q,hard){
   const checks=hard?{skill:"Sigilo",attr:"Astucia",difficulty:q.difficulty+1}:{skill:q.skill,attr:q.attr,difficulty:q.difficulty};
@@ -824,7 +829,9 @@
   askMenu(q.title,q.summary+"\n\nTu maestro evaluará tanto el resultado como la discreción.",choices,"OBJETIVO DEL DOMITOR");
  }
  function exposure(delta,reason){
+  if(delta>0&&game.mechanics?.tokens?.cobertura>0){game.mechanics.tokens.cobertura--;delta=Math.max(0,delta-5);log("Una cobertura preparada redujo el riesgo de exposición.");}
   game.exposure=clamp(game.exposure+delta,0,100);
+   // Un punto de cobertura ganado con la ficha amortigua una exposición peligrosa.
   if(delta)log((delta>0?"+":"")+delta+" exposición · "+reason);
   if(game.exposure>=60&&!game.flags.marquedMasquerade){
     game.flags.marquedMasquerade=true;
@@ -948,6 +955,7 @@
   askMenu("El precio de la eternidad",m+" ha preparado una ceremonia privada. Aceptar significará dejar atrás tu vida mortal y entrar en el clan "+game.character.clan+". La decisión será irreversible para este personaje.",
   [{label:"Acepto el Abrazo y sus consecuencias",action:()=>{
     game.embraced=true;embraceFxUntil=visualTime+4;game.character.disciplines={};game.character.status="Vástago";
+    M.init(game).blood=10;
     log("Recibiste el Abrazo. Ya pertenecés al clan "+game.character.clan+".");
     save();hud();disciplineCeremony();
    }},
@@ -1328,7 +1336,7 @@
   if(length){
    if(Math.abs(dx)>Math.abs(dy))game.facing=dx<0?"left":"right";
    else game.facing=dy<0?"up":"down";
-   const speed=76*dt;
+   const speed=(70+Math.min(15,3*(game.character.attr.Destreza||1)))*(game.mechanics?.power?.name==="Celeridad"?1.2:1)*dt;
    const mx=dx/length*Math.min(speed,length),my=dy/length*Math.min(speed,length);
    const pos=P?P.slide(game.scene,game.x,game.y,mx,my):{
      x:clamp(game.x+mx,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470),
@@ -1352,6 +1360,7 @@
   const root=$("sheetDetail");root.innerHTML="";
   const header=document.createElement("p");header.textContent=c.name+" · "+c.concept+" · "+c.nature+" / "+c.demeanor+" · "+(game.embraced?"Vástago":"Ghoul")+" del clan "+c.clan;root.appendChild(header);
   const grid=document.createElement("div");grid.className="sheet-detail-grid";root.appendChild(grid);
+  const note=document.createElement("p");note.textContent="RASGOS JUGABLES · "+M.summary(game)+" · Usá ACCIONES para aplicar Atributos, Habilidades, Trasfondos y Disciplinas.";root.insertBefore(note,grid);
   for(const [title,entries] of sections){
    const section=document.createElement("section");const h=document.createElement("h4");h.textContent=title;section.appendChild(h);
    const raw=Object.entries(entries);if(!raw.length){const p=document.createElement("p");p.textContent="Todavía no adquiridas.";section.appendChild(p);}
@@ -1378,6 +1387,7 @@
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
+  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game);root.appendChild(resources);
   const favours=Object.entries(game.access).filter(([k,v])=>v).map(([k])=>favorDescription(k));
   const favors=document.createElement("p");favors.textContent="Referencias y favores: "+(favours.join("; ")||"Ninguno");root.appendChild(favors);
   game.history.forEach(entry=>{const r=document.createElement("p");r.textContent="• "+entry;root.appendChild(r);});
