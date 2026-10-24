@@ -404,13 +404,17 @@
   $("questTitle").textContent=game.activeQuest?questObj(game.activeQuest).title:"Sin encargo activo";
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
+  if(K){
+    $("shopProgress").textContent=Object.keys(game.localPlaces||{}).filter(id=>K.byId[id]).length+" / "+K.definitions.length;
+    $("shopClueCount").textContent=(game.localClues||[]).length+" / "+K.definitions.length;
+  }
   if(T){
     $("districtProgress").textContent=game.districtVisited.length+" / "+T.defs.length;
     $("districtNotesCount").textContent=Object.keys(game.districtNotes).filter(k=>game.districtNotes[k]).length+" / "+T.defs.reduce((n,d)=>n+d.details.length,0);
     $("districtMapBtn").disabled=game.scene!=="district";
     $("districtHint").textContent=game.scene==="district"
-     ?"Estás en "+T.byId[game.district].name+". Explorá las puertas, las calles y los accesos a otros barrios."
-     :"En el mapa general, elegí explorar las calles al llegar a un destino.";
+     ?"Estás en "+T.byId[game.district].name+". Hay dos locales secundarios además del lugar principal, rincones y accesos a otros barrios."
+     :"En el mapa general, elegí explorar las calles para descubrir tiendas y contactos.";
   }
   const houseScene=["house","study","quarters"].includes(game.scene);
   $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="district"?"BARRIO · "+(T?.byId[game.district]?.name||"PARÍS").toUpperCase():game.scene==="sidevenue"?"COMERCIO · "+(K?.byId[game.sidevenue]?.name||"PARÍS").toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
