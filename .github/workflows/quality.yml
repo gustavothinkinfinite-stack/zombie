@@ -26,29 +26,26 @@ jobs:
           for file in ./*.js ./tests/*.js; do
             node --check "$file"
           done
-      - name: Probar investigaciones
-        run: node tests/local-cases.test.js
-      - name: Probar expediente Elizabeth Parker
-        run: node tests/elizabeth-case.test.js
-      - name: Probar relaciones sociales
-        run: node tests/social-relationships.test.js
-      - name: Probar seguridad del guardado
-        run: node tests/save-feedback.test.js
-      - name: Probar controles y paneles
-        run: node tests/modal-controls.test.js
-      - name: Probar distribución de ficha y HUD
-        run: node tests/character-hud.test.js
-      - name: Probar colisiones y navegación en comercios
-        run: node tests/shop-collisions.test.js
-      - name: Probar navegación y accesos entre barrios
-        run: node tests/district-navigation.test.js
-      - name: Probar recuperación de interiores guardados
-        run: node tests/venue-restoration.test.js
-      - name: Probar transiciones de la residencia
-        run: node tests/residence-transitions.test.js
-      - name: Probar protección de partidas al crear personaje
-        run: node tests/new-game-protection.test.js
-      - name: Probar salida segura al menú
-        run: node tests/menu-save-guard.test.js
-      - name: Probar recuperación de respaldos
-        run: node tests/save-backup.test.js
+      - name: Probar todas las regresiones
+        shell: bash
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          tests=(./tests/*.test.js)
+          if (( ${#tests[@]} == 0 )); then
+            echo "::error::No se encontraron archivos tests/*.test.js"
+            exit 1
+          fi
+          failed=0
+          for test in "${tests[@]}"; do
+            echo "::group::${test}"
+            if node "${test}"; then
+              echo "PASS: ${test}"
+            else
+              echo "::error file=${test}::Falló la prueba"
+              failed=$((failed + 1))
+            fi
+            echo "::endgroup::"
+          done
+          echo "Total: ${#tests[@]} pruebas; fallidas: ${failed}"
+          (( failed == 0 ))
