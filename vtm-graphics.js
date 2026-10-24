@@ -264,35 +264,142 @@ function cityBackground(c){
 const mapNames={hemeroteca:"Hemeroteca",stjuly:"St. July",elysee:"Elíseo",
  saintdenis:"Saint-Denis",tuneles:"Túneles",policia:"Archivo policial",
  passy:"Casa de Passy",bastilla:"Bastilla"};
+function landmarkArchitecture(c,id,cx,cy,color){
+ const x=cx-24,y=cy-18;
+ // Todos los destinos comparten escala; cada arquitectura conserva materiales
+ // y una silueta propia, en lugar de marcos idénticos superpuestos al mapa.
+ rect(c,x-3,y+5,54,34,"#101520af");
+ rect(c,x-2,y+1,52,32,"#8b817c");
+ rect(c,x,y+3,48,30,"#36313d");
+ if(id==="hemeroteca"){
+  // Biblioteca histórica: cubierta de zinc, frontón, pórtico y vanos altos.
+  rect(c,x+4,y-3,40,9,"#43515d");
+  rect(c,x+10,y-6,28,4,"#727986");
+  rect(c,x+4,y+7,40,22,"#a4978f");
+  rect(c,x+1,y+6,46,3,"#d6c2ad");
+  for(const dx of [7,17,29,39]){
+   rect(c,x+dx,y+10,4,18,"#cfc0b4");
+   rect(c,x+dx+1,y+12,2,13,"#796e78");
+  }
+  rect(c,x+20,y+15,8,14,"#1f2635");
+  rect(c,x+2,y+29,44,3,"#655d64");
+ }else if(id==="stjuly"){
+  // Club urbano art déco. La entrada está iluminada en ciruela y ámbar.
+  rect(c,x+3,y-5,42,9,"#25222e");
+  rect(c,x+5,y-7,38,3,"#98647d");
+  rect(c,x+4,y+4,40,26,"#443349");
+  for(let i=0;i<4;i++){
+   rect(c,x+8+i*9,y+8,5,8,i%2?"#d99f8e":"#b77f9b");
+   rect(c,x+10+i*9,y+9,2,6,"#2b2936");
+  }
+  rect(c,x+14,y+18,20,13,"#1a1725");
+  rect(c,x+17,y+18,14,3,"#a56d88");
+  rect(c,x+20,y+23,8,8,"#774862");
+  rect(c,x+2,y+30,44,2,"#bd8e82");
+ }else if(id==="elysee"){
+  // Sede principesca: alas simétricas, pórtico y patio monumental.
+  rect(c,x+1,y+6,46,23,"#aaa096");
+  rect(c,x-3,y+8,12,22,"#c0b09b");
+  rect(c,x+39,y+8,12,22,"#c0b09b");
+  rect(c,x+8,y+1,32,6,"#615e6a");
+  rect(c,x+15,y-4,18,6,"#998d88");
+  for(const dx of [10,17,31,38]){
+   rect(c,x+dx,y+10,3,14,"#e0cbb1");
+   rect(c,x+dx,y+24,3,2,"#76656b");
+  }
+  rect(c,x+22,y+12,6,17,"#382a38");
+  rect(c,x+20,y+29,10,6,"#8e7a78");
+  rect(c,x+1,y+32,47,2,"#c4afa1");
+ }else if(id==="saintdenis"){
+  // Galpones de ladrillo con persianas industriales.
+  rect(c,x+2,y-2,44,8,"#393f49");
+  rect(c,x+2,y+6,44,25,"#735353");
+  for(let i=0;i<6;i++){
+   rect(c,x+4+i*7,y+9,5,6,i%2?"#af8879":"#363946");
+   rect(c,x+4+i*7,y+16,5,1,"#3f333b");
+  }
+  rect(c,x+7,y+19,16,12,"#2e313d");
+  for(let k=0;k<3;k++)rect(c,x+8,y+21+k*3,13,1,"#77747a");
+  rect(c,x+27,y+20,14,11,"#2c252e");
+  rect(c,x+29,y+23,8,2,"#af6664");
+  rect(c,x+1,y+31,46,2,"#48333d");
+ }else if(id==="tuneles"){
+  // Acceso subterráneo: caseta de piedra y gran reja en el pavimento.
+  rect(c,x+1,y+5,46,28,"#414b4a");
+  rect(c,x+4,y+7,40,24,"#62625e");
+  rect(c,x+7,y+8,34,5,"#979087");
+  rect(c,x+11,y+13,26,18,"#131f24");
+  for(let k=0;k<7;k++)rect(c,x+13+k*4,y+15,2,14,"#60766e");
+  rect(c,x+12,y+17,24,2,"#495d58");
+  rect(c,x+12,y+26,24,2,"#495d58");
+  rect(c,x+4,y+31,40,2,"#292b31");
+ }else if(id==="policia"){
+  // Archivo administrativo: piedra fría, escalones y dos faroles azules.
+  rect(c,x+2,y-3,44,8,"#596878");
+  rect(c,x+4,y-5,40,2,"#a7acb1");
+  rect(c,x+4,y+6,40,24,"#82888e");
+  for(const dx of [8,16,32,40]){
+   rect(c,x+dx,y+10,4,9,"#293744");
+   rect(c,x+dx,y+10,4,1,"#c4b7ac");
+  }
+  rect(c,x+20,y+16,8,14,"#2b3041");
+  rect(c,x+20,y+17,8,2,"#aeb2bc");
+  rect(c,x+15,y+30,18,3,"#a4a0a1");
+  for(const dx of [5,43])rect(c,x+dx,y+21,3,5,"#8eb3c7");
+ }else if(id==="passy"){
+  // Mansión aristocrática de Passy con jardín y cubierta mansarda.
+  rect(c,x-4,y+10,56,23,"#2d4c44");
+  for(const dx of [0,47])streetTree(c,x+dx,y+20,6);
+  rect(c,x+6,y+3,36,27,"#a39a9f");
+  rect(c,x+6,y-2,36,7,"#4f4a5a");
+  rect(c,x+12,y-5,23,3,"#666171");
+  for(const dx of [10,18,31,39]){
+   rect(c,x+dx,y+9,4,9,"#d4bda1");
+   rect(c,x+dx+1,y+10,2,6,"#3b4558");
+  }
+  rect(c,x+22,y+16,7,14,"#342d3c");
+  rect(c,x+5,y+30,38,2,"#dbccc1");
+ }else if(id==="bastilla"){
+  // Fachadas de locales, escaparates y pequeña marquesina rojiza.
+  rect(c,x+2,y+1,44,30,"#6b4c51");
+  rect(c,x+2,y-3,44,5,"#34313d");
+  for(const dx of [8,19,30,39]){
+   rect(c,x+dx,y+7,5,7,"#d09f88");
+   rect(c,x+dx+1,y+8,3,5,"#353040");
+  }
+  rect(c,x+5,y+18,38,12,"#302531");
+  rect(c,x+9,y+18,10,7,"#92566c");
+  rect(c,x+24,y+19,10,11,"#211d2b");
+  rect(c,x+4,y+16,40,3,"#b47d73");
+  rect(c,x+8,y+30,34,2,"#8e5a5d");
+ }else{
+  rect(c,x+5,y+4,38,27,color);
+  rect(c,x+15,y+15,18,14,"#262331");
+ }
+ // Puertas resaltadas por el suelo mojado, sin alterar los hotspots.
+ rect(c,cx-4,cy+15,8,2,"#d2b49a55");
+}
 function mapDestination(c,loc,active,color,locked,time){
  const cx=Math.round((loc.x+loc.w/2)/2.1);
  const cy=Math.round((loc.y+loc.h/2)/2);
+ landmarkArchitecture(c,loc.id,cx,cy,color);
  const label=mapNames[loc.id]||loc.name;
- const labelWidth=Math.max(39,Math.min(82,Math.ceil(label.length*4.25+12)));
- const left=Math.round(cx-labelWidth/2),labelTop=cy+6;
- // Sombra sobre la calle, sombra de tejado, fachada y una puerta legible.
- rect(c,cx-14,cy-11,30,20,"#11152299");
- rect(c,cx-13,cy-15,26,4,"#151821");
- rect(c,cx-12,cy-14,24,3,color);
- rect(c,cx-11,cy-10,22,15,"#302c37");
- rect(c,cx-10,cy-9,20,1,"#947a76");
- rect(c,cx-8,cy-5,5,5,"#e0bc92");
- rect(c,cx+3,cy-5,5,5,"#998898");
- rect(c,cx-3,cy-4,6,9,"#1a1c2a");
- rect(c,cx-1,cy-2,2,5,"#886f6f");
- rect(c,cx-13,cy+5,26,2,"#121722");
- // Una sola banda tipográfica, no un segundo edificio del tamaño de la calle.
- rect(c,left-1,labelTop-1,labelWidth+2,13,"#0c111ae0");
- rect(c,left,labelTop,labelWidth,11,locked?"#433340":"#20222e");
- rect(c,left,labelTop,labelWidth,1,active?"#f1cc8e":color);
- rect(c,left+2,labelTop+10,labelWidth-4,1,active?"#bd986c":"#5b515e");
- text(c,label,cx,labelTop+8,7,active?"#ffe0aa":"#e7d5c1");
- if(locked){rect(c,cx+8,cy-13,5,6,"#ab7180");}
+ const labelWidth=Math.max(37,Math.min(80,Math.ceil(label.length*4.2+10)));
+ const lx=Math.round(cx-labelWidth/2),ly=cy+19;
+ // Rótulo discreto, independiente del edificio y legible sobre tejados.
+ rect(c,lx-1,ly-1,labelWidth+2,12,"#0d121bbd");
+ rect(c,lx,ly,labelWidth,10,locked?"#3e303d":"#222733");
+ rect(c,lx,ly,labelWidth,1,active?"#e2b981":color);
+ text(c,label,cx,ly+8,7,active?"#ffe1aa":"#e0d4c4");
+ if(locked){
+  rect(c,cx+15,cy-15,8,8,"#4f3743");
+  rect(c,cx+17,cy-13,4,4,"#c98c92");
+ }
  if(active){
-  const pulse=Math.sin(time*3+cx)*.08+.21;
-  glow(c,cx,cy-14,16,"234,191,121",pulse);
-  rect(c,cx-3,cy-25,6,7,"#edc58d");
-  text(c,"!",cx,cy-19,6,"#23202b");
+  const pulse=Math.sin(time*2.8+cx)*.05+.16;
+  glow(c,cx,cy-21,14,"238,191,121",pulse);
+  rect(c,cx-2,cy-32,5,8,"#ecc58d");
+  text(c,"!",cx,cy-25,6,"#2a2230");
  }
 }
 function mapResidence(c){
