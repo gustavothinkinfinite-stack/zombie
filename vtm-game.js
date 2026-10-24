@@ -743,28 +743,53 @@
   pixel(0,0,480,3,metal);
  }
  function drawVenue(){
-  const venue=D.locations.find(l=>l.id===game.venue),source=C.investigation.sources[game.venue];
-  if(!venue||!source){pixel(0,0,480,300,"#1a1820");return;}
-  pixel(0,0,480,300,"#201b24");
-  for(let y=37;y<300;y+=20)for(let x=20;x<460;x+=25){
-    pixel(x,y,24,19,(x+y)%3===0?"#39313b":"#332b35");pixel(x+5,y+8,7,1,"#514351");
+  const location=D.locations.find(l=>l.id===game.venue);
+  const npc=N.byLocation[game.venue],env=N.environments[game.venue];
+  if(!location||!env){pixel(0,0,480,300,"#1a1820");return;}
+  pixel(0,0,480,300,env.room);
+  // Piso de piedra y reflejos de la iluminación nocturna.
+  for(let y=42;y<300;y+=18)for(let x=16;x<461;x+=30){
+    pixel(x,y,29,17,(x+y)%3===0?"#40353f":"#342d38");
+    pixel(x+3,y+3,19,1,"#5d4a55");
   }
-  pixel(0,0,480,40,"#26212c");pixel(0,38,480,4,"#b49787");pixel(14,42,13,248,"#18131f");pixel(453,42,13,248,"#18131f");
-  for(let x=28;x<451;x+=82){pixel(x,65,16,125,"#473740");pixel(x+2,66,12,121,"#564550");}
-  for(const x of [85,340]){pixel(x-28,75,56,68,"#68545b");pixel(x-23,81,46,57,"#24242e");pixel(x-18,86,35,45,"#768197");}
-  pixel(48,178,385,92,game.venue==="stjuly"?"#5c403f":"#50444b");pixel(55,188,370,71,"#2c2530");
-  // Mesa de archivo, interlocutor y panel de prensa.
-  pixel(75,132,112,67,"#554452");pixel(84,138,94,15,"#b2977a");pixel(90,151,82,39,"#ac9480");
-  pixel(100,153,60,13,"#f0e0bd");pixel(103,169,58,5,"#4d4045");
-  pixel(302,131,105,70,"#493a47");pixel(308,138,92,52,game.venue==="stjuly"?"#76534e":"#b3a48d");
-  pixel(315,147,80,32,"#3c313d");
-  textPixel("ARCHIVO",130,123,"#eed2a5",9,"center");
-  textPixel("OBSERVAR",350,123,"#d7c2ac",9,"center");
-  portrait(240,103,"master",game.venue==="stjuly"?"#bca07b":"#758e9d");
-  textPixel(game.venue==="hemeroteca"?"DUPONT":game.venue==="stjuly"?"CAMARERO":"EMPLEADO",240,64,"#efdbba",10,"center");
-  pixel(211,270,58,30,"#201621");pixel(217,274,46,20,"#715966");textPixel("SALIR",240,289,"#f3d5a7",9,"center");
+  pixel(0,0,480,40,env.room);pixel(0,38,480,5,env.accent);
+  pixel(0,41,18,259,"#201823");pixel(462,41,18,259,"#201823");
+  for(let x=25;x<460;x+=84){pixel(x,65,15,136,"#211a27");pixel(x+3,67,7,126,env.accent);}
+  // Los salones tienen ventanas y vitrinas; los túneles, conductos.
+  for(const x of [86,345]){
+    pixel(x-34,69,68,80,"#584751");pixel(x-27,77,54,66,"#231f2c");
+    pixel(x-20,82,40,53,game.venue==="tuneles"?"#283d3e":"#4d5367");
+    pixel(x-2,82,4,53,"#9b857e");pixel(x-20,107,40,3,"#9b857e");
+  }
+  // Mesa del archivo, legajos y puntos de interacción.
+  pixel(50,162,160,73,"#231c27");pixel(61,166,139,62,env.accent);
+  pixel(72,172,116,49,"#53434c");
+  for(let i=0;i<5;i++){pixel(80+i*20,179,15,28,"#b1a091");pixel(83+i*20,182,7,2,"#665866");}
+  pixel(303,148,132,81,"#241d29");pixel(309,156,119,68,"#6a525b");
+  pixel(317,165,100,48,"#342732");
+  if(env.object==="barra"){
+   for(let i=0;i<8;i++)pixel(323+i*11,162,5,26,i%2?"#d5ae84":"#89949c");
+  }else if(env.object==="terminal"){
+   pixel(340,169,58,35,"#171b26");pixel(346,175,46,22,"#4d7e70");pixel(355,185,27,3,"#a6be9c");
+  }else if(env.object==="estatua"){
+   pixel(349,166,35,45,"#d2bda8");pixel(338,201,58,10,"#a38f85");pixel(359,153,15,17,"#e3d0b8");
+  }else if(env.object==="calle"){
+   pixel(320,175,93,15,"#222831");pixel(350,149,7,29,"#a69d9c");pixel(343,140,20,9,"#e6bf81");
+  }else{
+   pixel(337,167,61,38,"#d1bca5");pixel(350,173,39,26,"#65505a");
+  }
+  textPixel("EXAMINAR",130,138,"#ebd7b1",9,"center");
+  textPixel("OBSERVAR",366,132,"#dbc0b0",9,"center");
+  // Sprite distinguible por el atuendo y la paleta del PNJ.
+  portrait(240,104,"master",npc.color);
+  pixel(238,93,5,3,npc.hair);pixel(235,90,11,4,npc.hair);
+  pixel(236,101,3,2,npc.skin);pixel(243,101,3,2,npc.skin);
+  if(["isabelle","guardiana","marcus"].includes(npc.id)){pixel(229,110,6,11,"#c9a885");pixel(246,110,6,11,"#c9a885");}
+  textPixel(npc.name.toUpperCase(),240,66,"#f3dcb4",Math.min(9,480/(npc.name.length+12)),"center");
+  pixel(207,265,66,35,"#19141f");pixel(216,271,48,29,env.accent);
+  textPixel("SALIR",240,286,"#f0d3b1",9,"center");
   portrait(game.x,game.y,"player",game.embraced?"#ac5f6c":"#889b98");
-  textPixel(venue.name.toUpperCase(),240,23,"#eacba9",13,"center");
+  textPixel(env.label.toUpperCase(),240,24,"#f1d7bd",12,"center");
  }
  function textPixel(t,x,y,color,size,align){g.font="bold "+(size||9)+"px monospace";g.fillStyle=color;g.textAlign=align||"left";g.fillText(t,x,y);}
  function drawParis(){
