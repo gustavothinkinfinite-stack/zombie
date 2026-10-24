@@ -442,11 +442,23 @@
    const schedule=A.schedules[npc.id];
    if(!schedule)return;
    const current=game.clock.minutes,target=schedule.start*60;
-   if(current>=target||current<360)game.clock.night++;
+   // Una espera dentro de la misma noche no concede ingresos ni renueva favores.
+   // Después de medianoche, una cita de la tarde siguiente pertenece a otra noche.
+   const nextNight=current>=target||current<360;
+   if(nextNight){
+     if(CITY)CITY.tick(game,true);
+     processReactiveNight(true);
+     game.clock.night++;
+   }
    game.clock.minutes=target;
-   M.nextNight(game);
-   const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
-   processContactNight();processPoliticalNight();
+   if(CITY)CITY.tick(game);
+   processReactiveNight();
+   if(nextNight){
+     M.nextNight(game);
+     const stipend=ECON.nextNight(game);
+     if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
+     processContactNight();processPoliticalNight();
+   }
    log("Esperaste hasta que "+npc.name+" regresara al lugar.");
    hud();save();
    meetNPC(npc);
