@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–IV incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–V incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -94,6 +94,18 @@ Los ocho destinos de París disponen de nuevos fondos SVG independientes en `ass
 El motor carga las imágenes en segundo plano y preserva el fondo Canvas procedimental como respaldo hasta que el SVG esté listo, o si la carga falla. Las luces animadas se adaptan al lugar cuando los FX están activos.
 
 Las imágenes son vectoriales originales y sustituibles; el mayor detalle artístico sigue siendo trabajo pendiente. Los despachos y habitaciones privadas no cuentan aún con fondos SVG propios.
+
+## Fase V — Despachos y habitaciones privadas
+
+La serie de residencias está cubierta en tres estancias por clan: salón, despacho y dormitorio, un total de **21 fondos exclusivos**. Se añadieron catorce archivos SVG en `assets/residencias/`, con nombres `<clan>-despacho.svg` y `<clan>-habitaciones.svg`. Los ambientes incluyen bibliotecas, documentos, camas, vestidores, paneles y ornamentos distintivos.
+
+Los 29 fondos se registran mediante URLs locales y se cargan **cuando se visitan**, evitando descargar todas las imágenes al abrir el juego. Cuando un recurso no está cargado o falla, el renderizador usa automáticamente su fondo anterior de Canvas.
+
+Iluminación ambiental: luz sobre libros y escritorio en el despacho, reflejos fríos nocturnos en los dormitorios, luces particulares en cada salón y lugar público. Los FX se pueden desactivar sin modificar la partida.
+
+La compatibilidad de colisiones requiere mantener accesibles estos puntos: despacho `(145,137)`, `(338,137)`, `(240,212)`, dormitorio `(142,135)`, `(334,135)`, `(239,102)`, salida `(240,270)`. Cada fondo corresponde a un lienzo lógico de 480 × 300.
+
+**Pruebas:** 14 recursos SVG existentes; 21 estancias y ocho locales renderizados; fallback con carga retrasada y fallida; guardado, movimiento y opción FX verificados por simulación del motor. Queda pendiente una revisión visual real en navegador y completar arte y animación ilustrados profesionalmente.
 
 ## Próximos entregables de arte
 
