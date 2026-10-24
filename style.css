@@ -4,3 +4,9 @@
 #leadsStatus{color:#d1b4aa;margin:11px 0 14px;line-height:1.65;}
 #dupontRelation{color:#e6c9b0;}
 .dialog-card p{white-space:pre-line;}
+
+/* Diálogos de PNJ — retratos pixelados de la versión 0.3 */
+.dialog-portrait{display:flex;align-items:center;gap:14px;min-height:90px;margin:15px 0 6px;padding:10px 12px;background:linear-gradient(90deg,#281e2b,#221c26);border:1px solid #66505d;}
+.dialog-portrait canvas{width:90px;height:90px;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid #ad8b79;flex:none;background:#17131b;}
+.dialog-portrait span{font-size:10px;line-height:1.6;letter-spacing:1px;text-transform:uppercase;color:#d6bfae;font-weight:700;}
+@media(max-width:520px){.dialog-portrait canvas{width:72px;height:72px}.dialog-portrait{gap:10px;padding:8px}}
