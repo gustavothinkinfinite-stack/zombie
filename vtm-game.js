@@ -14,7 +14,8 @@
   keys.clear();touchMove=null;walkTarget=null;walkRoute=[];
   if(game)game.walking=false;
  }
- let loadedFromBackup=false,effectsEnabled=true;
+ let effectsEnabled=true;
+ let loadedFromBackup=false;
  try{
    const preference=localStorage.getItem("cronicas-paris-visual-fx");
    effectsEnabled=preference===null?!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches:preference==="1";
