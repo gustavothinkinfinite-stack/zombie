@@ -222,6 +222,20 @@ Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 
+## Renovación gráfica — Etapa 1: reconstrucción de París (24 de octubre de 2026)
+
+**Entregado en GitHub `main`:** el lienzo general de la ciudad fue sustituido por una base urbana procedural más detallada. No se han generado capturas ni imágenes estáticas; los cambios modifican el motor de dibujo que ejecuta la propia web.
+
+- **Tejido urbano diferenciable:** las manzanas ya no son copias idénticas. Ahora presentan fachadas y techos mansarda, claraboyas, chimeneas, patios, comercios, plazas arboladas, pequeñas zonas industriales y materiales distintos por barrio.
+- **Calles con escala coherente:** nuevos bulevares, aceras, pasos peatonales, bancos, lámparas, árboles, coches estacionados y bordillos. La animación previa de peatones, taxis y lluvia sigue funcionando por encima del fondo.
+- **Sena:** ribera sinuosa con piedras, reflejos sobre el agua y tres puentes dibujados con barandas.
+- **Ocho destinos visualmente distintos:** Hemeroteca de piedra con pórtico; St. July art déco; Elíseo palaciego; Saint-Denis industrial; túneles Nosferatu con reja; archivo policial administrativo; mansión ajardinada de Passy; locales rojizos de Bastilla. Todos conservan sus centros interactivos originales y sus nombres.
+- **Tamaño de personajes:** el protagonista se dibuja al **46 % de su escala de interior únicamente en la vista general de París**, coherente con los transeúntes y los nuevos edificios.
+- **Rendimiento y compatibilidad:** el fondo se pinta una sola vez por caché Canvas de 480 × 300 píxeles lógicos. Los edificios distintivos se dibujan por encima y el estado de la partida no cambia; no se alteraron hitboxes, misiones, scripts de movimiento ni partidas guardadas.
+- **Control de regresión:** `node tests/paris-visual-smoke.js` verifica los ocho destinos, la residencia, la escala del personaje, el caché, la ausencia de paneles gigantes y que el dibujado no modifique la partida.
+
+**Alcance:** esta es la **primera etapa** de la reconstrucción gráfica del juego. La iluminación dinámica por lugar, el rediseño completo de interiores, una cámara por distritos y sprites de personajes más expresivos quedan para las siguientes etapas. El cambio de código en GitHub no demuestra por sí solo que Hostinger lo haya desplegado.
+
 ## Corrección visual 1.1.1 — Proporciones del juego
 
 Esta corrección **modifica el juego real**, sin generar ni sustituir capturas, imágenes o escenarios. En la vista general de París:
