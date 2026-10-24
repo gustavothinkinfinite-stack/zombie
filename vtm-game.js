@@ -2007,6 +2007,12 @@
   }
   if(room==="district"){
     const spot=T?.nearby(game);
+    if(!spot&&CITY){
+      const event=CITY.nearEvent(game);
+      if(event)return "E · Suceso: "+event.title;
+      const passerby=CITY.nearWalker(game,visualTime);
+      if(passerby)return "E · Hablar con "+passerby.name;
+    }
     return spot?"E · "+(  spot.type==="neighbour"?"Ir a "+spot.name:(spot.type==="venue"||spot.type==="shop")?"Entrar a "+spot.name:spot.name):"";
   }
   if(["house","study","quarters"].includes(room)){
@@ -2072,10 +2078,16 @@
   const near=nearInteractive();if(near)$("floatingHint").textContent=near;
   else $("floatingHint").textContent=["house","study","quarters"].includes(game.scene)?"WASD: mover · E: explorar la residencia":"WASD: mover · E: investigar / regresar";
  }
- let caseSaveSeconds=0;
+ let caseSaveSeconds=0,cityRealSeconds=0;
  function frame(time){
   const dt=Math.min(.045,(time-lastTime)/1000||0);lastTime=time;
   visualTime+=dt;moveStep(dt);
+  // El tiempo transcurre aunque el personaje permanezca quieto (1 minuto cada 30 s reales).
+  // Los diálogos y los combates pausan el avance automático para permitir leer y decidir.
+  if(game&&CITY&&!$("play").classList.contains("hidden")&&!overlayOpen()&&!game.combat?.active){
+    cityRealSeconds+=dt;
+    if(cityRealSeconds>=30){cityRealSeconds-=30;advanceClock(1);}
+  }
   if(game&&ACT&&CI?.byId(game.scene)&&!overlayOpen()&&!game.combat?.active){
    const events=ACT.step(game,dt,P);
    for(const event of events){
@@ -2174,6 +2186,16 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(CITY){
+    const entries=CITY.recent(game,null,12),line=document.createElement("p");
+    line.textContent="Vida nocturna: "+CITY.summary(game).events+" sucesos esta noche · "+CITY.summary(game).shopsOpen+" comercios abiertos.";
+    root.appendChild(line);
+    for(const incident of entries){
+      const note=document.createElement("p");
+      note.textContent="• "+CITY.hhmm(incident.minute)+" · "+incident.district+": "+incident.title;
+      root.appendChild(note);
+    }
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
@@ -2197,6 +2219,9 @@
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
   if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
+  if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
+  if(CITY){const line=document.createElement("p");line.id="cityLifeStatus";line.className="caption";
+    document.querySelector(".exploration-panel")?.appendChild(line);}
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
   // El resumen completo incluye datos de combate y economía: mantenerlo accesible
