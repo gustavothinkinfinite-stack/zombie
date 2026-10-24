@@ -256,14 +256,16 @@
  }
  function save(){
   if(!game)return false;
-  if(SAVER?.save(localStorage,SAVE_KEY,game,D.clans))return true;
+  try{if(SAVER?.save(localStorage,SAVE_KEY,game,D.clans))return true;}catch(e){}
   notice("No se pudo guardar en este navegador.");
   return false;
  }
  function load(){
-  const result=SAVER?.load(localStorage,SAVE_KEY,D.clans)||null;
-  loadedFromBackup=!!result?.fromBackup;
-  return result?.game||null;
+  try{
+   const result=SAVER?.load(localStorage,SAVE_KEY,D.clans)||null;
+   loadedFromBackup=!!result?.fromBackup;
+   return result?.game||null;
+  }catch(e){loadedFromBackup=false;return null;}
  }
  function log(message){
   game.history.unshift(message);game.history=game.history.slice(0,35);
@@ -348,7 +350,8 @@
  }
  function confirmNewStory(){
   // Comprobar incluso partidas antiguas o ilegibles: nunca sobrescribirlas sin permiso.
-  const existing=SAVER?.hasSavedData(localStorage,SAVE_KEY);
+  let existing=null;
+  try{existing=SAVER?.hasSavedData(localStorage,SAVE_KEY);}catch(e){}
   if(existing===null||existing===undefined)
    return window.confirm("No se pudo comprobar el guardado anterior. Si continuás, la nueva partida podría reemplazarlo. ¿Querés continuar?");
   return !existing||window.confirm("Ya existe una partida guardada o su respaldo. Comenzar una nueva reemplazará su progreso. ¿Querés continuar?");
