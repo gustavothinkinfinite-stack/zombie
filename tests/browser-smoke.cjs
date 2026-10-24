@@ -77,6 +77,9 @@ const key="cronicas-paris-ghoul-v1";
     assert.equal(await page.locator("#play").isVisible(),true);
     const state=await page.locator("#sceneTitle").innerText();
     assert.ok(state.length>0);
+    // El botón Continuar partida puede conservar el foco después de ocultarse.
+    // Comprobamos E desde la superficie de juego, no desde un botón oculto.
+    await page.evaluate(()=>document.activeElement?.blur());
     await page.keyboard.press("e");
     await page.waitForSelector("#dialog:not(.hidden)",{timeout:5000});
     const title=await page.locator("#dialogTitle").innerText();
