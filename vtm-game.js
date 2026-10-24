@@ -2016,8 +2016,8 @@
   // Residencia a la misma escala que los otros edificios, sin bloquear al personaje.
   pixel(29,242,27,5,"#ac8c81");pixel(31,247,24,17,"#503b49");
   pixel(35,252,5,6,"#e4b68d");pixel(45,252,5,6,"#a798a4");
-  pixel(13,278,66,13,"#141620");pixel(14,279,64,11,"#302835");
-  textPixel("RESIDENCIA",46,287,"#f1d9b9",7,"center");
+  pixel(10,220,70,13,"#141620");pixel(11,221,68,11,"#302835");
+  textPixel("RESIDENCIA",45,229,"#f1d9b9",7,"center");
   pixel(0,0,480,3,"#c3a283");
   portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
