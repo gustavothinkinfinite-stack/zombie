@@ -182,7 +182,7 @@ window.VTM_ELIZABETH=(()=>{
  function meeting(){
   const g=get(),s=init(g);if(s.interviewedEtienne)return;
   api.ask("Etienne Moreau — Una propuesta prudente",
-   "La Senescal desea evitar una disputa entre Wyndham y los Brujah. Ofrece mediar, pero quiere conocer qué habéis averiguado. Su verdadero papel en la conspiración no se revela.",
+   "La Senescal desea evitar una disputa entre Wyndham y los Brujah. Ofrece mediar, pero quiere conocer qué habéis averiguado. La propuesta podría resolver la crisis política, pero compartir el expediente también implica ceder control sobre las pruebas.",
    [{label:"Escuchar su propuesta sin entregar pruebas",action:()=>{s.interviewedEtienne=true;api.advance(10);refresh("Etienne ofreció colaboración institucional.");menu();}},
     {label:"Compartir un resumen limitado del expediente",action:()=>{s.interviewedEtienne=true;api.advance(10);refresh("La Senescal conoce una parte de las pesquisas.");menu();}},
     {label:"Posponer la reunión",action:menu}],"POLÍTICA · ST. JULY");
