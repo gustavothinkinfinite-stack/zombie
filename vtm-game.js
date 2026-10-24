@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -338,6 +338,8 @@
   ECON.init(game);
   WORLD.init(game);
   POL.init(game);
+  COURT.init(game);
+  COURT.exposureReview(game);
   if(P){
    const pos=P.nearestFree(game.scene,game.x,game.y);
    if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
@@ -481,7 +483,7 @@
  function hud(){
   if(!game)return;
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
-  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game);
+  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game)+" · "+COURT.summary(game);
   $("playHumanity").textContent=game.character.humanity;
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
@@ -672,6 +674,8 @@
    const roll=dicePool("Percepción","Callejeo",7);
    const result=M.huntResult(game,roll);
    if(!result)return;
+   const huntingCase=COURT.hunting(game,game.scene==="venue"?game.venue:null,result);
+   if(huntingCase)log("La caza en otro dominio quedó anotada para su eventual revisión por la corte.");
    if(result.exposure)exposure(result.exposure,"La caza nocturna puso en riesgo la Mascarada.");
    log(roll.success?"Te alimentaste sin matar.":"La presa escapó.");
    advanceClock(25);hud();save();traitsResult("La sed de sangre",result,roll);
@@ -692,6 +696,7 @@
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      ...(game.embraced?[{label:"Política · libro de favores y deudas",action:POLUI.ledger}]:[]),
+     {label:"Corte del príncipe · audiencias, Tradiciones y expedientes",action:COURTUI.page},
      {label:"Talentos · diez acciones",action:()=>traitsCategory("Talentos")},
      {label:"Técnicas · diez acciones",action:()=>traitsCategory("Técnicas")},
      {label:"Conocimientos · diez acciones",action:()=>traitsCategory("Conocimientos")},
@@ -1189,6 +1194,8 @@
    const mainHere=!!q&&q.place===location.id&&!game.readyReport;
    const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
    const actions=[];
+   if(location.id==="elysee")actions.push({label:"Participar en la corte de Pierre Duvalier",action:COURTUI.page});
+   if(game.embraced&&["policia","stjuly","passy","tuneles"].includes(location.id))actions.push({label:"Contrastar irregularidades documentales para la corte",action:()=>COURTUI.archive(location.id)});
    for(const task of POL.tasksAt(game,location.id))actions.push({label:"Servicio político: "+task.title+(task.blocked?" · "+task.blocked:""),disabled:!!task.blocked,action:()=>POLUI.investigate(task.id)});
    if(ELI&&ELI.atPlace(game,location.id))actions.push({label:"Investigar el asesinato de Elizabeth Parker",action:ELI.menu});
    if(game.embraced)actions.push({label:"Usar una Disciplina durante la investigación",action:WORLDUI.menu});
@@ -1239,6 +1246,7 @@
   const trust=clamp(baseTrust+(standing>=20?1:standing<=-20?-1:0),-3,3);
   const opts=[];
   if(game.embraced&&POL.PLAYERS[npc.id])opts.push({label:"Negociar favores, deudas y servicios políticos",action:()=>POLUI.npcMenu(npc.id)});
+  if(npc.id==="guardiana")opts.push({label:"Pedir acceso a los asuntos de la corte de Pierre Duvalier",action:COURTUI.page});
   if(!state.impression){
    opts.push({label:"Presentarte con respeto · "+npc.check.attr+" + "+npc.check.skill,action:()=>{
     state.impression=true;
@@ -1366,6 +1374,8 @@
     game.flags.marquedMasquerade=true;
     increaseFaction("camarilla",-8,"Los rumores sobre tu actividad llegaron a la corte.");
   }
+  const investigation=COURT.exposureReview(game);
+  if(investigation)log("La corte registró rumores sobre una posible infracción de la Mascarada. Todavía no existe una condena.");
   if(game.exposure>=60)notice("Tu actividad está atrayendo miradas peligrosas.");
   hud();save();
  }
@@ -2145,7 +2155,8 @@
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
-  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game);root.appendChild(resources);
+  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game)+" · "+COURT.summary(game);root.appendChild(resources);
+  const courtLine=document.createElement("p");courtLine.textContent="La corte de París: "+COURT.summary(game)+" · consultá la sección Corte en Acciones para audiencias y expedientes.";root.appendChild(courtLine);
   const politics=document.createElement("p");politics.textContent="Deudas y favores: "+POL.summary(game)+". Consultá Política en Acciones para ver vencimientos y acreedores.";root.appendChild(politics);
   for(const [place,state] of Object.entries(ST.init(game).locations)){
    const entry=document.createElement("p");entry.textContent="Escena "+(D.locations.find(l=>l.id===place)?.name||place)+": "+(state.success?"resuelta":"pendiente")+" · "+state.method+" · noche "+state.night;root.appendChild(entry);
@@ -2156,6 +2167,7 @@
   stopWalking();$("journalModal").classList.remove("hidden");
  }
  function setup(){
+  COURTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock});
   POLUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   ECONUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu});
