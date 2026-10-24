@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -14,7 +14,7 @@
   keys.clear();touchMove=null;walkTarget=null;walkRoute=[];
   if(game)game.walking=false;
  }
- let effectsEnabled=true;
+ let loadedFromBackup=false,effectsEnabled=true;
  try{
    const preference=localStorage.getItem("cronicas-paris-visual-fx");
    effectsEnabled=preference===null?!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches:preference==="1";
@@ -256,10 +256,15 @@
  }
  function save(){
   if(!game)return false;
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));return true;}
-  catch(e){notice("No se pudo guardar en este navegador.");return false;}
+  if(SAVER?.save(localStorage,SAVE_KEY,game,D.clans))return true;
+  notice("No se pudo guardar en este navegador.");
+  return false;
  }
- function load(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&s.version===1&&s.character&&D.clans[s.character.clan])return s;}catch(e){}return null;}
+ function load(){
+  const result=SAVER?.load(localStorage,SAVE_KEY,D.clans)||null;
+  loadedFromBackup=!!result?.fromBackup;
+  return result?.game||null;
+ }
  function log(message){
   game.history.unshift(message);game.history=game.history.slice(0,35);
   const target=$("history");target.innerHTML="";
@@ -339,16 +344,14 @@
   $("stageClock").textContent="NOCHE "+game.clock.night+" · "+formatClock();
   $("stageRiskBar").style.width=game.exposure+"%";
   $("history").innerHTML="";game.history.slice(0,5).forEach(x=>{const p=document.createElement("p");p.textContent="• "+x;$("history").appendChild(p);});
-  hud();save();
+  hud();return save();
  }
  function confirmNewStory(){
   // Comprobar incluso partidas antiguas o ilegibles: nunca sobrescribirlas sin permiso.
-  let existing;
-  try{existing=localStorage.getItem(SAVE_KEY);}
-  catch(e){
+  const existing=SAVER?.hasSavedData(localStorage,SAVE_KEY);
+  if(existing===null||existing===undefined)
    return window.confirm("No se pudo comprobar el guardado anterior. Si continuás, la nueva partida podría reemplazarlo. ¿Querés continuar?");
-  }
-  return !existing||window.confirm("Ya existe una partida guardada. Comenzar una nueva reemplazará su progreso. ¿Querés continuar?");
+  return !existing||window.confirm("Ya existe una partida guardada o su respaldo. Comenzar una nueva reemplazará su progreso. ¿Querés continuar?");
  }
  function startStory(){
   // La cancelación mantiene la ficha en edición y no modifica el guardado previo.
@@ -1996,7 +1999,16 @@
   const state=document.createElement("p");state.id="mechanicsSummary";state.className="caption mechanics-summary";
   document.querySelector(".character-panel")?.appendChild(state);
   $("startNew").addEventListener("click",()=>{creator=freshDraft();step=0;renderCreator();});
-  $("continueGame").addEventListener("click",()=>{const persisted=load();if(persisted){game=persisted;enterGame();if(game.embraced&&Object.values(game.character.disciplines||{}).reduce((a,b)=>a+b,0)<3)disciplineCeremony();}else notice("No hay partida guardada.");});
+  $("continueGame").addEventListener("click",()=>{
+   const persisted=load();
+   if(!persisted){notice("No hay partida guardada recuperable.");return;}
+   const recovered=loadedFromBackup;
+   if(recovered&&!window.confirm("El guardado principal está ausente o dañado. Hay una copia de respaldo válida. ¿Querés recuperarla?"))return;
+   game=persisted;
+   const saved=enterGame();
+   if(recovered&&saved)notice("Se recuperó la última copia válida de tu partida.");
+   if(game.embraced&&Object.values(game.character.disciplines||{}).reduce((a,b)=>a+b,0)<3)disciplineCeremony();
+  });
   $("previousStep").addEventListener("click",()=>{if(step>0){step--;renderCreator();}});
   $("nextStep").addEventListener("click",()=>{if(validation(step))return;if(step===5)startStory();else{step++;renderCreator();}});
   $("dialogClose").addEventListener("click",closeDialog);
