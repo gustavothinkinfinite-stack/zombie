@@ -131,7 +131,7 @@ window.VTM_EQUIPMENT=(()=>{
   if(e.kits<1)return {error:"No te quedan botiquines."};
   if((game.character.skills?.Medicina||0)<1)return {error:"Necesitás Medicina 1 para aplicar el botiquín."};
   const m=game.mechanics||{};
-  if((m.health||7)>=7)return {error:"No tenés heridas que tratar."};
+  if((Number.isFinite(m.health)?m.health:7)>=7)return {error:"No tenés heridas que tratar."};
   const isLethal=(m.damage?.letal||0)>0;
   if((m.damage?.agravado||0)>0&&(m.damage?.contundente||0)===0&&!isLethal)
    return {error:"El daño agravado no puede curarse con este botiquín."};
