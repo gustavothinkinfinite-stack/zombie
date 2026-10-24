@@ -11,6 +11,19 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+## Fase XII — La sangre de los inocentes (octubre de 2026)
+
+Se incorporó **el expediente Elizabeth Parker** como investigación principal jugable y persistente, sin sustituir la progresión del ghoul, las misiones del Domitor ni los cuatro expedientes secundarios. El contenido es una **adaptación narrativa para el videojuego** de la crónica de París; no revela al jugador que Etienne Moreau es una impostora.
+
+- Accedé desde **Acciones → Expediente Elizabeth Parker**. Para iniciar el caso, visitá **Passy** y examiná el lugar principal: un contacto del Sheriff presenta el encargo.
+- **Ocho pistas jugables:** John en Passy, apartamento cerca de la hemeroteca, Claire Renaud en la policía, Élodie en el Elíseo (respeta el acceso existente), Mathieu y el garaje de Vasseur en Saint-Denis, Lucien en Bastilla y contactos de Erebos en los túneles. Cada investigación utiliza Atributo + Habilidad y dificultad 6–8.
+- **Progreso sin bloqueos:** el garaje admite tres rutas de acceso alternativas (Mathieu, Lucien o Erebos); un fracaso no borra la información contextual y permite un nuevo intento durante otra noche.
+- **Segundo acto:** al reunir cuatro pruebas incluyendo el garaje, se puede confrontar a Bapthiste en Bastilla, presentar el caso mediante Wyndham, Lucien o Etienne desde Passy, pedir medidas al Príncipe en el Elíseo y descubrir una vigilancia humana cerca de los túneles. No se captura ni destruye automáticamente a Bapthiste mediante un diálogo.
+- **Persistencia:** todo se guarda dentro de \`game.elizabeth\`, con migración no destructiva de partidas anteriores; diario, panel de asuntos pendientes, alerta de Bapthiste (0–6), decisiones políticas y resultados únicos.
+- **Localización y límites:** los puntos investigables reutilizan los ocho lugares existentes; apartamento, garaje y refugio aún son escenas narrativas dentro de esos escenarios, **no mapas interiores independientes**. El sistema de tiradas, puntos de experiencia y consecuencias políticas son adaptaciones del videojuego, no procedimientos literales del manual.
+
+Pruebas del módulo: \`node tests/elizabeth-case.test.js\`. El despliegue en Hostinger y la revisión visual interactiva requieren comprobación independiente.
+
 ## Fase XI — Cuatro expedientes de investigación interbarrial (octubre de 2026)
 
 Se añadieron **cuatro investigaciones secundarias independientes**, cada una con **cuatro pruebas** repartidas entre distintos comercios. Las dieciséis tiendas creadas en la fase IX participan en exactamente un expediente. **Estos casos son ficción ambiental nueva del videojuego**, no revelaciones anticipadas de la conspiración principal de la campaña.
