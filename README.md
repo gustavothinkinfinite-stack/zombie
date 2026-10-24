@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.7 · rediseño visual 2.0, fase IX)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.8 · rediseño visual 2.0, fase IX)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -46,6 +46,23 @@ Los rumores de estos comercios **son contenido ambiental original**, no pruebas 
 Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de acceso a los 16 locales, renderizado de 16 interiores y de sus puntos de interacción; ejecución completa de una visita con conversación, recompensa no repetible, guardado y retorno a la misma calle.
 
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
+
+
+## Versión 0.8 — Inventario real, munición y Disciplinas enfrentadas
+
+**Equipo que existe en la partida.** Inventario persistente de **barra metálica, cuchillo, pistola compacta, munición, chaleco protector y botiquines**. Cada arma debe obtenerse y equiparse antes de usarla. Las adquisiciones ocurren en lugares concretos (Saint-Denis, Bastilla, Passy, policía y St. July), exigen Habilidades y, a menudo, Trasfondos como Recursos, Contactos, Aliados o Influencia. Cada objeto sólo puede intentarse conseguir una vez por noche; no hay tiradas infinitas. Entrá por **Acciones → Inventario** o **«Conseguir suministros o preparar equipamiento»** en las escenas apropiadas.
+
+**Disparos y protección.** La pistola posee cargador de seis cartuchos; cada disparo consume uno y las recargas gastan un turno durante el cual el enemigo puede atacar. Sólo podés disparar si tenés la pistola equipada, cargada y conocés Armas de Fuego. Los suministros de munición son finitos. El chaleco suma dos dados a la absorción de daño contundente y letal (no agravado), y los botiquines requieren Medicina, no curan daño agravado y se consumen al utilizarlos. Estos objetos se guardan con el mismo personaje entre sesiones.
+
+**Adversarios diferenciados.** El matón de Saint-Denis se vuelve más agresivo al estar herido; el provocador de Bastilla comienza a esquivar cuando se siente superado; el custodio de Passy posee protección y una cantidad limitada de disparos. Los enemigos guardan **Voluntad, Astucia, protección y munición**, además de Salud, habilidades, fuerza y resistencia.
+
+**Tiradas enfrentadas sobrenaturales.** Dominación, efectos de terror, influencias emocionales y ciertos poderes de lectura de mente activados **contra un oponente presente en combate** se enfrentan a una tirada de Voluntad + Astucia del objetivo. La acción del vampiro tira el Atributo + Habilidad correspondiente; sólo si supera los éxitos netos del adversario se aplica el efecto. Fracasar sigue consumiendo la Sangre comprometida, la intervención queda limitada y puede provocar exposición. El resultado muestra ambos grupos de dados y los éxitos.
+
+**Compatibilidad y pruebas.** Los nuevos campos \`equipment\` y datos de combate se inicializan automáticamente al continuar partidas anteriores. Se validó la sintaxis de JavaScript y una continuación de partida simulada en la que un ghoul encuentra una barra, la equipa y la conserva en el guardado. Otras pruebas cubren munición, consumición de cartuchos, restricciones de inventario, guardados antiguos y poderes mentales resistidos.
+
+**Adaptación, no reproducción exacta:** la adquisición de objetos, efectos simplificados y progresión de equipamiento son sistemas originales del videojuego. Las tiradas enfrentadas y características de armas son una simplificación; todavía falta implementar objetivos diversos fuera del combate, cargadores por arma, compra por dinero y todas las excepciones del manual de tercera edición.
+
+**Publicación:** estos cambios se han guardado en la rama \`main\` de GitHub. El despliegue efectivo en Hostinger se verifica por separado.
 
 
 ## Versión 0.7 — Combate por turnos y poderes por círculo (octubre de 2026)
