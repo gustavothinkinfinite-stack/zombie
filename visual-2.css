@@ -361,3 +361,66 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   touch-action:none;
  }
 }
+
+
+/* v2.1 — ESCALA VISUAL DEL JUEGO REAL
+   La captura mostró un mapa innecesariamente expandido (más de 1150px) y
+   destinos que tapaban manzanas enteras. Limitar el ancho del juego,
+   compactar la columna de estado y mantener el Canvas en 480x300 lógico.
+   No modificar el sistema de colisiones ni las coordenadas de clic/táctil.
+*/
+#play .game-top{
+  max-width:1290px;
+  margin-inline:auto;
+  padding-bottom:12px;
+  gap:14px;
+}
+#play .game-top h2{font-size:clamp(23px,2vw,29px)}
+#play .scene-subtitle{margin-top:5px;line-height:1.3}
+#play .game-buttons{gap:6px}
+#play .game-buttons button{padding:8px 10px;font-size:10px}
+#play .game-layout{
+  width:100%;
+  max-width:1290px;
+  margin-inline:auto;
+  gap:15px;
+  align-items:start;
+}
+#play .gamepane{min-width:0;max-width:100%;box-shadow:0 15px 44px #0005}
+#play #world{display:block;width:100%;height:auto;aspect-ratio:8/5;image-rendering:pixelated}
+#play .controls{padding:10px 13px;gap:10px;line-height:1.4}
+#play .stage-status{top:12px;left:12px;right:12px}
+#play .stage-identity,#play .stage-clock{padding:6px 9px;border-radius:6px;gap:7px}
+#play .stage-identity strong{font-size:10px;max-width:172px}
+#play .stage-character-mark{width:26px;height:26px;font-size:17px}
+#play .stage-clock{min-height:35px;font-size:9px}
+#play .stage-moon{font-size:18px}
+#play .stage-bottom{bottom:10px;left:11px;right:11px}
+#play #floatingHint{font-size:10px;padding:6px 8px;max-width:62%}
+#play .stage-threat{padding:7px 9px;min-width:115px}
+#play .status-modern{gap:10px;min-width:0}
+#play .status-modern>section{padding:14px 16px 15px}
+#play .status-modern .eyebrow{margin-bottom:9px;font-size:9px}
+#play .status-modern h3{font-size:19px;margin:5px 0 8px}
+#play .status-modern p{font-size:11px;line-height:1.48}
+#play .status-modern .caption{font-size:10px}
+#play .status-modern .bar-label{margin:11px 0 6px}
+#play .character-panel .kv{padding:6px 0}
+#play .character-panel .mechanics-details{margin-top:7px;padding-top:8px}
+#play .quest-panel h3{font-size:18px}
+@media(min-width:1051px){
+  #play .game-layout{grid-template-columns:minmax(0,1fr) 310px}
+}
+@media(min-width:1051px) and (max-width:1250px){
+  #play .game-layout{grid-template-columns:minmax(0,1fr) 290px;gap:12px}
+}
+@media(max-width:1050px){
+  #play .game-layout{grid-template-columns:minmax(0,1fr)}
+  #play .status-modern{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:540px){
+  #play .status-modern{grid-template-columns:1fr}
+  #play .game-buttons button{padding:7px 8px}
+  #play .stage-identity strong{max-width:110px}
+  #play .stage-clock{font-size:8px}
+}
