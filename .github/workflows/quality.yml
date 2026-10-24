@@ -36,3 +36,5 @@ jobs:
         run: node tests/modal-controls.test.js
       - name: Probar colisiones y navegación en comercios
         run: node tests/shop-collisions.test.js
+      - name: Probar navegación y accesos entre barrios
+        run: node tests/district-navigation.test.js
