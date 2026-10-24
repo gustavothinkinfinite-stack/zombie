@@ -149,6 +149,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .character-panel .kv span{font-size:10px;color:#9e9faa}
 .character-panel .kv b{font-size:12px;color:#e4ddd5;font-weight:700;text-align:left}
 .character-panel .kv:first-of-type{grid-column:1 / -1}
+/* Los datos completos del personaje ocupan todo el ancho y se abren a demanda. */
+.character-panel .mechanics-details{grid-column:1 / -1;min-width:0;max-width:100%;margin-top:11px;padding-top:12px;border-top:1px solid #50424d}
+.character-panel .mechanics-details summary{cursor:pointer;color:#dbbda5;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.02em;padding:3px 0}
+.character-panel .mechanics-details summary:hover{color:#f2dbbf}
+.character-panel .mechanics-details summary:focus-visible{outline:2px solid #d7b88b;outline-offset:4px}
+.character-panel .mechanics-details .mechanics-summary{margin:7px 0 1px;padding:0;border-top:0;overflow-wrap:anywhere;word-break:normal;white-space:normal;line-height:1.65}
+
 .status-modern .kv{border-color:#393846}
 .status-modern .kv b{color:#e8d5c0;font-variant-numeric:tabular-nums}
 .quest-panel{border-left:2px solid #9ea8c6!important}
