@@ -87,7 +87,8 @@ window.VTM_TACTICS_UI=(()=>{
       extra+="\nConciencia ["+moral.roll.dice.join(", ")+"]: "+(moral.degeneration?
         "la violencia deterioró tu Humanidad.":"evitaste perder Humanidad.");
     }
-    bridge.faction(result.place==="saintdenis"?"brujah":result.place==="passy"?"tremere":"brujah",2,"Conflicto controlado.");
+    if(result.place!=="bapthiste")bridge.faction(result.place==="saintdenis"?"brujah":result.place==="passy"?"tremere":"brujah",2,"Conflicto controlado.");
+    else extra+="\nBapthiste ha sido incapacitado. Debés decidir si entregarlo bajo custodia.";
    }
    if(result.defeat){
     // Rescate contextual: evita un guardado injugable, pero deja coste.
@@ -105,7 +106,7 @@ window.VTM_TACTICS_UI=(()=>{
     (result.playerRoll?"\nTirada: ["+result.playerRoll.dice.join(", ")+"] · "+result.playerRoll.net+" éxitos.":"")+
     (result.enemyRoll?"\nAtaque rival: ["+result.enemyRoll.dice.join(", ")+"] · "+result.enemyRoll.net+" éxitos.":"")+
     extra+"\n\n"+body(),
-    result.ended?[{label:"Continuar la historia",action:()=>{}}]:
+    result.ended?[{label:result.victory&&result.place==="bapthiste"?"Decidir custodia de Bapthiste":"Continuar la historia",action:()=>{if(result.victory&&result.place==="bapthiste")bridge.bapthisteOutcome?.();}}]:
       [{label:"Siguiente turno",action:battleMenu},{label:"Disciplina",disabled:!game.embraced,action:powersMenu}],
     result.ended?"RESULTADO DEL COMBATE":"RONDA RESUELTA");
  }
