@@ -1,23 +1,25 @@
 "use strict";
-/* Regresión: la creación de un personaje no puede borrar una partida sin consentimiento.
- * Ejecutar: node tests/new-game-protection.test.js
- */
+/* Crear una partida no puede reemplazar el guardado principal ni respaldo sin permiso. */
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const source=fs.readFileSync(path.join(__dirname,"..","vtm-game.js"),"utf8");
+const root=path.join(__dirname,"..");
+const source=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
+const moduleSource=fs.readFileSync(path.join(root,"vtm-save.js"),"utf8");
+const windowModule={};vm.runInNewContext(moduleSource,{window:windowModule});
+const SAVER=windowModule.VTM_SAVE;
 const start=source.indexOf(" function confirmNewStory(){");
 const end=source.indexOf("\n function startStory(){",start);
-assert.ok(start>=0&&end>start,"Debe existir una comprobación previa al inicio");
+assert.ok(start>=0&&end>start,"Debe existir la comprobación previa al inicio");
 const guard=source.slice(start,end);
-function check(stored,answer,{unavailable=false}={}){
+function check(primary,backup,answer,{unavailable=false}={}){
  let prompts=0,reads=0;
  const localStorage={getItem:key=>{
   reads++;
-  assert.equal(key,"cronicas-paris-ghoul-v1");
-  if(unavailable)throw new Error("Storage unavailable");
-  return stored;
+  if(unavailable)throw Error("Storage unavailable");
+  assert.ok(["cronicas-paris-ghoul-v1","cronicas-paris-ghoul-v1-backup"].includes(key));
+  return key.endsWith("-backup")?backup:primary;
  }};
  const window={confirm:message=>{
   prompts++;
@@ -25,24 +27,29 @@ function check(stored,answer,{unavailable=false}={}){
   return answer;
  }};
  const allowed=vm.runInNewContext(guard+"\nconfirmNewStory()",{
-  localStorage,window,SAVE_KEY:"cronicas-paris-ghoul-v1"
+  localStorage,window,SAVER,SAVE_KEY:"cronicas-paris-ghoul-v1"
  });
  return{allowed,prompts,reads};
 }
-assert.deepEqual(check(null,false),{allowed:true,prompts:0,reads:1});
-console.log("OK: primera partida inicia sin confirmación");
-assert.deepEqual(check('{"version":1,"character":{"name":"Antigua"}}',false),{allowed:false,prompts:1,reads:1});
-console.log("OK: cancelar preserva la partida anterior");
-assert.deepEqual(check('{"version":1,"character":{"name":"Antigua"}}',true),{allowed:true,prompts:1,reads:1});
-console.log("OK: reemplazar requiere aprobación expresa");
-assert.deepEqual(check("partida antigua ilegible",false),{allowed:false,prompts:1,reads:1});
-console.log("OK: incluso partidas antiguas o dañadas están protegidas");
-assert.deepEqual(check(null,false,{unavailable:true}),{allowed:false,prompts:1,reads:1});
-assert.deepEqual(check(null,true,{unavailable:true}),{allowed:true,prompts:1,reads:1});
-console.log("OK: error al consultar almacenamiento requiere aprobación");
-
-const story=source.slice(end,end+1150);
+assert.equal(check(null,null,false).allowed,true);
+assert.equal(check(null,null,false).prompts,0);
+console.log("OK: sin partidas, se permite crear personaje");
+const saved='{"version":1,"character":{"name":"Antigua"}}';
+assert.equal(check(saved,null,false).allowed,false);
+assert.equal(check(saved,null,false).prompts,1);
+assert.equal(check(saved,null,true).allowed,true);
+console.log("OK: una partida existente requiere confirmación");
+assert.equal(check(null,saved,false).allowed,false);
+assert.equal(check(null,saved,true).allowed,true);
+console.log("OK: un respaldo aislado también queda protegido");
+assert.equal(check("{dañado",null,false).allowed,false);
+assert.equal(check("{dañado",null,true).allowed,true);
+console.log("OK: los datos ilegibles siguen protegidos");
+assert.equal(check(null,null,false,{unavailable:true}).allowed,false);
+assert.equal(check(null,null,true,{unavailable:true}).allowed,true);
+console.log("OK: acceso restringido al almacenamiento exige confirmación");
+const story=source.slice(end,end+1250);
 const guardIndex=story.indexOf("if(!confirmNewStory())return;");
 const replaceIndex=story.indexOf("game={version:1,character:buildCharacter()");
-assert.ok(guardIndex>0&&replaceIndex>guardIndex,"El guard debe ejecutarse antes de sustituir el personaje");
-console.log("OK: el estado sólo se reemplaza después de confirmar");
+assert.ok(guardIndex>0&&replaceIndex>guardIndex);
+console.log("OK: la confirmación ocurre antes de sustituir al personaje");
