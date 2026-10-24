@@ -482,6 +482,9 @@
  }
  function hud(){
   if(!game)return;
+  // Detectar sospechas nuevas incluso cuando otro subsistema modifica directamente la exposición.
+  const inquiry=COURT.exposureReview(game);
+  if(inquiry)log("La corte abre una comprobación preliminar por rumores sobre la Mascarada.");
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
   const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game)+" · "+COURT.summary(game);
   $("playHumanity").textContent=game.character.humanity;
