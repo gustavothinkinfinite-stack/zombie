@@ -4,7 +4,7 @@
    Los efectos concretos se simplifican para el prototipo, nunca sustituyen la ficha de mesa. */
 window.VTM_TACTICS=(()=>{
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- const EQ=window.VTM_EQUIPMENT;
+ const EQ=window.VTM_EQUIPMENT,ADV=window.VTM_ADVANCED_TACTICS||null;
  const ENEMIES=Object.freeze({
   bapthiste:{name:"Bapthiste, Brujah rebelde",health:9,dex:4,wits:4,str:4,stamina:4,skill:3,willpower:7,armor:0,ammo:0,style:"agresivo",damage:"contundente",reward:3},
   saintdenis:{name:"Matón de Saint-Denis",health:6,dex:3,wits:2,str:3,stamina:2,skill:2,willpower:2,armor:0,ammo:0,style:"agresivo",damage:"contundente",reward:2},
@@ -143,14 +143,16 @@ window.VTM_TACTICS=(()=>{
   if(g.combat.records[place]==="won")return {error:"Ya neutralizaste la amenaza de este lugar."};
   if(g.mechanics.health<=0)return {error:"Estás incapacitado; necesitás recuperarte."};
   g.combat.active={place,round:1,enemy:{name:e.name,health:e.health,max:e.health,dex:e.dex,wits:e.wits,str:e.str,stamina:e.stamina,skill:e.skill,damage:e.damage,willpower:e.willpower,armor:e.armor,ammo:e.ammo,style:e.style},history:[],ended:false};
+  ADV?.init(g);
   return {started:true,enemy:e.name};
  }
  function action(g,choice,rng=Math.random){
   init(g);
   const encounter=g.combat.active;if(!encounter||encounter.ended)return {error:"No hay combate activo."};
   const e=encounter.enemy;
-  const valid=["golpe","arma","disparo","esquiva","huida","recargar"].includes(choice);
+  const valid=["golpe","arma","disparo","esquiva","huida","recargar",...(ADV?.MOVES||[])].includes(choice);
   if(!valid)return {error:"Acción no admitida."};
+  const invalid=ADV?.valid(g,choice);if(invalid)return {error:invalid};
   if(EQ&&choice!=="recargar"){const reason=EQ.moveAllowed(g,choice);if(reason)return {error:reason};}
   if(choice==="recargar"&&(!EQ||EQ.init(g).equipped!=="pistola"||EQ.init(g).ammo<=0||EQ.init(g).magazine>=6))return {error:"No podés recargar ahora."};
   const log=[],playerInit=rank(g,"Destreza")+rank(g,"Astucia")+Math.floor(rng()*10)+1+
@@ -160,18 +162,19 @@ window.VTM_TACTICS=(()=>{
   let done=false,dodging=choice==="esquiva";
   const player=()=>{
    if(choice==="huida"){
-    const t=dice(rank(g,"Destreza")+skill(g,"Atletismo")+wounds(g)+
+    const t=dice(rank(g,"Destreza")+skill(g,"Atletismo")+wounds(g)+(ADV?.init(g)?.distance||0)+
       (g.embraced?power(g,"Celeridad"):0),7,rng);
     outcome.playerRoll=t;log.push(t.success?"Escapaste antes de quedar rodeado.":"Tu intento de retirada fracasó.");
     if(t.success){encounter.ended=true;g.combat.records[encounter.place]="escaped";done=true;outcome.ended=true;}
     return;
    }
    if(dodging){log.push("Adoptás una postura defensiva.");return;}
+   if(ADV?.move(g,choice,log,rng))return;
    if(choice==="recargar"){const r=EQ.reload(g);log.push(r.ok?"Recargaste "+r.loaded+" cartucho(s); quedan "+r.reserve+" en reserva.":r.error);return;}
    const st=choice==="golpe"?"Pelea":choice==="arma"?"Armas Cuerpo a Cuerpo":"Armas de Fuego";
    if(choice==="disparo"){if(!EQ?.useAmmo(g)){log.push("No queda munición.");return;}log.push("Disparaste un cartucho.");}
    const p=dice(rank(g,"Destreza")+skill(g,st)+wounds(g)+
-    (g.embraced&&g.mechanics.battleSpeed>0?1:0),choice==="disparo"?7:6,rng);
+    (g.embraced&&g.mechanics.battleSpeed>0?1:0)+(ADV?.outgoing(g,choice)||0),choice==="disparo"?7:6,rng);
    outcome.playerRoll=p;
    if(!p.success){log.push("Tu ataque falló ("+p.dice.join(", ")+").");return;}
    const weapon=EQ?.ITEMS[EQ.init(g).equipped];
@@ -196,7 +199,8 @@ window.VTM_TACTICS=(()=>{
   const npc=()=>{
    if(done)return;
    if(e.skipAttack){e.skipAttack=false;log.push("El adversario pierde su acción por un poder sobrenatural.");return;}
-   const attack=dice(e.dex+e.skill+(e.style==="agresivo"&&e.health<=3?1:0),6,rng);outcome.enemyRoll=attack;
+   if(ADV?.enemyMove(g,e,log))return;
+   const attack=dice(Math.max(1,e.dex+e.skill+(e.style==="agresivo"&&e.health<=3?1:0)-(ADV?.incoming(g,choice)||0)),6,rng);outcome.enemyRoll=attack;
    if(e.style==="armado"&&e.ammo>0){e.ammo--;log.push("El custodio disparó ("+e.ammo+" cartuchos restantes).");}
    else if(e.style==="armado"&&e.ammo<=0){e.damage="contundente";log.push("El custodio agotó su munición y combate a golpes.");}
    if(!attack.success){log.push("El adversario falló su ataque.");return;}
@@ -221,6 +225,7 @@ window.VTM_TACTICS=(()=>{
   for(let i=0;i<extra&&!done;i++){log.push("Acción física adicional "+(i+1)+" por Celeridad.");player();}
   g.mechanics.battleSpeed=0;
   if(g.mechanics.claws&&choice==="golpe")g.mechanics.claws=false;
+  ADV?.after(g,choice);
   encounter.history.push({round:encounter.round,choice,log:[...log]});
   encounter.history=encounter.history.slice(-10);
   if(!outcome.ended)encounter.round++;
