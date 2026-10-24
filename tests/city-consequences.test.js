@@ -115,7 +115,7 @@ test("Carga de scripts y enlaces al motor sin alterar la clave del guardado",()=
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const main=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
  const world=fs.readFileSync(path.join(root,"vtm-world-powers-ui.js"),"utf8");
- assert.ok(html.includes("FASE XVIII"));
+ assert.ok(html.includes("FASE XIX"));
  assert.ok(html.indexOf("vtm-city-consequences.js?")<html.indexOf("vtm-game.js?"));
  for(const symbol of ["CIV.init(game)","CIV.tick(game)","CIV.exposure(game","CIV.menu","CIV.draw(g,game","CIV?.interact(game)","observedPower:"])
   assert.ok(main.includes(symbol),symbol);
