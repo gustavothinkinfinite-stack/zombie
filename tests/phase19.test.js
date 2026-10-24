@@ -109,7 +109,7 @@ run("Las rutas de combate, persecución y UI cargan antes del motor principal",(
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8"),
  main=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8"),
  ui=fs.readFileSync(path.join(root,"vtm-tactics-ui.js"),"utf8");
- assert.ok(html.includes("FASE XIX"));
+ assert.ok(html.includes("FASE XX"));
  for(const file of ["vtm-advanced-tactics.js","vtm-stealth-chase.js"])assert.ok(html.includes(file+"?"));
  assert.ok(html.indexOf("vtm-advanced-tactics.js?")<html.indexOf("vtm-tactics.js?"));
  assert.ok(html.indexOf("vtm-stealth-chase.js?")<html.indexOf("vtm-game.js?"));
