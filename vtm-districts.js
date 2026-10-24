@@ -44,7 +44,7 @@ window.VTM_DISTRICTS=(()=>{
  const grid=new Map(defs.map(d=>[d.x+","+d.y,d.id]));
  const edges={north:[0,-1],south:[0,1],west:[-1,0],east:[1,0]};
  const exits={north:{x:240,y:62},south:{x:240,y:267},west:{x:39,y:155},east:{x:441,y:155}};
- const entrances={north:{x:240,y:249},south:{x:240,y:70},west:{x:428,y:155},east:{x:52,y:155}};
+ const entrances={north:{x:240,y:249},south:{x:240,y:60},west:{x:428,y:155},east:{x:52,y:155}};
  function neighbour(id,dir){const d=byId[id],step=edges[dir];return d&&step?grid.get((d.x+step[0])+","+(d.y+step[1]))||null:null;}
  function arrival(dir){return {...(entrances[dir]||{x:240,y:195})};}
  function point(id,name){return byId[id]?.details.find(o=>o.id===name)||null;}
