@@ -1,11 +1,11 @@
 # Recursos gráficos · Crónicas de París
 
-## Hoja de personajes v2
+## Hoja de personajes v3
 
 \`personajes-paris-v2.svg\` es un **asset SVG local**, independiente del código de juego, renderizado en Canvas 2D mediante el recorte de imágenes. Está creado específicamente para este prototipo y puede reemplazarse por un PNG/WebP compatible o por sprites ilustrados de mayor resolución.
 
-**Tamaño total:** 256 × 768 píxeles.  
-**Celdas:** 32 × 48 píxeles, ocho columnas y dieciséis filas.  
+**Tamaño total:** 512 × 768 píxeles.  
+**Celdas:** 32 × 48 píxeles, dieciséis columnas y dieciséis filas.  
 **Columnas:** \`abajo 0–1\`, \`izquierda 2–3\`, \`derecha 4–5\`, \`arriba 6–7\`. Cada par contiene dos cuadros alternos de marcha.  
 **Fondo:** transparente.  
 **Interpolación:** desactivada; el juego usa \`imageSmoothingEnabled=false\`.
@@ -40,3 +40,7 @@ La asignación de filas se resuelve según el clan o el identificador del PNJ y 
 Los sprites SVG tienen capas de ropa, rostro, cabello, sombras, accesorios y colores de personajes, pero **siguen siendo un primer asset de pixel art vectorial**. No son un conjunto definitivo de ilustraciones profesionales. La siguiente iteración artística puede sustituirlos conservando las medidas, filas y columnas, o actualizar el mapeo en \`vtm-graphics.js\`.
 
 No incorporar diseños canónicos de personajes no confirmados de la campaña ni revelar secretos de la Senescal mediante sus retratos.
+
+## Personalización del protagonista
+
+`vtm-appearance.js` dibuja capas independientes de tez, pelo, abrigo y accesorios por encima de su sprite. La apariencia se guarda en la ficha y persiste durante el Abrazo. Los PNJ mantienen su propio atuendo. La versión anterior `personajes-paris-v2.svg` permanece en el repositorio como referencia, pero el motor utiliza la v3.
