@@ -64,12 +64,27 @@ function backgroundStatus(){
 }
 const atlasRows={Toreador:0,Ventrue:1,Tremere:2,Nosferatu:3,Brujah:4,Gangrel:5,Malkavian:6,Ghoul:7,
  isabelle:8,ingrid:9,lucien:10,john:11,marcus:12,dupont:13,guardiana:14,archivista:15};
-let atlas=null,atlasReady=false,atlasFailed=false;
+let atlas=null,atlasReady=false,atlasFailed=false,usingPreviousAtlas=false;
 if(typeof Image==="function"){
+ atlas=new Image();
+ atlas.onload=()=>{
+  atlasReady=!!atlas.naturalWidth;
+  atlasFailed=!atlasReady;
+  if(!atlasReady&&!usingPreviousAtlas)loadPreviousAtlas();
+ };
+ atlas.onerror=()=>{if(!usingPreviousAtlas)loadPreviousAtlas();else{atlasReady=false;atlasFailed=true;}};
+ atlas.src="./assets/personajes-paris-v4.svg?v=vtm-sprites-v4-20261024";
+}
+function loadPreviousAtlas(){
+ // Recuperación visual: si la hoja nueva no carga, volver a la anterior
+ // y, si también falla, conservar el sprite procedural como último recurso.
+ if(typeof Image!=="function")return;
+ usingPreviousAtlas=true;
+ atlasReady=false;
  atlas=new Image();
  atlas.onload=()=>{atlasReady=!!atlas.naturalWidth;atlasFailed=!atlasReady;};
  atlas.onerror=()=>{atlasReady=false;atlasFailed=true;};
- atlas.src="./assets/personajes-paris-v4.svg?v=vtm-sprites-v4-20261024";
+ atlas.src="./assets/personajes-paris-v3.svg?v=vtm20-f6";
 }
 function drawSprite(c,x,y,opts){
  if(!atlasReady||!atlas)return false;
