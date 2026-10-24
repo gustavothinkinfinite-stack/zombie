@@ -136,7 +136,10 @@ window.VTM_CASE_INTERIORS=(()=>{
   rect(c,18,6,444,31,"#17141d");
   name(c,p.title.toUpperCase(),240,27,"#e9cab0",11);
   door(c,"SALIR");
-  for(const s of p.spots){if(s.id!=="exit" && !(s.id==="bapthiste"&&game?.combat?.records?.bapthiste==="won"))mark(c,s,false,time);}
+  for(const s of p.spots){
+   const disabledBoss=s.id==="bapthiste"&&!(game?.combat?.records?.bapthiste==="won"&&!game?.elizabeth?.bapthisteOutcome);
+   if(s.id!=="exit"&&!disabledBoss)mark(c,s,false,time);
+  }
   c.restore?.();return true;
  }
  return Object.freeze({places,byId,nearest,draw});
