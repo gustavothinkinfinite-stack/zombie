@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -297,6 +297,8 @@
   ST.init(game);
   TACT.init(game);
   EQUIP.init(game);
+  ECON.init(game);
+  WORLD.init(game);
   if(P){
    const pos=P.nearestFree(game.scene,game.x,game.y);
    if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
@@ -343,6 +345,7 @@
      game.clock.minutes=1200;game.clock.night++;
      log("La noche siguiente cae sobre París.");
       M.nextNight(game);
+      const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
       processContactNight();
    }
    hud();save();
@@ -353,7 +356,7 @@
      "Podés retirarte al refugio y dejar pasar las horas de luz. Los personajes de París continuarán sus actividades. Algunas relaciones podrán cambiar durante tu ausencia.",
      [{label:"Descansar y avanzar una noche",action:()=>{
        game.clock.night++;game.clock.minutes=1215;
-       M.nextNight(game);processContactNight();
+       M.nextNight(game);const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");processContactNight();
        log("Descansaste hasta el inicio de la noche "+game.clock.night+".");
        hud();save();
        notice("Comienza una nueva noche en París.");
@@ -372,6 +375,7 @@
    if(current>=target||current<360)game.clock.night++;
    game.clock.minutes=target;
    M.nextNight(game);
+   const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
    processContactNight();
    log("Esperaste hasta que "+npc.name+" regresara al lugar.");
    hud();save();
@@ -416,7 +420,7 @@
  function hud(){
   if(!game)return;
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
-  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game);
+  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game);
   $("playHumanity").textContent=game.character.humanity;
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
@@ -614,6 +618,7 @@
    if(game.combat?.active){TACTUI.battleMenu();return;}
    const m=M.init(game),choices=[
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
+     {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      {label:"Talentos · diez acciones",action:()=>traitsCategory("Talentos")},
      {label:"Técnicas · diez acciones",action:()=>traitsCategory("Técnicas")},
      {label:"Conocimientos · diez acciones",action:()=>traitsCategory("Conocimientos")},
@@ -621,6 +626,7 @@
    ];
    if(game.embraced){
      choices.push({label:"Disciplinas · poderes del clan",action:traitsPowers});
+     choices.push({label:"Disciplinas aplicadas a personas y lugares",disabled:!WORLD.context(game),action:WORLDUI.menu});
      choices.push({label:"Cazar · reponer Reserva de Sangre",disabled:!["paris","venue"].includes(game.scene)||m.blood>=10||M.used(game,"hunt:"+(game.venue||game.scene)),action:traitsHunt});
    }
    choices.push({label:"Gastar Voluntad para mejorar futuras pruebas",disabled:m.will<=0||M.used(game,"will"),action:traitsWill});
@@ -708,6 +714,7 @@
    if(st.decision)return;
    st.decision=choice;
    if(choice==="help"){
+     const payment=ECON.creditOnce(game,"help:"+shop.id,14,"Trabajo para "+shop.name);if(payment)log("Trabajo local remunerado: +"+payment+" €.");
      H?.remember(game,shop,choice);
      log("Ayudaste a "+shop.keeper+" en "+shop.name+".");
      increaseFaction(shop.faction,2,"Un favor discreto durante una visita a "+shop.name+".");
@@ -773,6 +780,8 @@
            hud();save();
            askMenu(follow.title,effect.text,[{label:"Continuar",action:()=>{}}],"CONSECUENCIAS ENTRE NOCHES");
          }}));
+         options.unshift({label:"Consultar el mostrador y comprar o vender",action:()=>ECONUI.market(shop)});
+         if(game.embraced)options.unshift({label:"Usar un poder sobrenatural ante el encargado",action:WORLDUI.menu});
          if(H?.nightNews(game,shop))options.push(newsChoice());
          options.push({label:"Despedirte",action:()=>{}});
          askMenu(shop.keeper,follow.text+"\n\n"+(H?.districtContext(game,shop).label||""),
@@ -781,7 +790,8 @@
        }
        const mood=H?.mood(game,shop)||"neutral";
        const neighbors=H?.districtContext(game,shop).label||"";
-       const opts=[];
+       const opts=[{label:"Comprar o vender al encargado",action:()=>ECONUI.market(shop)}];
+       if(game.embraced)opts.push({label:"Usar una Disciplina ante el mortal",action:WORLDUI.menu});
        if(H?.nightNews(game,shop))opts.push(newsChoice());
        opts.push({label:"Despedirte",action:()=>{}});
        askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?
@@ -800,6 +810,8 @@
        [{label:"Ofrecer ayuda y ganar confianza",action:()=>localAction(shop,"help")},
         {label:"Preguntar con discreción (Percepción + Investigación · dificultad "+difficulty+")",action:()=>localAction(shop,"inquire")},
         {label:"Presionar al encargado (riesgo para la Mascarada)",action:()=>localAction(shop,"pressure")},
+        {label:"Comprar o vender artículos",action:()=>ECONUI.market(shop)},
+        ...(game.embraced?[{label:"Utilizar una Disciplina sobre este lugar",action:WORLDUI.menu}]:[]),
         {label:"No intervenir",action:()=>{}}],"CONTACTO SECUNDARIO");
      return;
    }
@@ -1010,6 +1022,8 @@
    const quest=game.sideQuests[arc.id];
    if(quest?.status!=="ready")return;
    quest.status="done";quest.reported=true;
+   const honorarium=ECON.creditOnce(game,"personal:"+arc.id,excellent?42:12,"Encargo para "+npc.name);
+   if(honorarium)log("Honorarios del encargo personal: +"+honorarium+" €.");
    const excellent=result.success&&credible;
    const factionPoints=excellent?10+result.bonus:credible?-5:-10;
    game.npcRelations[npc.id]=clamp((game.npcRelations[npc.id]||0)+(excellent?2:-1),-3,3);
@@ -1035,6 +1049,7 @@
    const mainHere=!!q&&q.place===location.id&&!game.readyReport;
    const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
    const actions=[];
+   if(game.embraced)actions.push({label:"Usar una Disciplina durante la investigación",action:WORLDUI.menu});
    if(EQUIP.OFFERS[location.id])actions.push({label:"Conseguir suministros o preparar equipamiento",action:TACTUI.equipmentMenu});
    if(TACT.ENEMIES[location.id])actions.push({label:"Enfrentar físicamente una amenaza del lugar",action:()=>TACTUI.battleEntry(location.id)});
    if(ST.scenes[location.id])actions.push({label:"Resolver una situación del lugar según mi ficha",action:()=>SU.openScene(location)});
@@ -1324,6 +1339,7 @@
  }
  function endQuest(points,reason){
   const last=game.readyReport?.id;
+  if(last){const honorarium=ECON.creditOnce(game,"main:"+game.questIndex+":"+last,points>=0?30:10,"Servicio para el Domitor");if(honorarium)log("Compensación por el encargo: +"+honorarium+" €.");}
   game.activeQuest=null;game.readyReport=null;game.questIndex++;addAppreciation(points,reason);
   askMenu("Una sentencia del maestro",reason+(game.appreciation>=100&&!game.embraced?"\n\nHas ganado su favor. El Abrazo es ahora una posibilidad, nunca una obligación.":"\n\nTodavía quedan pruebas por superar."),
     [{label:game.appreciation>=100&&!game.embraced?"Hablar del Abrazo":"Continuar mi servicio",action:()=>{if(game.appreciation>=100&&!game.embraced)offerEmbrace();}}],"APRECIO "+game.appreciation+" / 100");
@@ -1763,7 +1779,8 @@
   if(length){
    if(Math.abs(dx)>Math.abs(dy))game.facing=dx<0?"left":"right";
    else game.facing=dy<0?"up":"down";
-   const speed=(70+Math.min(15,3*(game.character.attr.Destreza||1)))*(game.mechanics?.power?.name==="Celeridad"?1.2:1)*dt;
+   const accelerated=game.embraced&&game.worldPowers?.sprintNight===game.clock.night;
+   const speed=(70+Math.min(15,3*(game.character.attr.Destreza||1)))*(accelerated?1.35:game.mechanics?.power?.name==="Celeridad"?1.2:1)*dt;
    const mx=dx/length*Math.min(speed,length),my=dy/length*Math.min(speed,length);
    const pos=P?P.slide(game.scene,game.x,game.y,mx,my):{
      x:clamp(game.x+mx,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470),
@@ -1844,7 +1861,7 @@
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
-  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game);root.appendChild(resources);
+  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game);root.appendChild(resources);
   for(const [place,state] of Object.entries(ST.init(game).locations)){
    const entry=document.createElement("p");entry.textContent="Escena "+(D.locations.find(l=>l.id===place)?.name||place)+": "+(state.success?"resuelta":"pendiente")+" · "+state.method+" · noche "+state.night;root.appendChild(entry);
   }
@@ -1854,6 +1871,8 @@
   $("journalModal").classList.remove("hidden");
  }
  function setup(){
+  ECONUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
+  WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu});
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>SU.openScene(D.locations.find(l=>l.id===id)),actions:traitsMenu});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
