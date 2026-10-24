@@ -76,8 +76,8 @@ test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const source=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
  assert.ok(html.indexOf('src="vtm-city-life.js?')>0);
  assert.ok(html.indexOf('src="vtm-city-life.js?')<html.indexOf('src="vtm-game.js?'));
- assert.ok(html.includes("FASE XV"));
- for(const mark of ["CITY.init(game)","CITY.tick(game)","CITY.districtDraw","CITY.shopDraw","CITY.interactShop","CITY.bulletin","cityRealSeconds"])assert.ok(source.includes(mark),mark);
+ assert.match(html, /<span class="brand-version">[^<]*FASE [IVXLCDM]+/, "La portada debe indicar una fase vigente");
+ for(const mark of ["CITY.init(game)","CITY.tick(game)","CITY.districtDraw","CITY.shopDraw","CITY?.interactShop","CITY.bulletin","cityRealSeconds"])assert.ok(source.includes(mark),mark);
  assert.ok(source.includes('SAVE_KEY="cronicas-paris-ghoul-v1"'));
  new Function(source);
 });
