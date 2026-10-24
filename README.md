@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.9 · rediseño visual 2.0, fase XII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.0 · rediseño visual 2.0, fase XII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -119,6 +119,27 @@ Los rumores de estos comercios **son contenido ambiental original**, no pruebas 
 Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de acceso a los 16 locales, renderizado de 16 interiores y de sus puntos de interacción; ejecución completa de una visita con conversación, recompensa no repetible, guardado y retorno a la misma calle.
 
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
+
+
+## Versión 1.0 — La política tiene consecuencias
+
+Esta versión incorpora **favores a cobrar, compromisos contraídos, servicios políticos, vencimientos y encargos para los Vástagos**. Los sistemas funcionan directamente con **Ingrid, Lucien, Isabelle Dubois, Marcus von Württemberg, John Winthrop y la Guardiana del Elíseo**, sin cambiar el trasfondo de los personajes ni revelar prematuramente los secretos de la Senescal Etienne Moreau.
+
+**Favores en lugar de simples bonificaciones:**
+- Al hablar con estos PNJ **después del Abrazo**, aparece **«Negociar favores, deudas y servicios políticos»**. Cada Vástago mantiene una relación y un saldo propios; no son créditos universales intercambiables.
+- Podés ganar un favor **cumpliendo una vez** un pequeño encargo específico del PNJ (obtener pruebas en otro escenario y regresar a informar). Los encargos personales previamente completados con éxito se reconocen en las partidas anteriores, una sola vez. Las investigaciones fallidas pueden intentarse de nuevo la noche siguiente.
+- Un favor ganado puede gastarse en **información, protección, discreción, mediación, una recomendación a la corte o apoyo logístico**, según quién te lo deba. Estos servicios modifican las referencias disponibles, las ventajas de Habilidades, el riesgo de Mascarada o la reputación de una facción.
+- Si gozás de la confianza suficiente podés **pedir un favor a crédito**. La obligación vence tres noches después; una deuda impaga provoca disminución de relación y reputación, incrementa la exposición y bloquea determinadas negociaciones. El castigo no se duplica por volver a cargar la partida.
+- Las deudas se saldan **entregando un servicio pendiente** al acreedor o mediante un favor ganado disponible. Sólo se permiten dos obligaciones abiertas en total y una con cada PNJ. Los servicios tienen límites por personaje y noche.
+- El prestigio que muestra el sistema deriva de reputación con la Camarilla, relaciones y servicios completados. Es un **indicador local del videojuego, no el Trasfondo Posición oficial ni un cargo político otorgado por Pierre Duvalier**.
+
+**Dónde verlo:** desde **Acciones → Política · libro de favores y deudas**, en el diálogo de los PNJ políticos y en el diario del personaje. Los encargos aceptados se investigan en los lugares de París correspondientes con su propio requisito de Atributo, Habilidad y dificultad.
+
+**Compatibilidad y pruebas:** el nuevo estado \`game.politics\` se crea al continuar partidas existentes, sin reemplazar las misiones actuales, el inventario o la economía. Las pruebas unitarias comprobaron entrega y repetición de encargos, gasto de favores, deuda y vencimiento, sanciones únicas, liquidación de obligaciones, restricciones para ghouls y migración de encargos antiguos. Una prueba simulada de interfaz confirmó la carga de una partida, el diálogo con Lucien, la opción de negociación y la aceptación/guardado de un encargo político.
+
+**Limitaciones:** se trata de una implementación original para el videojuego, inspirada en las relaciones políticas de Vampiro: La Mascarada. No es una reproducción literal de todos los sistemas de Prestation, Harpías, Posición o Boons del manual. Todavía faltan ceremonias formales de deuda ante Harpías, favores intercambiables y audiencias de corte complejas.
+
+**Despliegue:** los cambios se confirmaron en el repositorio GitHub, rama \`main\`. El estado de publicación en Hostinger no está confirmado.
 
 
 ## Versión 0.9 — Economía nocturna y Disciplinas en el mundo
