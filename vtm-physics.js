@@ -22,9 +22,16 @@ const furniture={
   {x:50,y:154,w:158,h:80,id:"mostrador"},
   {x:302,y:156,w:130,h:73,id:"mobiliario"}
  ],
+ district:[
+  // Manzanas coherentes con vtm-districts.js: avenidas centrales libres.
+  {x:19,y:51,w:151,h:70,id:"edificio-noroeste"},
+  {x:310,y:51,w:151,h:70,id:"edificio-noreste"},
+  {x:19,y:198,w:151,h:50,id:"edificio-suroeste"},
+  {x:310,y:198,w:151,h:50,id:"edificio-sureste"}
+ ],
  paris:[]
 };
-const sceneKey=(scene)=>["house","study","quarters","venue"].includes(scene)?scene:"paris";
+const sceneKey=(scene)=>["house","study","quarters","venue","district"].includes(scene)?scene:"paris";
 function obstacles(scene){return furniture[sceneKey(scene)]||[];}
 function canStand(scene,x,y,r=R){
  if(!Number.isFinite(x)||!Number.isFinite(y))return false;
