@@ -71,7 +71,6 @@ function environment(){
 }
 {
  const t=environment();
- t.open.delete("play");
  let callback,interactions=0,prevented=0,closed=0;
  t.ctx.window={addEventListener:(type,fn)=>{if(type==="keydown")callback=fn;}};
  t.ctx.interact=()=>{interactions++;};
