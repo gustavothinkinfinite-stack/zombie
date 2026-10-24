@@ -165,6 +165,13 @@ function character(c,x,y,opts={}){
  if(npc?.id==="lucien")rect(c,x-8,y-15+bob,14,4,"#22242c");
  if(npc?.id==="john")rect(c,x-2,y+5+bob,4,9,"#e0d0c6");
  if(npc?.id==="ingrid")rect(c,x+4,y-9+bob,5,4,"#567361");
+ if(npc){
+   rect(c,x-24,y-32,48,11,"#11151dc9");
+   text(c,npc.name.length>14?npc.name.slice(0,12)+"…":npc.name,x,y-24,7,"#f3d5b8");
+ }else if(master){
+   rect(c,x-23,y-32,46,11,"#12141ac4");
+   text(c,"DOMITOR",x,y-24,7,"#edd1b7");
+ }
 }
 function effects(c,mode,time){
  if(mode==="paris"){
