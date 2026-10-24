@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–VI incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–VII incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -116,6 +116,20 @@ Las selecciones se incorporan a `game.character.appearance`; las partidas antigu
 `assets/personajes-paris-v3.svg` contiene ahora **256 cuadros** (16 filas × cuatro direcciones × cuatro cuadros). Dimensiones: 512 × 768 px. Cada celda conserva 32 × 48 px, garantizando continuidad del motor y del fallback. El movimiento intercala cuatro cuadros de marcha; hay parpadeo y detalles de reposo. El Abrazo tiene un efecto breve condicionado por FX.
 
 La interfaz actualiza inmediatamente la condición del jugador tras el Abrazo. Quedan pendientes hojas de sprites hechas a mano, mayor variedad de siluetas y vestuario y revisiones visuales reales en distintos dispositivos.
+
+## Fase VII — Vida urbana y capas animadas
+
+El módulo `vtm-ambience.js` realiza tres tareas separadas de la lógica del juego:
+
+1. `street()`: peatones y taxis de movimiento determinista, cantidad variable según las horas de la noche, con lluvia y luces ya existentes del motor.
+2. `interior()` y `foreground()`: personajes de ambiente que no se confunden con contactos jugables; monitores y luces con variación tenue; bordes en primer plano para dar profundidad sin obstaculizar pasillos ni puertas.
+3. `landmarkMarkers()` y `nearestStreetPoint()`: cuatro rincones observables con texto ambiental e ingreso en el diario (una vez por rincón).
+
+Las figuras de ambiente **no son objetivos de misiones, no se pueden atacar, no tienen colisión y no otorgan recursos ni dados adicionales**. Sus posiciones no se guardan. Al desactivar FX desaparecen peatones, taxis, extras y variaciones de luz, pero los puntos observables permanecen visibles y utilizables.
+
+Se conservaron las coordenadas de entrada a edificios y los interiores de siete clanes. Todo funciona a 480 × 300 px lógicos con el motor y el atlas de la fase VI.
+
+Para ampliar esta fase, priorizar calles conectadas de varios sectores, ciclos de PNJ realmente persistentes, rutas peatonales físicas y posibles encuentros narrativos, separando siempre decoración de actores interactivos.
 
 ## Próximos entregables de arte
 
