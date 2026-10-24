@@ -69,7 +69,7 @@ if(typeof Image==="function"){
  atlas=new Image();
  atlas.onload=()=>{atlasReady=!!atlas.naturalWidth;atlasFailed=!atlasReady;};
  atlas.onerror=()=>{atlasReady=false;atlasFailed=true;};
- atlas.src="./assets/personajes-paris-v2.svg?v=vtm20-f3";
+ atlas.src="./assets/personajes-paris-v2.svg?v=vtm20-f6";
 }
 function drawSprite(c,x,y,opts){
  if(!atlasReady||!atlas)return false;
@@ -221,7 +221,11 @@ function drawVenue(c,id,N,game,time){
 
 
 function character(c,x,y,opts={}){
- if(drawSprite(c,x,y,opts))return;
+ const spriteDrawn=drawSprite(c,x,y,opts);
+ if(spriteDrawn){
+   if(opts.appearance&&!opts.master&&!opts.npc)window.VTM_APPEARANCE?.overlay(c,x,y,opts.appearance,opts);
+   return;
+ }
  const {master=false,clan="Toreador",npc=null,embraced=false,facing="down",walking=false,cycle=0,time=0}=opts;
  x=Math.round(x);y=Math.round(y);
  const palette={Toreador:"#986177",Tremere:"#847096",Brujah:"#975d57",Nosferatu:"#5d7d6b",Ventrue:"#647d96",Gangrel:"#657b60",Malkavian:"#85719a"};
@@ -249,6 +253,7 @@ function character(c,x,y,opts={}){
  if(npc?.id==="lucien")rect(c,x-8,y-15+bob,14,4,"#22242c");
  if(npc?.id==="john")rect(c,x-2,y+5+bob,4,9,"#e0d0c6");
  if(npc?.id==="ingrid")rect(c,x+4,y-9+bob,5,4,"#567361");
+ if(opts.appearance&&player)window.VTM_APPEARANCE?.overlay(c,x,y,opts.appearance,opts);
  if(npc){
    rect(c,x-24,y-32,48,11,"#11151dc9");
    text(c,npc.name.length>14?npc.name.slice(0,12)+"…":npc.name,x,y-24,7,"#f3d5b8");
