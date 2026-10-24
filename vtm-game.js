@@ -674,7 +674,7 @@
    const roll=dicePool("Percepción","Callejeo",7);
    const result=M.huntResult(game,roll);
    if(!result)return;
-   const huntingCase=COURT.hunting(game,game.scene==="venue"?game.venue:null,result);
+   const huntingCase=COURT.hunting(game,game.scene==="venue"?game.venue:null,{success:roll.success});
    if(huntingCase)log("La caza en otro dominio quedó anotada para su eventual revisión por la corte.");
    if(result.exposure)exposure(result.exposure,"La caza nocturna puso en riesgo la Mascarada.");
    log(roll.success?"Te alimentaste sin matar.":"La presa escapó.");
