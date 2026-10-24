@@ -1,8 +1,8 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fase I del rediseño incorporada en \`main\` (23 de octubre de 2026).  
-**Alcance:** Interfaz, HUD, diálogos y retratos.  
-**Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (renderizado de retratos y sincronización del HUD).  
+**Estado:** Fases I y II incorporadas en \`main\` (23 de octubre de 2026).  
+**Alcance:** Interfaz, HUD, diálogos, retratos, sprites de movimiento, ciudad e interiores procedurales.  
+**Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
 
 ## Dirección artística
@@ -56,6 +56,24 @@ Los valores de la ficha **no deben duplicarse con lógica independiente**. El HT
 - Encabezado de función (encuentro, Mascarada, investigación, etc.), nombre del hablante, texto de lectura cómoda y botones de decisión bien diferenciados.
 - Los retratos de los siete Domitores se identifican por el nombre establecido en los datos del clan. Los PNJ conocidos se leen de \`vtm-npcs.js\`.
 - Primeros retratos procedurales: 144 × 176, pixel art detallado, con variaciones de vestimenta, pelo y facciones. Son provisionales hasta contar con arte ilustrado definitivo.
+
+## Implementación efectiva — Fase II
+
+**Nuevo motor visual:** \`vtm-graphics.js\` realiza el dibujo en Canvas 2D sin depender de imágenes externas, librerías de render ni servidores. Genera escenarios de 480 × 300 píxeles lógicos con los mismos puntos de interacción que las versiones anteriores. Los fondos estáticos se reutilizan en memoria por ciudad, clan/sala o interior; los sprites, indicadores de misión y efectos se dibujan sobre ellos.
+
+- **París:** fachadas con ventanas iluminadas, tejados, avenidas, farolas con halos, el Sena, tres puentes, árboles y vehículos. Los ocho accesos conservan sus ubicaciones y su lógica de misión.
+- **Residencias:** salón, despacho y aposentos para los siete clanes, con materiales y decoración adaptados a los colores de cada Domitor. Los objetos observables mantienen sus coordenadas de detección.
+- **Ocho interiores:** arquitectura y elementos propios para club, túneles, Elíseo, archivos y otros destinos.
+- **Sprites 2D:** protagonista y PNJ dibujados con cabeza, rasgos, abrigo, zapatos y ropa diferenciada por clan. Orientación arriba, abajo, izquierda y derecha. La animación de caminar cambia las piernas y el desplazamiento vertical del sprite.
+- **Ambientación:** lluvia en capas, polvo interior, iluminación radial y destellos suaves en los objetos importantes.
+- **Rendimiento y accesibilidad:** botón \`FX activados / desactivados\` que controla lluvia y partículas; su preferencia se guarda por separado de la partida. Se respeta inicialmente la preferencia del sistema de reducir movimiento.
+- **Motor de respaldo:** \`vtm-game.js\` conserva el renderer antiguo como fallback si \`window.VTM_GRAPHICS\` no está disponible, aunque el sitio debe cargar ambos scripts en el orden correcto.
+
+**Todavía pendiente:** sustituir los gráficos generados por un tileset artístico y una hoja de sprites creados por un ilustrador, animación de brazos/gestos, variaciones de ropa personalizables en el creador, colisiones con el mobiliario y mapas de barrios a mayor escala. Los gráficos 2.0 actuales son más ricos, pero siguen siendo **procedurales**, no arte pintado a mano.
+
+### Pruebas de integración
+
+Se ejecutaron pruebas con contextos Canvas simulados de las 21 combinaciones de salón/despacho/aposentos de siete clanes; ocho interiores; París con movimiento del personaje; persistencia del estado anterior (aprecio y ficha); y preferencias de efectos gráficos. No se detectaron excepciones JavaScript en esos recorridos. Una prueba de Canvas simulada no reemplaza una revisión visual en múltiples navegadores ni un despliegue público comprobado.
 
 ## Próximos entregables de arte
 
