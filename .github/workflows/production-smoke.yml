@@ -1,0 +1,35 @@
+name: Hostinger — Validación de producción
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hostinger:
+    name: Probar Crónicas de París en Hostinger
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      GAME_URL: https://wheat-chough-542895.hostingersite.com/
+    steps:
+      - name: Obtener las pruebas del repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright
+        run: npm install --no-save --no-package-lock playwright@1.55.0
+      - name: Preparar Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Recorrer la versión pública en navegador aislado
+        run: node tests/browser-smoke.cjs
+      - name: Adjuntar captura si falla una comprobación
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hostinger-error-navegador
+          path: browser-smoke-failure.png
+          if-no-files-found: ignore
