@@ -105,6 +105,7 @@ window.VTM_REACTIVE_CITY=(()=>{
    {id:"witness",x:185,y:213,title:"Testigo nerviosa",kind:"npc"}
   ];
   if(now<POLICE&&!s.flags.intervened)actors.push({id:"suspect",x:216,y:168,title:"Sospechoso que huye",kind:"npc"});
+  if(c.flags.intimidated){const i=actors.findIndex(p=>p.id==="witness");if(i>=0)actors.splice(i,1);}
   if(now>=POLICE)actors.push({id:"officer",x:295,y:214,title:"Agente de policía",kind:"npc"});
   return actors;
  }
@@ -180,7 +181,7 @@ window.VTM_REACTIVE_CITY=(()=>{
       "Encontrás un objeto caído durante el forcejeo y conservás un detalle identificable para contrastarlo.",
       "El tránsito y la lluvia dificultan reconstruir los movimientos.",{police:1})});
    }
-   if((c.flags.evidence||c.flags.intervened)&&!c.flags.concealed){
+   if((c.flags.evidence||c.flags.intervened)&&!c.flags.concealed&&!c.flags.reported){
     options.push({label:"Ocultar las pruebas recuperadas",action:()=>{
       mutate(g,"concealed","Ocultás elementos que podrían ayudar a resolver el robo. Los testigos notan tu intervención.",{neighbors:-2,police:-2});
       bridge?.advance?.(5);respond(g,"Los efectos no son inmediatos. La policía seguirá buscando, pero dispondrá de menos información.",true);
