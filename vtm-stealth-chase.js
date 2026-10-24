@@ -65,8 +65,8 @@ window.VTM_STEALTH_CHASE=(()=>{
  function follow(g,p,physics,dt){
   const rt=navState(g),id=g.district;
   let route=rt[id],d=Math.hypot(g.x-p.x,g.y-p.y);
-  if(!route||route.delay<=0||route.goalDistance>30||route.points.length===0){
-   route={delay:.8,goalDistance:0,points:physics.path("district",{x:p.x,y:p.y},{x:g.x,y:g.y}).slice(0,100)};
+  if(!route||route.delay<=0||Math.hypot(g.x-route.tx,g.y-route.ty)>30||route.points.length===0){
+   route={delay:.8,tx:g.x,ty:g.y,points:physics.path("district",{x:p.x,y:p.y},{x:g.x,y:g.y}).slice(0,100)};
    rt[id]=route;
   }else route.delay-=dt;
   if(route.points.length===0)return;
@@ -77,8 +77,7 @@ window.VTM_STEALTH_CHASE=(()=>{
   const next=physics.slide("district",p.x,p.y,(point.x-p.x)*fraction,(point.y-p.y)*fraction);
   if(next.moved){p.x=next.x;p.y=next.y;}
   else route.delay=0;
-  // Recálculo hacia la posición presente del jugador, no la del último turno.
-  route.goalDistance=Math.hypot(g.x-point.x,g.y-point.y);
+  // El objetivo se recalcula al moverse más de 30 píxeles o expirar el plazo.
  }
  function step(g,dt,physics,options={}){
   if(!g||g.scene!=="district"||!physics||g.combat?.active)return[];
