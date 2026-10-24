@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–VIII incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–IX incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -138,6 +138,16 @@ Nuevo módulo \`vtm-districts.js\`: ocho escenas exteriores conectadas por acces
 La escena \`district\` conserva el sistema de colisiones, las rutas al hacer clic y las animaciones de la fase anterior. El progreso de ocho zonas y dieciséis rincones se guarda en dos propiedades nuevas del archivo de partida. La visita a un local desde un barrio conserva su punto de regreso. La escena \`paris\` no desaparece y los jugadores pueden seguir entrando directamente en sus destinos mediante el menú de navegación.
 
 Esta primera topología es un **grafo lúdico**, no un plano geográfico preciso de París. Las próximas iteraciones deberían añadir edificios secundarios interactivos, mayor diferenciación por barrio, interiores adicionales, eventos contextuales y cartografía a escala.
+
+## Fase IX — Interiores comerciales secundarios
+
+Se incorporaron dos nuevos accesos por barrio y 16 escenas \`sidevenue\` mediante el módulo \`vtm-shops.js\`. Comparten lienzo de 480×300 píxeles y reutilizan el sistema de colisiones de los interiores de la fase III.
+
+Se utiliza un conjunto de esquemas de decoración y paletas para oficinas, galerías, bares, librerías, anticuarios, talleres, floristerías y almacenes. Las capas y props son originales generados por Canvas, con elementos temáticos según establecimiento. Cada local incluye un mostrador lateral, una estantería, un encargado, área central transitable y una salida.
+
+El módulo de barrios ubica dos entradas a distancia de los rincones observables. El jugador puede decidir ayudar al encargado, investigar o presionarlo. Los cambios de reputación, riesgo y pistas se guardan por local una sola vez. No hay recompensas ilimitadas por repetir conversaciones.
+
+Los fondos y PNJ comerciales son una base funcional para la siguiente fase artística; deben sustituirse progresivamente por assets ilustrados individuales.
 
 ## Próximos entregables de arte
 
