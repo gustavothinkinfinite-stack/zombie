@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.0 · rediseño visual 2.0, fase XII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.0 · rediseño visual 2.0, fase XIII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -21,6 +21,21 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+## Fase XIII — Interiores 2D y confrontación de Bapthiste (octubre de 2026)
+
+El expediente **La sangre de los inocentes** ahora incorpora tres mapas interiores top-down de 480×300 píxeles, con decoración procedimental, paredes y obstáculos físicos compatibles con navegación WASD, controles táctiles y clic para caminar:
+
+1. **Apartamento de Elizabeth Parker**, accesible desde la hemeroteca tras abrir el expediente en Passy. Examiná su escritorio para realizar la tirada original del apartamento, y explorá mensajes, fotografías y ventana.
+2. **Garaje de Adrien Vasseur**, accesible desde Saint-Denis después de obtener una pista a través de Mathieu, Lucien o Erebos. Examiná los registros físicos para investigar el garaje; también se pueden explorar el vehículo, las cámaras y la salida de servicio.
+3. **Refugio de Bapthiste**, accesible desde Bastilla al reunir cuatro pruebas, incluyendo el garaje. El Brujah aparece como personaje visible. Podés presentar las contradicciones, retirarte o entrar en combate por turnos. Si lo neutralizás, elegís entregarlo vivo al Sheriff o retirarte sin custodiarlo. **No hay ejecución automática.**
+
+**Cómo acceder:** entrar al edificio principal del barrio → examinar archivos/objetos → «Investigar el asesinato de Elizabeth Parker» → «Entrar al apartamento / garaje / refugio». Dentro de cada mapa, acercate a los objetos señalados y presioná **E**; la salida inferior devuelve al personaje exactamente al escenario de origen. También se conserva el acceso desde **Acciones → Expediente Elizabeth Parker**.
+
+- Archivos añadidos: \`vtm-case-interiors.js\` y \`tests/case-interiors.test.js\`. Geometría integrada con \`vtm-physics.js\`; combates de Bapthiste integrados con \`vtm-tactics.js\` y \`vtm-tactics-ui.js\`.
+- **Compatibilidad:** la partida continúa usando \`cronicas-paris-ghoul-v1\`; \`caseReturn\` sólo se agrega al entrar en un nuevo interior. Los indicios anteriores y los expedientes secundarios no se reinician.
+- **Límite:** el combate de Bapthiste utiliza una ficha simplificada del videojuego (no sustituye su ficha oficial de mesa), y los mapas son arte Canvas procedimental, no ilustraciones artesanales. Todavía no se ha confirmado el despliegue en Hostinger ni una revisión interactiva visual en navegador real.
+- **Pruebas:** \`node tests/case-interiors.test.js\` verifica colisiones, rutas, mapas, condiciones de acceso e integración. También conviene ejecutar \`node tests/elizabeth-case.test.js\` para comprobar regresiones de la investigación.
+
 ## Fase XII — La sangre de los inocentes (octubre de 2026)
 
 Se incorporó **el expediente Elizabeth Parker** como investigación principal jugable y persistente, sin sustituir la progresión del ghoul, las misiones del Domitor ni los cuatro expedientes secundarios. El contenido es una **adaptación narrativa para el videojuego** de la crónica de París; no revela al jugador que Etienne Moreau es una impostora.
@@ -30,7 +45,7 @@ Se incorporó **el expediente Elizabeth Parker** como investigación principal j
 - **Progreso sin bloqueos:** el garaje admite tres rutas de acceso alternativas (Mathieu, Lucien o Erebos); un fracaso no borra la información contextual y permite un nuevo intento durante otra noche.
 - **Segundo acto:** al reunir cuatro pruebas incluyendo el garaje, se puede confrontar a Bapthiste en Bastilla, presentar el caso mediante Wyndham, Lucien o Etienne desde Passy, pedir medidas al Príncipe en el Elíseo y descubrir una vigilancia humana cerca de los túneles. No se captura ni destruye automáticamente a Bapthiste mediante un diálogo.
 - **Persistencia:** todo se guarda dentro de \`game.elizabeth\`, con migración no destructiva de partidas anteriores; diario, panel de asuntos pendientes, alerta de Bapthiste (0–6), decisiones políticas y resultados únicos.
-- **Localización y límites:** los puntos investigables reutilizan los ocho lugares existentes; apartamento, garaje y refugio aún son escenas narrativas dentro de esos escenarios, **no mapas interiores independientes**. El sistema de tiradas, puntos de experiencia y consecuencias políticas son adaptaciones del videojuego, no procedimientos literales del manual.
+- **Localización y límites:** los puntos investigables reutilizan los ocho lugares existentes; apartamento, garaje y refugio aún son escenas narrativas dentro de esos escenarios, **no mapas interiores independientes en la fase XII original (añadidos en la fase XIII)**. El sistema de tiradas, puntos de experiencia y consecuencias políticas son adaptaciones del videojuego, no procedimientos literales del manual.
 
 Pruebas del módulo: \`node tests/elizabeth-case.test.js\`. El despliegue en Hostinger y la revisión visual interactiva requieren comprobación independiente.
 
