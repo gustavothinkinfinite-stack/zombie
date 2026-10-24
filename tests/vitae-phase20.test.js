@@ -92,6 +92,8 @@ run("Ventrue debe alimentarse en su entorno selectivo",()=>{
  assert.match(V.feedingRestriction(game),/Passy/);
  game.venue="passy";
  assert.equal(V.feedingRestriction(game),null);
+ V.afterHunt(game,{}, {success:true});
+ assert.equal(game.vitae.tasteLocked,true);
 });
 run("Rötschreck distingue la prueba de Coraje y permite gastar Voluntad",()=>{
  const game=g();M.init(game);
