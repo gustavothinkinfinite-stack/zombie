@@ -138,6 +138,7 @@ window.VTM_VITAE=(()=>{
   const s=init(g);
   if(result&&roll?.success){
    s.frenzy.active=false;
+   if(s.clan==="Ventrue")s.tasteLocked=true;
    record(g,"Te alimentaste y la presión inmediata de la Bestia disminuyó.");
   }else if(!roll?.success&&m(g).blood<=2)return frenzy(g,"hambre tras caza fallida",rng);
   return null;
