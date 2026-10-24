@@ -15,6 +15,7 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 - **París en pixel art ampliado:** nuevos dibujos procedurales para tejados, ventanas, avenidas, farolas, el Sena, puentes y lluvia en movimiento. Los destinos tienen colores por escenario e indicadores de misión. Siguen siendo escenarios **esquemáticos**, no mapas definitivos dibujados a mano.
 - **Ocho escenarios con interior:** Hemeroteca, St. July, Elíseo, Saint-Denis, túneles, archivo policial, Passy y Bastilla. Todos permiten entrar, examinar objetos, hablar con su representante y salir a las calles.
+- **Retratos pixelados:** bustos personalizados de ocho interlocutores al abrir la conversación. Incluyen cabello, piel, vestimenta y afiliación; son dibujos iniciales programáticos y se sustituirán por sprites definitivos más adelante.
 - **Ocho encuentros:** Isabelle Dubois, Ingrid, Lucien, John Winthrop, Marcus von Württemberg y Pierre Dupont (establecidos en la campaña); la Guardiana del Elíseo y el Encargado del archivo policial (roles sin nombre propio de este prototipo).
 - **Primeras impresiones persistentes:** presentación mediante una tirada de Atributo + Habilidad apropiada al interlocutor, modificando su confianza entre −3 y +3. Cada primera impresión sólo puede resolverse una vez.
 - **Rumores y favores:** conversaciones independientes por PNJ, pistas de contexto y referencias obtenibles tras ganarse la confianza. Los favores pueden otorgar +1 dado en una Habilidad concreta o facilitar trámites sociales. No se pueden pedir indefinidamente.
@@ -22,7 +23,7 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Diario y HUD:** registro de los contactos conocidos, sus relaciones y favores, más el estado del acceso al Elíseo.
 - **Compatibilidad:** la versión 0.3 amplía las partidas guardadas de las versiones 0.1 y 0.2 sin borrar personajes, misiones, pistas, aprecio ni Disciplinas. La confianza de Pierre Dupont en sus encuentros se sincroniza con el resultado de la investigación.
 
-**Pruebas completadas:** carga de los cuatro archivos JS, comprobación de selectores HTML, migración de partida antigua, acceso denegado al Elíseo, obtención y uso de invitación, interacción con los ocho PNJ, primeras impresiones no repetibles, misión de Pierre Dupont por dos fuentes, informe al Domitor y persistencia de las relaciones.
+**Pruebas completadas:** carga de los cinco archivos JS, comprobación de selectores HTML, migración de partida antigua, acceso denegado al Elíseo, obtención y uso de invitación, interacción con los ocho PNJ, primeras impresiones no repetibles, misión de Pierre Dupont por dos fuentes, informe al Domitor y persistencia de las relaciones.
 
 **Límites actuales:** la lluvia y los elementos urbanos son gráficos programáticos, no sprites ilustrados finales. Los interiores comparten parte de su estructura. Los PNJ no tienen rutinas diurnas/nocturnas, desplazamiento libre ni misiones personales completas. La exposición de la Mascarada y la reputación tienen efectos limitados y no reemplazan todavía un sistema completo de investigación policial o consecuencias políticas. No se revelan al jugador secretos sobre la Senescal ni la conspiración.
 
@@ -30,7 +31,7 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 Entrá en el despacho del Domitor, examiná los documentos, visitá la ciudad, conocé a Isabelle Dubois en el St. July y pedí una referencia después de mejorar su confianza. Probá el acceso al Elíseo. También podés encontrar una invitación examinando la mesa del salón de tu residencia. Pedile al Domitor la investigación de Pierre Dupont y reuní pruebas antes de confrontarlo. Volvé a informar para modificar el aprecio.
 
-**Publicación:** los commits están en `main`. La comprobación de que Hostinger efectivamente sirve esta versión es independiente del estado de GitHub; el despliegue manual debe realizarse desde hPanel si no está automatizado.
+**Publicación:** los commits están en `main`. Último despliegue observado en hPanel al cerrar este trabajo: **2026-10-23 20:13**, rama `main`, directorio `public_html`, indicado como **despliegue manual**. No se confirmó que Hostinger sirva la versión 0.3. Para publicarla, abrir GIT en hPanel, pulsar **Redeploy** y recargar el sitio. La página externa no fue accesible desde la herramienta de verificación.
 
 ## Versión 0.2 — Residencia e investigación ramificada (23 de octubre de 2026)
 
