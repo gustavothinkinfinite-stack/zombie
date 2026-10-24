@@ -69,16 +69,16 @@ if(typeof Image==="function"){
  atlas=new Image();
  atlas.onload=()=>{atlasReady=!!atlas.naturalWidth;atlasFailed=!atlasReady;};
  atlas.onerror=()=>{atlasReady=false;atlasFailed=true;};
- atlas.src="./assets/personajes-paris-v2.svg?v=vtm20-f6";
+ atlas.src="./assets/personajes-paris-v3.svg?v=vtm20-f6";
 }
 function drawSprite(c,x,y,opts){
  if(!atlasReady||!atlas)return false;
  const direction={down:0,left:1,right:2,up:3}[opts.facing]??0;
  const row=opts.npc&&atlasRows[opts.npc.id]!=null?atlasRows[opts.npc.id]:
   !opts.master&&!opts.npc&&!opts.embraced?atlasRows.Ghoul:(atlasRows[opts.clan]??atlasRows.Ghoul);
- const frame=opts.walking?Math.floor((opts.cycle||0)*2)%2:0;
+ const frame=opts.walking?Math.floor((opts.cycle||0)*2.0)%4:0;
  try{
-  c.drawImage(atlas,(direction*2+frame)*32,row*48,32,48,Math.round(x)-16,Math.round(y)-21,32,48);
+  c.drawImage(atlas,(direction*4+frame)*32,row*48,32,48,Math.round(x)-16,Math.round(y)-21,32,48);
   if(opts.npc||opts.master){
    rect(c,x-23,y-36,46,12,"#101420c9");
    text(c,opts.npc?(opts.npc.name.length>14?opts.npc.name.slice(0,12):opts.npc.name):"DOMITOR",x,y-27,7,"#ecd1b3");
@@ -319,6 +319,20 @@ function effects(c,mode,time,location,room=""){
    }
  }
 }
+function transformation(c,x,y,time,remaining,clan){
+ // Resplandor temporal únicamente durante el Abrazo (no aura permanente).
+ const fade=Math.max(0,Math.min(1,remaining/4));
+ const palette={Toreador:"182,89,111",Ventrue:"147,141,156",Tremere:"159,114,189",Nosferatu:"114,164,139",Brujah:"182,90,86",Gangrel:"143,159,104",Malkavian:"162,119,176"};
+ const rgb=palette[clan]||"166,104,124";
+ glow(c,x,y,45+20*(1-fade),rgb,.24*fade);
+ for(let i=0;i<23;i++){
+   const alpha=.10+.6*fade;
+   const a=i/23*Math.PI*2+time*2.1;
+   const r=15+Math.sin(time*3+i)*5+(1-fade)*31;
+   rect(c,x+Math.cos(a)*r,y+Math.sin(a)*r*.65-5,2+(i%3),3+(i%2),
+     "rgba("+rgb+","+Math.min(.76,alpha).toFixed(3)+")");
+ }
+}
 function clearCache(){cache.clear();}
-return {drawCity,drawResidence,drawVenue,character,effects,clearCache,backgroundStatus,assetStatus:()=>({atlasReady,atlasFailed,...backgroundStatus()}),version:"2.0-phase-V"};
+return {drawCity,drawResidence,drawVenue,character,effects,transformation,clearCache,backgroundStatus,assetStatus:()=>({atlasReady,atlasFailed,...backgroundStatus()}),version:"2.0-phase-VI"};
 })();
