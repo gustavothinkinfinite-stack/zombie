@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.5 · rediseño visual 2.0I)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.5 · rediseño visual 2.0, fase VII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -26,6 +26,18 @@ Se incorpora **ACCIONES** junto al botón **Ficha**. Esta versión conserva la c
 **Adaptaciones explícitas:** el menú de acciones, fichas de ventajas, límite de uso, costes resumidos de sangre y reglas de caza son mecánicas originales del videojuego inspiradas en la 3.ª edición; no son una transcripción literal del manual. La implementación prioriza consecuencias narrativas y no representa aún un sistema táctico completo de combate o todas las opciones individuales de cada círculo de Disciplina.
 
 **Pruebas de desarrollo:** sintaxis, correspondencia exacta de las 30 Habilidades y los dones de los siete clanes, continuidad de guardados previos y simulación del menú y una acción completa de Talentos. **La publicación efectiva en Hostinger debe comprobarse por separado.**
+
+## Rediseño visual 2.0 — Fase VII: una ciudad que se mueve (octubre de 2026)
+
+Se integró `vtm-ambience.js`, un módulo visual y narrativo desacoplado de la lógica de tiradas, misiones y guardados.
+
+- **Ciudad activa:** peatones con ropa y siluetas distintas, algunos con paraguas; tres taxis circulan por las vías; reflejos y pequeños destellos de iluminación. El movimiento y la densidad cambian según la hora nocturna, sin introducir PNJ ficticios en la política de la crónica.
+- **Interiores habitados:** extras ambientales en St. July, Elíseo, Bastilla, Saint-Denis, hemeroteca y comisaría; monitores y focos sutiles en Passy y túneles.
+- **Capas de profundidad:** columnas y bordes delanteros, sombras discretas en los bordes de pantalla y luz ambiental que fluctúa. Ninguna capa bloquea el centro de la pantalla ni la salida.
+- **Cuatro observaciones opcionales en París:** carteles bajo la lluvia, quiosco cerrado, parada de taxis y reflejos del Sena. Se activan con la tecla E, se describen en un cuadro narrativo y se registran una sola vez en el diario, sin recompensas, nuevas misiones ni revelaciones de la trama central.
+- **Rendimiento:** sin imágenes adicionales, librerías ni solicitudes de red. Los extras son deterministas y no se guardan; sólo el registro de exploración persiste en `game.flags["street:<id>"]`. El botón FX desactiva los elementos animados, respetando preferencias de movimiento reducido. El renderizador anterior sigue funcionando si el módulo opcional falta.
+
+**Pruebas:** sintaxis de diez archivos JS; carga de una partida guardada anterior; interacción inicial y repetida con una observación, sin duplicar registro; FX encendidos y apagados; y entrada al St. July sin pérdida de aprecio. Los resultados provienen de ejecución simulada, no de un navegador gráfico verificado. La publicación en Hostinger sigue siendo independiente de los commits.
 
 ## Rediseño visual 2.0 — Fase VI: apariencia del protagonista y animación (octubre de 2026)
 
