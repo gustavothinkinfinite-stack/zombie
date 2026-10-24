@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -330,6 +330,7 @@
   EQUIP.init(game);
   ECON.init(game);
   WORLD.init(game);
+  POL.init(game);
   if(P){
    const pos=P.nearestFree(game.scene,game.x,game.y);
    if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
@@ -378,6 +379,9 @@
    for(const message of alerts)log(message);
    if(game.exposure>=60&&!game.flags.marquedMasquerade)exposure(0,"Alertas acumuladas en los barrios.");
  }
+ function processPoliticalNight(){
+  for(const event of POL.nextNight(game))log(event.description);
+ }
  function advanceClock(amount){
    game.clock.minutes+=Math.max(0,Math.round(amount));
    if(game.clock.minutes>=1440)game.clock.minutes-=1440;
@@ -387,7 +391,7 @@
      log("La noche siguiente cae sobre París.");
       M.nextNight(game);
       const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
-      processContactNight();
+      processContactNight();processPoliticalNight();
    }
    hud();save();
  }
@@ -397,7 +401,7 @@
      "Podés retirarte al refugio y dejar pasar las horas de luz. Los personajes de París continuarán sus actividades. Algunas relaciones podrán cambiar durante tu ausencia.",
      [{label:"Descansar y avanzar una noche",action:()=>{
        game.clock.night++;game.clock.minutes=1215;
-       M.nextNight(game);const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");processContactNight();
+       M.nextNight(game);const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");processContactNight();processPoliticalNight();
        log("Descansaste hasta el inicio de la noche "+game.clock.night+".");
        hud();save();
        notice("Comienza una nueva noche en París.");
@@ -417,7 +421,7 @@
    game.clock.minutes=target;
    M.nextNight(game);
    const stipend=ECON.nextNight(game);if(stipend)log("Recursos: ingresos nocturnos +"+stipend+" €.");
-   processContactNight();
+   processContactNight();processPoliticalNight();
    log("Esperaste hasta que "+npc.name+" regresara al lugar.");
    hud();save();
    meetNPC(npc);
@@ -470,7 +474,7 @@
  function hud(){
   if(!game)return;
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
-  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game);
+  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game);
   $("playHumanity").textContent=game.character.humanity;
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
@@ -675,6 +679,7 @@
      ...(ELI?[{label:"Expediente Elizabeth Parker · investigación principal",action:ELI.menu}]:[]),
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
+     ...(game.embraced?[{label:"Política · libro de favores y deudas",action:POLUI.ledger}]:[]),
      {label:"Talentos · diez acciones",action:()=>traitsCategory("Talentos")},
      {label:"Técnicas · diez acciones",action:()=>traitsCategory("Técnicas")},
      {label:"Conocimientos · diez acciones",action:()=>traitsCategory("Conocimientos")},
@@ -1142,10 +1147,12 @@
  function completePersonal(npc,arc,result,credible){
    const quest=game.sideQuests[arc.id];
    if(quest?.status!=="ready")return;
-   quest.status="done";quest.reported=true;
+   const excellent=result.success&&credible;
+   quest.status="done";quest.reported=true;quest.reportCredible=credible;
    const honorarium=ECON.creditOnce(game,"personal:"+arc.id,excellent?42:12,"Encargo para "+npc.name);
    if(honorarium)log("Honorarios del encargo personal: +"+honorarium+" €.");
-   const excellent=result.success&&credible;
+   const favor=POL.personal(game,arc.id,excellent);
+   if(favor)log(npc.name+" te debe un favor político por tu servicio.");
    const factionPoints=excellent?10+result.bonus:credible?-5:-10;
    game.npcRelations[npc.id]=clamp((game.npcRelations[npc.id]||0)+(excellent?2:-1),-3,3);
    increaseFaction(arc.faction,factionPoints,"El informe de "+arc.title+".");
@@ -1170,6 +1177,7 @@
    const mainHere=!!q&&q.place===location.id&&!game.readyReport;
    const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
    const actions=[];
+   for(const task of POL.tasksAt(game,location.id))actions.push({label:"Servicio político: "+task.title+(task.blocked?" · "+task.blocked:""),disabled:!!task.blocked,action:()=>POLUI.investigate(task.id)});
    if(ELI&&ELI.atPlace(game,location.id))actions.push({label:"Investigar el asesinato de Elizabeth Parker",action:ELI.menu});
    if(game.embraced)actions.push({label:"Usar una Disciplina durante la investigación",action:WORLDUI.menu});
    if(EQUIP.OFFERS[location.id])actions.push({label:"Conseguir suministros o preparar equipamiento",action:TACTUI.equipmentMenu});
@@ -1218,6 +1226,7 @@
   const standing=npcFaction?(game.factions[npcFaction]||0):0;
   const trust=clamp(baseTrust+(standing>=20?1:standing<=-20?-1:0),-3,3);
   const opts=[];
+  if(game.embraced&&POL.PLAYERS[npc.id])opts.push({label:"Negociar favores, deudas y servicios políticos",action:()=>POLUI.npcMenu(npc.id)});
   if(!state.impression){
    opts.push({label:"Presentarte con respeto · "+npc.check.attr+" + "+npc.check.skill,action:()=>{
     state.impression=true;
@@ -2004,7 +2013,8 @@
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
-  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game);root.appendChild(resources);
+  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game)+" · "+ECON.summary(game)+" · "+POL.summary(game);root.appendChild(resources);
+  const politics=document.createElement("p");politics.textContent="Deudas y favores: "+POL.summary(game)+". Consultá Política en Acciones para ver vencimientos y acreedores.";root.appendChild(politics);
   for(const [place,state] of Object.entries(ST.init(game).locations)){
    const entry=document.createElement("p");entry.textContent="Escena "+(D.locations.find(l=>l.id===place)?.name||place)+": "+(state.success?"resuelta":"pendiente")+" · "+state.method+" · noche "+state.night;root.appendChild(entry);
   }
@@ -2014,6 +2024,7 @@
   stopWalking();$("journalModal").classList.remove("hidden");
  }
  function setup(){
+  POLUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   ECONUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu});
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>SU.openScene(D.locations.find(l=>l.id===id)),actions:traitsMenu});
