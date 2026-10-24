@@ -263,6 +263,21 @@ Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 
+## Renovación visual — Personajes e interiores (24 de octubre de 2026)
+
+Esta etapa añade **acabados gráficos a los personajes y escenarios reales**, conservando la lógica y el formato de las partidas. Se creó el módulo puramente visual \`vtm-art-polish.js\`.
+
+- **Personajes:** detalles de chaquetas, costuras, solapas, botones, botas, mantos y paletas diferenciadas para los siete clanes principales, así como acentos para Isabelle, Ingrid, Lucien, John, Marcus, Dupont y la Guardiana. La capa se dibuja encima del atlas SVG ya existente y del sprite procedural de reserva, preservando el selector de Apariencia y las cuatro direcciones. Las piernas, mangas y abrigo responden al ciclo de caminar.
+- **Residencias:** las siete casas se decoran con marcos, tapices y acentos particulares por clan. Sus tres tipos de estancia —salón, despacho y habitación privada— reciben variaciones de biblioteca, escritorio, dormitorio y lámparas. La iluminación tiene tonos distintos según el clan.
+- **Salones públicos:** los ocho escenarios existentes (St. July, Elíseo, Passy, túneles, Bastilla, Saint-Denis, Hemeroteca y Archivo Policial) reciben elementos arquitectónicos y mobiliario secundarios propios: panelados, vitrinas, libros, conductos y zócalos.
+- **Comercios:** la capa decorativa incorpora estantes, productos y efectos lumínicos según el tipo de establecimiento, sin mover el encargado, la salida ni los objetos examinables.
+- **Rendimiento:** los SVG y el Canvas de 480 × 300 píxeles se mantienen. Las capas de decoración son pequeñas instrucciones de dibujo que no alteran rutas, posiciones, NPC, diálogos, encargos, recursos ni guardados.
+- **Interruptor FX:** permite apagar las nuevas fuentes de luz dinámicas sin eliminar la decoración estática.
+- **Integración:** se incorporó \`vtm-art-polish.js\` a \`index.html\` antes de \`vtm-graphics.js\` y se actualizaron los identificadores de caché. Las llamadas de \`vtm-game.js\` pasan únicamente el estado del interruptor FX a los dibujantes de habitaciones y salones.
+- **Regresión:** \`node tests/interior-art-smoke.js\` valida los siete clanes, sus 21 combinaciones de habitación, ocho salones y siete categorías de comercio, así como el cambio de fotogramas y la invariancia del estado guardado. También se verificaron las pruebas ya existentes de iluminación de barrios, accesos y mapa de París.
+
+**Alcance:** este trabajo pule los **sprites y SVG existentes** mediante una nueva capa de dibujo; todavía no es una sustitución de todo el atlas por ilustraciones diseñadas individualmente. Los archivos están confirmados en GitHub, pero **no se ha verificado que Hostinger haya publicado esta actualización**.
+
 ## Renovación visual — Fachadas, luces y animación (24 de octubre de 2026)
 
 **Actualización visual implementada en el videojuego web**, sin nuevas imágenes conceptuales ni cambios a misiones, acciones, coordenadas, combate, reglas de la Mascarada o formato de partidas guardadas.
