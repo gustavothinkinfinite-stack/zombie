@@ -2021,8 +2021,13 @@
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
+  // El resumen completo incluye datos de combate y economía: mantenerlo accesible
+  // sin forzar una columna estrecha del panel de personaje.
+  const details=document.createElement("details");details.className="mechanics-details";
+  const summary=document.createElement("summary");summary.textContent="Estado y recursos detallados";
   const state=document.createElement("p");state.id="mechanicsSummary";state.className="caption mechanics-summary";
-  document.querySelector(".character-panel")?.appendChild(state);
+  details.append(summary,state);
+  document.querySelector(".character-panel")?.appendChild(details);
   $("startNew").addEventListener("click",()=>{creator=freshDraft();step=0;renderCreator();});
   $("continueGame").addEventListener("click",()=>{
    const persisted=load();
