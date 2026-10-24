@@ -52,6 +52,8 @@ run("Gangrel conserva las marcas bestiales tras el Frenesí",()=>{
  const game=g("Gangrel");M.init(game);
  assert.equal(V.frenzy(game,"ataque",()=>0.0).frenzy,true);
  assert.equal(V.init(game).marks,1);
+ assert.equal(V.weakness(game,"Carisma","Etiqueta").bonus,-3);
+ V.calm(game);
  assert.equal(V.weakness(game,"Carisma","Etiqueta").bonus,-1);
  const raw=JSON.parse(JSON.stringify(game));
  assert.equal(V.init(raw).marks,1);
