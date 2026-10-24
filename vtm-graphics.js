@@ -523,14 +523,15 @@ function drawVenue(c,id,N,game,time){
 function character(c,x,y,opts={}){
  // En el mapa general una persona ocupa menos de una manzana. Mantener los
  // sprites a escala normal en interiores y barrios visitables.
- if(opts.mapScale){
-  const k=0.46;
+ if(opts.mapScale||opts.districtScale){
+  const k=opts.mapScale?0.46:0.68;
   c.save();c.translate(Math.round(x),Math.round(y));c.scale(k,k);
-  character(c,0,0,{...opts,mapScale:false});
+  character(c,0,0,{...opts,mapScale:false,districtScale:false});
   c.restore();
   if(!opts.npc&&!opts.master){
-   rect(c,x-5,y+12,10,2,"#dfc09c");
-   rect(c,x-2,y+11,4,1,"#f2dab7");
+   const shadowY=opts.mapScale?12:17;
+   rect(c,x-5,y+shadowY,10,2,"#dfc09c");
+   rect(c,x-2,y+shadowY-1,4,1,"#f2dab7");
   }
   return;
  }
