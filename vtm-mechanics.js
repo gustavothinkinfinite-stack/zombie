@@ -94,7 +94,16 @@ window.VTM_MECHANICS=(()=>{
  }
  function reward(game,name,n=1){
   const m=init(game);
-  if(name==="salud")m.health=clamp(m.health+n,0,7);
+  if(name==="salud"){
+   const healed=clamp(Math.floor(n),0,7-m.health);m.health+=healed;
+   if(m.damage){
+    let left=healed;
+    for(const kind of ["contundente","letal","agravado"]){
+     const take=Math.min(m.damage[kind]||0,left);
+     m.damage[kind]-=take;left-=take;
+    }
+   }
+  }
   else m.tokens[name]=clamp((m.tokens[name]||0)+n,0,3);
  }
  function modifiers(game,attr,skill){
