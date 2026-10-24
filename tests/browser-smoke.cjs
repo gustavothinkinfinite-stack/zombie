@@ -89,7 +89,7 @@ const key="cronicas-paris-ghoul-v1";
   });
   await check("El prólogo conspirativo se inicia y persiste con las misiones antiguas",async()=>{
    await page.locator("#actionsBtn").click();
-   await page.locator("#dialogOptions button").filter({hasText:"Conspiración del Principado"}).click();
+   await page.locator("#dialogOptions button").filter({hasText:"investigar coincidencias"}).click();
    assert.match(await page.locator("#dialogTitle").innerText(),/Crónica del Principado/);
    await page.locator("#dialogOptions button").filter({hasText:"Comenzar a contrastar registros"}).click();
    assert.match(await page.locator("#dialogText").innerText(),/Fuentes corroboradas: 0\/4/);
