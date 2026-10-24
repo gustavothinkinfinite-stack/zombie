@@ -1744,7 +1744,7 @@
     G.character(g,x,y,{master:type==="master",npc,clan:npc?.clan||game.character.clan,
       embraced:!!game.embraced,facing:type==="player"?(game.facing||"down"):"down",
       walking:type==="player"&&!!game.walking,cycle:game.walkCycle||0,time:visualTime,
-      mapScale:game.scene==="paris",
+      mapScale:game.scene==="paris",districtScale:game.scene==="district",
       appearance:type==="player"?game.character.appearance:null});
     return;
   }
