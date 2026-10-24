@@ -36,6 +36,8 @@ jobs:
         run: node tests/save-feedback.test.js
       - name: Probar controles y paneles
         run: node tests/modal-controls.test.js
+      - name: Probar distribución de ficha y HUD
+        run: node tests/character-hud.test.js
       - name: Probar colisiones y navegación en comercios
         run: node tests/shop-collisions.test.js
       - name: Probar navegación y accesos entre barrios
