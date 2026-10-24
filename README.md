@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–IV)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–V)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,21 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Rediseño visual 2.0 — Fase V: despachos y dormitorios de los siete clanes (octubre de 2026)
+
+**Se completaron las 21 salas privadas del prototipo con fondos SVG propios**:
+
+- Los **siete despachos** tienen bibliotecas y documentación con decoración específica para Toreador, Ventrue, Tremere, Nosferatu, Brujah, Gangrel y Malkavian.
+- Los **siete dormitorios** tienen camas, vestidores, cuadernos de servicio, ventanas y detalles decorativos relacionados con el clan. Se suman a los siete salones ya realizados.
+- `assets/residencias/<clan>-despacho.svg` y `<clan>-habitaciones.svg` son recursos locales con `viewBox="0 0 480 300"`. El contenido se ha creado sin cambiar posiciones interactivas.
+- `vtm-graphics.js` registra ahora **29 fondos SVG** entre lugares públicos y residencias. Los carga **bajo demanda** al visitar cada escena, en vez de solicitar todos al abrir el juego. Mientras se carga una imagen, o si falla, se utiliza el antiguo renderizador Canvas.
+- **Iluminación animada por sala**: los despachos tienen luz cálida sobre documentos; los dormitorios, reflejos nocturnos fríos; salones, clubes y lugares de París mantienen sus efectos temáticos. Los efectos respetan la opción FX del jugador.
+- **Compatible con el guardado anterior**: se mantienen atributos, misiones, pistas, aprecio, clanes y Abrazo. Se reutilizan colisiones, rutas y accesos de la versión anterior.
+
+**Pruebas de la fase V**: presencia y estructura de los 14 nuevos SVG; renderizado de 21 combinaciones de sala/clan y ocho lugares públicos (29 recursos); carga diferida y respaldo tras error simulado; integración con una partida anterior, movimiento por clic, guardado y FX, sin excepciones observadas.
+
+**Limitación**: los SVG son ilustraciones vectoriales originales para el prototipo. No equivalen todavía a escenografía pintada a mano, motores 3D o iluminación física. El despliegue en Hostinger debe verificarse aparte.
 
 ## Rediseño visual 2.0 — Fase IV: escenarios ilustrados (octubre de 2026)
 
