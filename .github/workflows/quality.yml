@@ -38,3 +38,5 @@ jobs:
         run: node tests/shop-collisions.test.js
       - name: Probar navegación y accesos entre barrios
         run: node tests/district-navigation.test.js
+      - name: Probar recuperación de interiores guardados
+        run: node tests/venue-restoration.test.js
