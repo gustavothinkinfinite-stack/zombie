@@ -107,7 +107,7 @@ test("Integración con el motor anterior y pruebas del proyecto",()=>{
  const main=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
  assert.ok(html.indexOf("vtm-reactive-city.js?")>0);
  assert.ok(html.indexOf("vtm-reactive-city.js?")<html.indexOf("vtm-game.js?"));
- assert.ok(html.includes("FASE XVIII"));
+ assert.ok(html.includes("FASE XIX"));
  for(const needle of ["REACT.init(game)","REACT.tick(game","REACT?.interact(game)","REACT.shopChoices(game,shop)","REACT.draw(g,game","REACT.menu","REACT.summary(game)"]){
   assert.ok(main.includes(needle),needle);
  }
