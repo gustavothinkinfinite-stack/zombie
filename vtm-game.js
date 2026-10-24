@@ -364,6 +364,18 @@
     "Aprendés deprisa. Prestá atención a las formas; también son armas.":"Antes de hablar de honor o discreción, aprendé cómo dirigirte a un Vástago.",
     [{label:"Entendido.",action:()=>{}}],"PRUEBA SOCIAL · DADOS: "+r.dice.join(", "));
   }});
+  if(game.exposure>=25&&game.flags.exposureHelpNight!==game.clock.night){
+   choices.push({label:"Pedir ayuda para contener los rumores sobre tus actos",action:()=>{
+     game.flags.exposureHelpNight=game.clock.night;
+     const test=dicePool("Inteligencia","Subterfugio",7),successful=test.success;
+     exposure(successful?-24:7,successful?"Se ocultaron rastros comprometedores.":"Intentar encubrir los hechos creó nuevas sospechas.");
+     addAppreciation(successful?-2:-5,successful?"Tu Domitor desaprueba el coste del favor.":"Tu falta de previsión vuelve a perjudicarte.");
+     askMenu("La discreción tiene precio",successful?
+       "Un intermediario logra desviar la atención sobre tu actividad. Tu maestro, sin embargo, te exige mayor cuidado.":
+       "El intento de encubrimiento no convence a los testigos. Tu maestro no va a repetir esta ayuda durante la misma noche.",
+       [{label:"Asumir las consecuencias",action:()=>{}}],"MASQUERADA · DADOS "+test.dice.join(", "));
+   }});
+  }
   if(!game.flags.readTheRoom)choices.push({label:"Observar el ánimo del maestro · Percepción + Empatía",action:()=>{
    game.flags.readTheRoom=true;
    const r=dicePool("Percepción","Empatía",6);
@@ -389,7 +401,10 @@
  function dicePool(attribute,skill,difficulty){
   const c=game.character;
   const buffs={"Callejeo":"tunnelContact","Pelea":"brujahContact","Política":"sheriffWarning","Ocultismo":"tremereReference","Empatía":"pressContact","Investigación":"policeReference","Etiqueta":"courtProtocol"};
-  const bonus=game.access?.[buffs[skill]]?1:0;
+  const patron={"Etiqueta":"camarilla","Política":"camarilla","Pelea":"brujah","Callejeo":"nosferatu","Ocultismo":"tremere"}[skill];
+  const faction=patron?(game.factions[patron]||0):0;
+  const politicalDie=faction>=25?1:faction<=-25?-1:0;
+  const bonus=(game.access?.[buffs[skill]]?1:0)+politicalDie;
   const count=Math.max(1,c.attr[attribute]+(c.skills[skill]||0)+bonus);
   const dice=Array.from({length:count},()=>Math.floor(Math.random()*10)+1);
   const hits=dice.filter(d=>d>=difficulty).length,ones=dice.filter(d=>d===1).length;
@@ -567,7 +582,10 @@
     game.knownNpcs.push(npc.id);
     log("Conociste a "+npc.name+".");
   }
-  const trust=npc.id==="dupont"?clamp(game.relations.dupont,-3,3):game.npcRelations[npc.id];
+  const baseTrust=npc.id==="dupont"?clamp(game.relations.dupont,-3,3):game.npcRelations[npc.id];
+  const npcFaction={"ingrid":"nosferatu","lucien":"brujah","isabelle":"tremere","marcus":"tremere","john":"camarilla","guardiana":"camarilla"}[npc.id];
+  const standing=npcFaction?(game.factions[npcFaction]||0):0;
+  const trust=clamp(baseTrust+(standing>=20?1:standing<=-20?-1:0),-3,3);
   const opts=[];
   if(!state.impression){
    opts.push({label:"Presentarte con respeto · "+npc.check.attr+" + "+npc.check.skill,action:()=>{
@@ -663,6 +681,10 @@
  function exposure(delta,reason){
   game.exposure=clamp(game.exposure+delta,0,100);
   if(delta)log((delta>0?"+":"")+delta+" exposición · "+reason);
+  if(game.exposure>=60&&!game.flags.marquedMasquerade){
+    game.flags.marquedMasquerade=true;
+    increaseFaction("camarilla",-8,"Los rumores sobre tu actividad llegaron a la corte.");
+  }
   if(game.exposure>=60)notice("Tu actividad está atrayendo miradas peligrosas.");
   hud();save();
  }
