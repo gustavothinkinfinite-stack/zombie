@@ -714,7 +714,7 @@
      exposure(7,"El encargado de "+shop.name+" denunció tu comportamiento amenazante.");
      increaseFaction(shop.faction,-2,"Tus métodos incomodaron a las personas del barrio.");
      if(!game.localClues.includes(shop.id))game.localClues.push(shop.id);
-     askMenu("Respuestas bajo presión",shop.rumor+"\n\nObtuviste una información, pero la presión dejó testigos y deterioró tu reputación.",
+     askMenu("Respuestas bajo presión",shop.clue+"\n\nObtuviste información, pero la presión dejó testigos y deterioró tu reputación.",
       [{label:"Marcharte",action:()=>{}}],"CONSECUENCIAS DEL BARRIO");
    }
    advanceClock(9);hud();save();
@@ -742,7 +742,7 @@
      state.inspected=true;log("Revisaste el interior de "+shop.name+".");advanceClock(3);save();
    }
    askMenu(target.type==="clue"?"Objetos del mostrador":"Detalles del establecimiento",
-     target.type==="clue"?shop.description+"\n\n"+shop.rumor:shop.description+"\n\n"+shop.clue+"\n\nEstas observaciones no prueban por sí solas ninguna conspiración.",
+     target.type==="clue"?shop.description+"\n\n"+shop.rumor:shop.description+"\n\nEl mobiliario guarda huellas de actividad nocturna, pero no permite sacar conclusiones sobre quién las dejó.",
      [{label:"Continuar la visita",action:()=>{}}],"EXPLORACIÓN INTERIOR");
  }
 
