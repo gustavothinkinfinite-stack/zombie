@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–V)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–VI)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,20 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Rediseño visual 2.0 — Fase VI: apariencia del protagonista y animación (octubre de 2026)
+
+**Cambios implementados**
+
+- **Creador de personaje:** dentro del paso Concepto, nuevo selector visual con vista previa para tono de piel (5), color de cabello (5), peinado (3), vestimenta (5) y accesorio (4). Son elecciones cosméticas sin coste en puntos y no alteran las reglas de la tercera edición.
+- **Editor durante la partida:** botón **Apariencia**, vista previa, **Guardar apariencia** y **Cancelar**. El aspecto se conserva en el guardado junto con la ficha. Se pueden conservar estilos elegidos antes del Abrazo.
+- **Ghoul y Vástago distintos:** antes del Abrazo el sprite es humano. Después aparece un acabado más pálido y un acento visual discreto del clan. Nosferatu recibe rasgos físicos adicionales. Las peculiaridades gráficas no representan automáticamente poderes o Disciplinas.
+- **Nuevo atlas `assets/personajes-paris-v3.svg`:** 16 personajes o variantes × 4 orientaciones × 4 cuadros de marcha = **256 cuadros**, de 32 × 48 píxeles. Sustituye al atlas de 128 cuadros; se mantiene la compatibilidad con el fallback programático si la imagen no carga.
+- **Animación complementaria:** parpadeo ocasional, detalles de respiración en reposo y movimiento de bufanda. Durante el Abrazo se muestra una animación breve alrededor del personaje (sólo con FX activos), que no permanece después.
+- **Guardados antiguos:** reciben un conjunto de apariencia predeterminado al continuar, sin modificar Atributos, misiones, pistas, aprecio, clan o Disciplinas.
+- **Corrección del HUD:** el indicador de Ghoul/Vástago cambia en el momento del Abrazo; también se refrescan reloj e indicador de exposición.
+
+**Pruebas realizadas:** análisis de sintaxis y referencias HTML; migración de partida anterior; editor y cancelación; vista previa del creador; persistencia del aspecto después del Abrazo; render del atlas de 256 cuadros; ceremonia del Abrazo y asignación de las tres Disciplinas iniciales. Pendiente inspección visual exhaustiva en navegador y despliegue confirmado en Hostinger.
 
 ## Rediseño visual 2.0 — Fase V: despachos y dormitorios de los siete clanes (octubre de 2026)
 
