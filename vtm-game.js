@@ -7,6 +7,16 @@
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  let creator=null,step=0,game=null,keys=new Set(),lastTime=0,walkTarget=null,toastTimer=0;
  let dialogOpen=false,touchMove=null,visualTime=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
+ let effectsEnabled=true;
+ try{
+   const preference=localStorage.getItem("cronicas-paris-visual-fx");
+   effectsEnabled=preference===null?!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches:preference==="1";
+ }catch(e){effectsEnabled=true;}
+ function updateFxButton(){
+   const btn=$("visualEffectsBtn");if(!btn)return;
+   btn.textContent=effectsEnabled?"✦ FX activados":"✦ FX desactivados";
+   btn.setAttribute("aria-pressed",String(effectsEnabled));
+ }
  g.imageSmoothingEnabled=false;
  const ITEMS=[["concepto","Concepto"],["atributos","Atributos"],["habilidades","Habilidades"],["trasfondos","Trasfondos"],["virtudes","Virtudes"],["gratuitos","Puntos gratuitos"]];
  const PRIORITY_BUDGET_ATTR=[7,5,3],PRIORITY_BUDGET_SKILL=[13,9,5];
@@ -1203,8 +1213,8 @@
  }
  function drawWorld(){
   if(!game)return;
-  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G)rainOverlay();}
-  if(G)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime);
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
+  if(G&&effectsEnabled)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime);
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
@@ -1317,6 +1327,13 @@
   $("journalBtn").addEventListener("click",journalModal);
   $("journalClose").addEventListener("click",()=>$("journalModal").classList.add("hidden"));
   $("manualSaveBtn").addEventListener("click",()=>{save();notice("Partida guardada.");});
+  $("visualEffectsBtn").addEventListener("click",()=>{
+    effectsEnabled=!effectsEnabled;
+    try{localStorage.setItem("cronicas-paris-visual-fx",effectsEnabled?"1":"0");}catch(e){}
+    updateFxButton();
+    notice(effectsEnabled?"Efectos ambientales activados.":"Efectos ambientales desactivados.");
+  });
+  updateFxButton();
   $("titleBtn").addEventListener("click",()=>{save();show("welcome");$("continueGame").disabled=!load();});
   $("touchUse").addEventListener("click",interact);
   for(const b of document.querySelectorAll("[data-move]")){
