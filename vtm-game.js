@@ -1,12 +1,12 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  let creator=null,step=0,game=null,keys=new Set(),lastTime=0,walkTarget=null,walkRoute=[],toastTimer=0;
- let dialogOpen=false,touchMove=null,visualTime=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
+ let dialogOpen=false,touchMove=null,pendingLook=null,visualTime=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
  let effectsEnabled=true;
  try{
    const preference=localStorage.getItem("cronicas-paris-visual-fx");
@@ -31,7 +31,7 @@
     attr:a,skills:h,backgrounds:b,virtues:v,
     attrRanks:{"Físicos":0,"Sociales":1,"Mentales":2},
     skillRanks:{"Talentos":0,"Técnicas":1,"Conocimientos":2},
-    free:{attrs:{},skills:{},backgrounds:{},virtues:{},humanity:0,will:0},freeCategory:"Atributo",freeTrait:"Fuerza"};
+    free:{attrs:{},skills:{},backgrounds:{},virtues:{},humanity:0,will:0},freeCategory:"Atributo",freeTrait:"Fuerza",appearance:V.normalize()};
  }
  function freeCost(cat){return {"Atributo":5,"Habilidad":2,"Trasfondo":1,"Virtud":2,"Humanidad":1,"Voluntad":1}[cat];}
  function adjusted(trait,cat){
@@ -86,6 +86,48 @@
   input.value=creator[key];input.addEventListener("change",()=>{creator[key]=input.value;renderSheet();refreshValidation();});
   input.addEventListener("input",()=>{creator[key]=input.value;renderSheet();refreshValidation();});box.appendChild(input);return box;
  }
+
+ function appearanceControls(root,model,embraced,clan){
+   const shell=document.createElement("div");shell.className="appearance-layout";
+   const left=document.createElement("div");left.className="appearance-fields";
+   const labels={skin:"Tono de piel",hair:"Color de cabello",coat:"Vestimenta",hairstyle:"Peinado",detail:"Accesorio"};
+   for(const key of Object.keys(V.palettes)){
+     const box=document.createElement("div");box.className="field";
+     const label=document.createElement("label");label.textContent=labels[key];box.appendChild(label);
+     const sel=document.createElement("select");sel.setAttribute("aria-label",labels[key]);
+     for(const val of V.palettes[key]){
+       const option=document.createElement("option");option.value=val.id;option.textContent=val.label;sel.appendChild(option);
+     }
+     sel.value=model.appearance[key];
+     sel.addEventListener("change",()=>{
+       model.appearance[key]=sel.value;
+       V.preview(preview,model.appearance,{embraced,clan});
+       if(creator&&model===creator)renderSheet();
+     });
+     box.appendChild(sel);left.appendChild(box);
+   }
+   const right=document.createElement("div");right.className="appearance-preview";
+   const preview=document.createElement("canvas");preview.width=180;preview.height=210;
+   preview.setAttribute("aria-label","Vista previa del personaje, frente");
+   right.appendChild(preview);
+   const caption=document.createElement("p");caption.textContent=embraced?"VÁSTAGO · "+clan.toUpperCase():"GHOUL · SERVICIO NOCTURNO";right.appendChild(caption);
+   const caption2=document.createElement("small");caption2.textContent="Vista frontal · La ropa y el rostro se reflejan también al caminar.";right.appendChild(caption2);
+   shell.append(left,right);root.appendChild(shell);
+   V.preview(preview,model.appearance,{embraced,clan});
+ }
+ function openAppearance(){
+   if(!game)return;
+   if(!$("dialog").classList.contains("hidden"))closeDialog();
+   $("sheetModal").classList.add("hidden");$("journalModal").classList.add("hidden");
+   pendingLook={appearance:V.normalize(game.character.appearance)};
+   const box=$("appearanceBody");box.innerHTML="";
+   appearanceControls(box,pendingLook,game.embraced,game.character.clan);
+   $("appearanceModal").classList.remove("hidden");
+ }
+ function closeAppearance(){
+   pendingLook=null;
+   $("appearanceModal").classList.add("hidden");
+ }
  function renderConcept(root){
   item("Concepto y patronazgo","El personaje es todavía humano, ligado por sangre a un Domitor vampiro. Elegí el clan de su maestro: ese será el clan posible tras el Abrazo.").forEach(x=>root.appendChild(x));
   const fields=document.createElement("div");fields.className="fields";
@@ -100,6 +142,11 @@
    b.innerHTML="<strong>"+esc(clan)+"</strong><small>"+esc(m.master)+" · "+esc(m.title)+"</small><p>"+esc(m.opening)+"</p>";
    b.addEventListener("click",()=>{creator.clan=clan;renderCreator();});grid.appendChild(b);
   }root.appendChild(grid);
+  const appearanceTitle=document.createElement("h2");appearanceTitle.className="section-title";appearanceTitle.textContent="Apariencia del ghoul";appearanceTitle.style.marginTop="28px";
+  root.appendChild(appearanceTitle);
+  const hint=document.createElement("p");hint.className="section-lead";hint.textContent="Elegí el rostro y la vestimenta. Son opciones estéticas; no gastan puntos de creación.";
+  root.appendChild(hint);
+  appearanceControls(root,creator,false,creator.clan);
  }
  function drawRanked(root,type){
   const attr=type==="attr";
@@ -169,7 +216,7 @@
  function renderSheet(){
   if(!creator)return;
   const s=$("sheetSummary");s.innerHTML="";
-  const lines=[["Nombre",creator.name||"Sin nombre"],["Concepto",creator.concept],["Naturaleza",creator.nature],["Conducta",creator.demeanor],["Estado inicial","Ghoul humano"],["Clan del maestro",creator.clan],["Domitor",D.clans[creator.clan].master],["Humanidad",humanity()],["Fuerza de Voluntad",will()],["Disciplinas","Ninguna"],["Puntos gratuitos",freeSpent()+" / 15"]];
+  const lines=[["Nombre",creator.name||"Sin nombre"],["Concepto",creator.concept],["Naturaleza",creator.nature],["Conducta",creator.demeanor],["Estado inicial","Ghoul humano"],["Clan del maestro",creator.clan],["Domitor",D.clans[creator.clan].master],["Humanidad",humanity()],["Fuerza de Voluntad",will()],["Disciplinas","Ninguna"],["Apariencia",V.palettes.coat.find(v=>v.id===creator.appearance?.coat)?.label||"Abrigo negro"],["Puntos gratuitos",freeSpent()+" / 15"]];
   for(const [k,v] of lines){const r=document.createElement("div");r.className="sheetline";const l=document.createElement("span");l.textContent=k;const b=document.createElement("b");b.textContent=v;r.append(l,b);s.appendChild(r);}
  }
  function refreshValidation(){const val=validation(step);$("validation").textContent=val;$("nextStep").disabled=!!val;const next=$("nextStep");next.textContent=step===5?"COMENZAR HISTORIA":"Continuar →";}
@@ -190,6 +237,7 @@
  }
  function buildCharacter(){
   const clone=JSON.parse(JSON.stringify(creator));
+  clone.appearance=V.normalize(clone.appearance);
   for(const k of Object.keys(clone.attr))clone.attr[k]+=(clone.free.attrs[k]||0);
   for(const k of Object.keys(clone.skills))clone.skills[k]+=(clone.free.skills[k]||0);
   for(const k of Object.keys(clone.backgrounds))clone.backgrounds[k]+=(clone.free.backgrounds[k]||0);
@@ -212,6 +260,7 @@
  function notice(message){$("notice").textContent=message;$("notice").classList.remove("hidden");toastTimer=4;}
  function expandSave(){
   if(!game)return;
+  game.character.appearance=V.normalize(game.character.appearance);
   game.observed=game.observed||{};
   game.arc=game.arc||{clues:[],outcome:null,visited:[]};
   game.arc.clues=Array.isArray(game.arc.clues)?game.arc.clues:[];
@@ -970,7 +1019,8 @@
     const npc=type==="master"&&game.scene==="venue"?N.byLocation[game.venue]:null;
     G.character(g,x,y,{master:type==="master",npc,clan:npc?.clan||game.character.clan,
       embraced:!!game.embraced,facing:type==="player"?(game.facing||"down"):"down",
-      walking:type==="player"&&!!game.walking,cycle:game.walkCycle||0,time:visualTime});
+      walking:type==="player"&&!!game.walking,cycle:game.walkCycle||0,time:visualTime,
+      appearance:type==="player"?game.character.appearance:null});
     return;
   }
   pixel(x-9,y+5,18,19,type==="master"?"#181722":"#50565c");pixel(x-13,y+10,5,12,type==="master"?"#272431":"#4b5457");
@@ -1253,6 +1303,7 @@
  }
  function moveStep(dt){
   if(!game)return;
+  if(!$("appearanceModal").classList.contains("hidden")){game.walking=false;return;}
   if(dialogOpen){game.walking=false;return;}
   let dx=0,dy=0;
   if(keys.has("w")||keys.has("arrowup")||touchMove==="up")dy--;
@@ -1334,6 +1385,13 @@
   $("nextStep").addEventListener("click",()=>{if(validation(step))return;if(step===5)startStory();else{step++;renderCreator();}});
   $("dialogClose").addEventListener("click",closeDialog);
   $("characterBtn").addEventListener("click",sheetModal);
+  $("appearanceBtn").addEventListener("click",openAppearance);
+  $("appearanceCancel").addEventListener("click",closeAppearance);
+  $("appearanceApply").addEventListener("click",()=>{
+    if(!game||!pendingLook)return;
+    game.character.appearance=V.normalize(pendingLook.appearance);
+    save();closeAppearance();notice("Apariencia guardada.");
+  });
   $("sheetClose").addEventListener("click",()=>$("sheetModal").classList.add("hidden"));
   $("journalBtn").addEventListener("click",journalModal);
   $("journalClose").addEventListener("click",()=>$("journalModal").classList.add("hidden"));
@@ -1354,15 +1412,16 @@
   window.addEventListener("keydown",e=>{
    const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();
    if(e.target?.tagName==="INPUT"||e.target?.tagName==="SELECT")return;
+   if(!$("appearanceModal").classList.contains("hidden")&&k!=="escape")return;
    keys.add(k);if(e.repeat||!game||$("play").classList.contains("hidden"))return;
    if(k==="e"||k===" ")interact();
-   if(k==="escape"){if(!$("dialog").classList.contains("hidden"))closeDialog();$("sheetModal").classList.add("hidden");$("journalModal").classList.add("hidden");}
+   if(k==="escape"){if(!$("dialog").classList.contains("hidden"))closeDialog();$("sheetModal").classList.add("hidden");$("journalModal").classList.add("hidden");closeAppearance();}
   });
   window.addEventListener("keyup",e=>keys.delete(e.key.toLowerCase()));
   window.addEventListener("blur",()=>{keys.clear();touchMove=null;if(game)save();});
   document.addEventListener("visibilitychange",()=>{if(document.hidden&&game)save();});
   canvas.addEventListener("pointerdown",e=>{
-   if(!game||dialogOpen)return;
+   if(!game||dialogOpen||!$("appearanceModal").classList.contains("hidden"))return;
    const r=canvas.getBoundingClientRect();
    const x=(e.clientX-r.left)/r.width*480,y=(e.clientY-r.top)/r.height*300;
    if(P){
