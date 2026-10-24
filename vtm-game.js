@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -272,6 +272,10 @@
   game.cityPos=game.cityPos||{x:46,y:267};
   game.districtVisited=Array.isArray(game.districtVisited)?[...new Set(game.districtVisited.filter(id=>T?.byId[id]))]:[];
   game.districtNotes=(game.districtNotes&&typeof game.districtNotes==="object"&&!Array.isArray(game.districtNotes))?game.districtNotes:{};
+  if(K)K.normalize(game);
+  else if(game.scene==="sidevenue"){game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;}
+  game.localPlaces=game.localPlaces||{};
+  game.localClues=game.localClues||[];
   if(game.scene==="district"&&(!T||!T.byId[game.district])){
     game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;
   }
@@ -313,7 +317,7 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,sidevenue:null,sideReturn:null,localPlaces:{},localClues:[],flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -409,8 +413,8 @@
      :"En el mapa general, elegí explorar las calles al llegar a un destino.";
   }
   const houseScene=["house","study","quarters"].includes(game.scene);
-  $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="district"?"BARRIO · "+(T?.byId[game.district]?.name||"PARÍS").toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
-  $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":game.scene==="district"?"Explorando "+(T?.byId[game.district]?.name||"París"):"Las calles después del anochecer";
+  $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="district"?"BARRIO · "+(T?.byId[game.district]?.name||"PARÍS").toUpperCase():game.scene==="sidevenue"?"COMERCIO · "+(K?.byId[game.sidevenue]?.name||"PARÍS").toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
+  $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":game.scene==="sidevenue"?"Un local de París":game.scene==="district"?"Explorando "+(T?.byId[game.district]?.name||"París"):"Las calles después del anochecer";
   $("floatingHint").textContent=houseScene?"E: examinar objetos, hablar o salir":"E: interactuar con objetos y personajes";
   $("exposureText").textContent=game.exposure+" / 100";
   $("exposureBar").style.width=game.exposure+"%";
@@ -655,11 +659,95 @@
    walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
    advanceClock(3);hud();save();notice("Regresaste al mapa general de París.");
  }
+
+ function enterShop(shop){
+   if(!K||!shop||!K.byId[shop.id])return;
+   game.sideReturn={scene:"district",district:game.district,x:game.x,y:game.y};
+   game.sidevenue=shop.id;game.scene="sidevenue";
+   game.x=240;game.y=236;walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
+   if(!game.localPlaces[shop.id])game.localPlaces[shop.id]={entered:true,decision:null,inspected:false,met:false};
+   advanceClock(7);hud();save();
+   notice("Entraste a "+shop.name+".");
+ }
+ function exitShop(){
+   if(!K)return;
+   const shop=K.byId[game.sidevenue],r=game.sideReturn;
+   game.scene="district";game.district=r?.district||shop.district;
+   game.x=r?.x??shop.x;game.y=r?.y??shop.y;
+   if(P){const pos=P.nearestFree("district",game.x,game.y);game.x=pos.x;game.y=pos.y;}
+   game.sidevenue=null;game.sideReturn=null;walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
+   advanceClock(3);hud();save();
+ }
+ function shopStatus(shop){
+   if(!game.localPlaces[shop.id])game.localPlaces[shop.id]={entered:true,decision:null,inspected:false,met:false};
+   return game.localPlaces[shop.id];
+ }
+ function localAction(shop,choice){
+   const st=shopStatus(shop);
+   if(st.decision)return;
+   st.decision=choice;
+   if(choice==="help"){
+     log("Ayudaste a "+shop.keeper+" en "+shop.name+".");
+     increaseFaction(shop.faction,2,"Un favor discreto durante una visita a "+shop.name+".");
+     askMenu("Una colaboración discreta",shop.keeper+" agradece la ayuda. Has ganado una pequeña referencia local, aunque todavía no conocés todo lo que ocurre en este negocio.",
+      [{label:"Continuar",action:()=>{}}],"CONSECUENCIAS DEL BARRIO");
+   }else if(choice==="inquire"){
+     const roll=dicePool("Percepción","Investigación",7);
+     const success=!!roll.success;
+     if(success){
+       if(!game.localClues.includes(shop.id))game.localClues.push(shop.id);
+       log("Nueva observación local: "+shop.clue);
+       askMenu("Un detalle revelador",shop.clue+"\n\nTirada de Percepción + Investigación: "+roll.dice.join(", ")+".",
+        [{label:"Guardar la información",action:()=>{}}],"INVESTIGACIÓN SECUNDARIA");
+     }else{
+       log("No lograste obtener información de "+shop.name+".");
+       exposure(4,"Una pregunta incómoda levantó sospechas en "+shop.name+".");
+       askMenu("Preguntas sin respuesta",shop.keeper+" nota tu interés y cambia de tema. No obtuviste una pista verificable.\n\nTirada: "+roll.dice.join(", ")+".",
+        [{label:"Retirarte con discreción",action:()=>{}}],"INVESTIGACIÓN SECUNDARIA");
+     }
+   }else{
+     log("Presionaste al encargado de "+shop.name+".");
+     exposure(7,"El encargado de "+shop.name+" denunció tu comportamiento amenazante.");
+     increaseFaction(shop.faction,-2,"Tus métodos incomodaron a las personas del barrio.");
+     if(!game.localClues.includes(shop.id))game.localClues.push(shop.id);
+     askMenu("Respuestas bajo presión",shop.rumor+"\n\nObtuviste una información, pero la presión dejó testigos y deterioró tu reputación.",
+      [{label:"Marcharte",action:()=>{}}],"CONSECUENCIAS DEL BARRIO");
+   }
+   advanceClock(9);hud();save();
+ }
+ function shopInteract(){
+   const shop=K?.byId[game.sidevenue];if(!shop)return;
+   const target=K.nearest(game);
+   if(!target){notice("Acercate al mostrador, al encargado, a la estantería o a la salida.");return;}
+   if(target.type==="exit"){exitShop();return;}
+   const state=shopStatus(shop);
+   if(target.type==="clerk"){
+     if(!state.met){state.met=true;log("Conociste a "+shop.keeper+", encargado de "+shop.name+".");save();}
+     if(state.decision){
+       askMenu(shop.keeper,shop.description+"\n\n"+(state.decision==="help"?"Te reconoce y agradece tu colaboración.":state.decision==="inquire"?"Recuerda tu curiosidad y evita nuevas preguntas.":"Te mira con desconfianza después de lo ocurrido."),
+        [{label:"Despedirte",action:()=>{}}],"CONTACTO SECUNDARIO");return;
+     }
+     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión.",
+       [{label:"Ofrecer ayuda y ganar confianza",action:()=>localAction(shop,"help")},
+        {label:"Preguntar con discreción (Percepción + Investigación)",action:()=>localAction(shop,"inquire")},
+        {label:"Presionar al encargado (riesgo para la Mascarada)",action:()=>localAction(shop,"pressure")},
+        {label:"No intervenir",action:()=>{}}],"CONTACTO SECUNDARIO");
+     return;
+   }
+   if(!state.inspected){
+     state.inspected=true;log("Revisaste el interior de "+shop.name+".");advanceClock(3);save();
+   }
+   askMenu(target.type==="clue"?"Objetos del mostrador":"Detalles del establecimiento",
+     target.type==="clue"?shop.description+"\n\n"+shop.rumor:shop.description+"\n\n"+shop.clue+"\n\nEstas observaciones no prueban por sí solas ninguna conspiración.",
+     [{label:"Continuar la visita",action:()=>{}}],"EXPLORACIÓN INTERIOR");
+ }
+
  function districtInteract(){
    if(!T)return;
    const found=T.nearby(game);
    if(!found){notice("Acercate a una puerta, un rincón señalado o una salida del barrio.");return;}
    if(found.type==="map"){leaveDistrict();return;}
+   if(found.type==="shop"){enterShop(found.shop);return;}
    if(found.type==="neighbour"){
      const opposite={north:"south",south:"north",west:"east",east:"west"}[found.dir];
      enterDistrict(found.target,T.arrival(opposite),false);return;
@@ -1198,6 +1286,7 @@
   if(!game||dialogOpen)return;
   const room=game.scene;
   if(room==="venue"){venueInteract();return;}
+  if(room==="sidevenue"){shopInteract();return;}
   if(room==="district"){districtInteract();return;}
   if(["house","study","quarters"].includes(room)){
    if(room==="house"){
@@ -1437,6 +1526,15 @@
   textPixel(env.label.toUpperCase(),240,24,"#f1d7bd",12,"center");
  }
  function textPixel(t,x,y,color,size,align){g.font="bold "+(size||9)+"px monospace";g.fillStyle=color;g.textAlign=align||"left";g.fillText(t,x,y);}
+ function drawShop(){
+   if(!K)return;
+   const shop=K.byId[game.sidevenue];if(!shop)return;
+   K.draw(g,game,visualTime,effectsEnabled);
+   if(G){
+     G.character(g,240,104,{npc:{id:"keeper-"+shop.id,name:shop.keeper,color:"#746176",skin:"#caa691",hair:"#3b313b"},clan:"Toreador",facing:"down",walking:false});
+   }
+   portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
+ }
  function drawDistrict(){
    if(!T){drawParis();return;}
    T.draw(g,game,visualTime,effectsEnabled);
@@ -1523,7 +1621,7 @@
  }
  function drawWorld(){
   if(!game)return;
-  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="district")drawDistrict();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,(game.scene==="paris"||game.scene==="district")?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
   if(B&&G)B.foreground(g,game.scene==="district"?"paris":game.scene,game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled);
@@ -1535,9 +1633,13 @@
  function nearInteractive(){
   if(!game)return "";
   const room=game.scene;
+  if(room==="sidevenue"){
+    const spot=K?.nearest(game);
+    return spot?"E · "+spot.name:"";
+  }
   if(room==="district"){
     const spot=T?.nearby(game);
-    return spot?"E · "+(spot.type==="neighbour"?"Ir a "+spot.name:spot.type==="venue"?"Entrar a "+spot.name:spot.name):"";
+    return spot?"E · "+(  spot.type==="neighbour"?"Ir a "+spot.name:(spot.type==="venue"||spot.type==="shop")?"Entrar a "+spot.name:spot.name):"";
   }
   if(["house","study","quarters"].includes(room)){
    if(room==="house"){
@@ -1647,6 +1749,12 @@
       visited.textContent="Recorriste: "+game.districtVisited.map(id=>T.byId[id]?.name||id).join("; ")+".";
       root.appendChild(visited);
     }
+  }
+  if(K){
+    const places=Object.values(game.localPlaces||{});
+    const paragraph=document.createElement("p");
+    paragraph.textContent="Establecimientos secundarios: "+places.length+"/"+K.definitions.length+" visitados · "+places.filter(p=>p.decision).length+" decisiones tomadas · "+(game.localClues||[]).length+" informaciones obtenidas.";
+    root.appendChild(paragraph);
   }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
