@@ -210,17 +210,52 @@ window.VTM_DISTRICTS=(()=>{
   paintBlock(c,310,51,151,70,d,2+d.y);
   paintBlock(c,19,198,151,50,d,4+d.y);
   paintBlock(c,310,198,151,50,d,5+d.x);
-  rect(c,0,127,480,63,"#3b424e");
-  rect(c,178,40,124,260,"#39414d");
-  rect(c,0,134,480,5,"#77727a");
-  rect(c,0,183,480,5,"#716e78");
-  rect(c,184,40,5,260,"#8c858b");
-  rect(c,292,40,5,260,"#89838a");
-  // Adoquines de las dos avenidas y marcas viales.
-  for(let x=0;x<480;x+=33){rect(c,x+8,159,17,2,"#beafa3");rect(c,x+14,174,9,1,"#70808b");}
-  for(let y=46;y<295;y+=34){rect(c,237,y+8,5,19,"#c1aea0");}
-  for(const yy of [130,182]){for(let xx=0;xx<480;xx+=20){rect(c,xx+2,yy,14,2,"#6d727e");}}
-  for(const xx of [181,295]){for(let yy=48;yy<300;yy+=22){rect(c,xx,yy+1,2,13,"#87818a");}}
+  // Aceras independientes de la calzada: estrechan visualmente el cruce
+  // sin tocar su sistema de movimiento ni posiciones interactivas.
+  rect(c,0,127,480,66,"#77737a");
+  rect(c,0,139,480,43,"#303845");
+  rect(c,0,127,480,3,"#a69a93");
+  rect(c,0,136,480,3,"#a5a0a2");
+  rect(c,0,182,480,3,"#a49b9c");
+  rect(c,0,190,480,3,"#8b858a");
+  rect(c,179,40,122,260,"#807c80");
+  rect(c,191,40,98,260,"#313a46");
+  rect(c,178,40,4,260,"#a29899");
+  rect(c,188,40,3,260,"#a4a1a2");
+  rect(c,289,40,3,260,"#a39d9e");
+  rect(c,298,40,4,260,"#918d92");
+  // Juntas del pavimento y parches de asfalto desgastado.
+  for(let x=5;x<480;x+=27){
+   for(const y of [129,186]){
+    rect(c,x,y,12,1,"#504e5a");
+    if(hash(x,y,d.x+d.y)>.55)rect(c,x+3,y+4,6,1,"#b3a59e");
+   }
+   const g=hash(x,162,d.x);
+   if(g>.64)rect(c,x+4,149+(x%4)*6,9,1,"#75838a60");
+  }
+  for(let y=47;y<300;y+=28){
+   rect(c,181,y+2,7,1,"#b5a69b");
+   rect(c,293,y+3,5,1,"#b5a69b");
+   if(hash(y,d.y,9)>.45)rect(c,202+(y%3)*20,y+5,11,1,"#77879355");
+  }
+  // Marcas de separación, pasos de cebra y canaletas.
+  for(let x=0;x<480;x+=34){
+   if(x>161&&x<315)continue;
+   rect(c,x+8,160,17,2,"#baaea3");
+   rect(c,x+13,177,9,1,"#71818b");
+  }
+  for(let y=45;y<296;y+=38)if(y<127||y>192)rect(c,239,y+8,4,19,"#bdafa0");
+  for(const x of [157,315]){
+   for(let y=143;y<179;y+=7)rect(c,x+(x===157?0:2),y,18,3,"#c4bdb275");
+  }
+  for(const y of [116,195]){
+   for(let x=202;x<281;x+=11)rect(c,x,y,5,13,"#c6baac9a");
+  }
+  for(const [x,y] of [[36,145],[325,158],[447,173],[263,217]]){
+   rect(c,x,y,10,2,"#1e2836");
+   rect(c,x+2,y+1,6,2,"#555a62");
+   rect(c,x+4,y+3,2,1,"#a7a8a0");
+  }
   // Dos locales secundarios tienen entradas propias, separadas de las notas ambientales.
   const local=window.VTM_SHOPS?.byDistrict[d.id]||[];
   for(const shop of local){
@@ -246,6 +281,43 @@ window.VTM_DISTRICTS=(()=>{
    rect(c,location.x-11,location.y-11,22,12,"#696777");
    const arrow={north:"^",south:"v",west:"<",east:">"}[dir];
    text(c,arrow,location.x,location.y-2,12,"#f4d8af");
+  }
+  // Mobiliario: marquesinas, papeleras, postes y sombras de los faroles.
+  // Se mantienen fuera de la zona de las dos notas interactivas y comercios.
+  for(const [x,y] of [[23,146],[455,146],[167,208],[313,208]]){
+   rect(c,x+1,y+4,9,2,"#15202a7a");
+   rect(c,x,y,8,3,"#82737b");
+   rect(c,x+2,y-4,4,4,"#5a636d");
+  }
+  if(d.id==="policia"){
+   // Vehículo estacionado de servicio, señal institucional y vallas.
+   rect(c,326,144,30,10,"#222b3a");
+   rect(c,330,142,22,9,"#687b8c");
+   rect(c,336,140,9,3,"#b3bcc5");
+   rect(c,329,150,3,4,"#202938");
+   rect(c,350,150,3,4,"#202938");
+   for(let n=0;n<3;n++)rect(c,25+n*6,197,2,7,"#a6aeb3");
+  }else if(d.id==="bastilla"){
+   // Toldos de bares y un rincón de carteles desgastados.
+   for(let n=0;n<5;n++)rect(c,26+n*12,199,9,4,n%2?"#995f66":"#5d424f");
+   rect(c,330,195,15,9,"#392637");
+   rect(c,333,196,9,3,"#ad8074");
+  }else if(d.id==="passy"||d.id==="elysee"){
+   for(const x of [44,423]){
+    rect(c,x-2,199,20,3,"#aaa6a0");
+    rect(c,x+1,202,2,10,"#bdb0a4");
+    rect(c,x+15,202,2,10,"#bdb0a4");
+   }
+  }else if(d.id==="tuneles"){
+   for(const x of [50,418]){
+    rect(c,x,206,19,12,"#121d24");
+    for(let t=0;t<5;t++)rect(c,x+3+t*3,207,1,9,"#5f7572");
+   }
+  }else if(d.id==="saintdenis"){
+   for(let t=0;t<4;t++){
+    rect(c,33+t*13,201,10,12,"#373b47");
+    rect(c,34+t*13,203,8,1,"#9a7980");
+   }
   }
   // Luminarias y árboles en áreas seguras.
   for(const [x,y] of [[190,130],[293,184],[30,135],[453,184]]){
