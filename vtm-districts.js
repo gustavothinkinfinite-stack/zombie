@@ -132,6 +132,77 @@ window.VTM_DISTRICTS=(()=>{
   rect(c,x+4,y-6,2,2,"#f1d2a6");
   text(c,side?"TIENDA":"LOCAL",x,y-16,7,"#f0ddc3");
  }
+
+ function missionFacade(c,d){
+  // El punto E de interacción sigue siendo (240,122), sin mover el hotspot.
+  const stone=["passy","elysee","hemeroteca","policia"].includes(d.id);
+  rect(c,202,73,76,48,"#111722");
+  rect(c,206,71,68,49,stone?"#716d76":"#4e3948");
+  rect(c,210,76,60,42,stone?"#9a9294":"#654a57");
+  if(d.id==="policia"){
+   rect(c,206,72,68,9,"#52616e");
+   rect(c,209,70,62,3,"#a3b1b8");
+   for(const x of [214,225,253,264]){
+    rect(c,x,86,6,15,"#303c4b");
+    rect(c,x+1,88,4,10,"#8aa3b3");
+   }
+   rect(c,230,91,20,27,"#1a2432");
+   rect(c,234,96,12,17,"#384354");
+   rect(c,232,117,16,3,"#b1a9a1");
+  }else if(d.id==="elysee"){
+   rect(c,208,69,64,7,"#c8bab0");
+   rect(c,218,64,44,5,"#7e7782");
+   for(const x of [215,224,250,259]){
+    rect(c,x,83,4,29,"#dbc7b7");
+    rect(c,x+1,84,2,25,"#b09fa0");
+   }
+   rect(c,235,90,10,29,"#272330");
+   rect(c,233,114,14,5,"#c5b8b0");
+  }else if(d.id==="tuneles"){
+   rect(c,210,80,60,39,"#465951");
+   rect(c,216,85,48,34,"#151e22");
+   for(let x=217;x<265;x+=6)rect(c,x,85,3,33,"#61756e");
+   rect(c,216,96,48,3,"#384940");
+   rect(c,216,111,48,3,"#384940");
+  }else if(d.id==="saintdenis"){
+   rect(c,210,76,60,43,"#6d5155");
+   rect(c,212,81,56,6,"#3b3c46");
+   for(const x of [217,229,241,253])rect(c,x,87,7,8,"#d4a78d");
+   rect(c,221,99,38,19,"#252935");
+   for(let yy=101;yy<118;yy+=4)rect(c,223,yy,34,2,"#6f7782");
+  }else if(d.id==="bastilla"||d.id==="stjuly"){
+   rect(c,209,77,62,41,d.id==="stjuly"?"#493146":"#5b3c46");
+   rect(c,214,78,52,5,d.id==="stjuly"?"#b486a4":"#bb776e");
+   for(const x of [216,231,248,260])rect(c,x,88,7,10,"#cd9b86");
+   rect(c,224,101,32,18,"#211d2c");
+   rect(c,230,103,20,4,"#8a637b");
+  }else if(d.id==="passy"){
+   rect(c,212,75,56,42,"#a69a9f");
+   rect(c,214,72,52,4,"#50485b");
+   for(const x of [220,232,250,259]){
+    rect(c,x,83,5,10,"#d9bea1");
+    rect(c,x+2,84,1,8,"#384052");
+   }
+   rect(c,233,99,14,19,"#302939");
+  }else{
+   rect(c,213,76,54,43,"#817079");
+   rect(c,215,74,50,3,"#aaa2a2");
+   for(const x of [219,232,249,260]){
+    rect(c,x,84,5,11,"#e2c5a0");
+    rect(c,x+2,86,1,8,"#493f4c");
+   }
+   rect(c,233,97,14,22,"#2b2834");
+  }
+  rect(c,228,119,24,4,"#2a303b");
+  // Insignia pequeña encima de la entrada, sin título largo superpuesto.
+  rect(c,232,80,16,3,d.lamp);
+ }
+ function districtCaption(d){
+  const labels={passy:"PASSY",stjuly:"ST. JULY",elysee:"ELÍSEO",
+    hemeroteca:"HEMEROTECA",bastilla:"BASTILLA",saintdenis:"SAINT-DENIS",
+    policia:"ARCHIVO POLICIAL",tuneles:"ACCESO A LOS TÚNELES"};
+  return "PARÍS NOCTURNO  /  "+(labels[d.id]||d.name.toUpperCase());
+ }
  function base(c,d){
   rect(c,0,0,W,H,"#242a37");
   // Cuatro manzanas dejan avenidas centrales transitables y aceras laterales.
@@ -156,14 +227,8 @@ window.VTM_DISTRICTS=(()=>{
    const x=shop.x,y=shop.y;
    painterDoor(c,x,y,d,shop.side);
   }
-  // El edificio de misión se identifica claramente sin entorpecer el pasillo.
-  rect(c,206,74,68,47,"#1b1926");
-  rect(c,212,79,56,37,d.brick);
-  rect(c,218,84,44,29,"#332b37");
-  rect(c,230,93,20,25,"#201d2a");
-  rect(c,246,108,2,4,"#e5c594");
-  rect(c,217,76,47,3,d.lamp);
-  text(c,d.name.length>22?d.name.slice(0,20):d.name,240,72,8,"#f1d9bd");
+  // Arquitectura específica de cada edificio principal.
+  missionFacade(c,d);
   // Puntos de observación al oeste y al este del cruce.
   for(const spot of d.details){
    rect(c,spot.x-10,spot.y-22,20,10,"#171e2b");
@@ -194,7 +259,7 @@ window.VTM_DISTRICTS=(()=>{
    rect(c,x-6,y-35,12,6,"#698674");
   }
   rect(c,0,0,480,39,"#151b28d8");
-  text(c,"PARÍS NOCTURNO  /  "+d.name.toUpperCase(),240,25,11,"#dfc6ab");
+  text(c,districtCaption(d),240,24,8,"#dfc6ab");
  }
  function backplate(c,id){
   let cached=background.get(id);
