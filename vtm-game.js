@@ -1472,7 +1472,7 @@
    if(room==="house"){
     if(Math.hypot(game.x-240,game.y-98)<62){speak();return;}
     if(Math.hypot(game.x-240,game.y-269)<45){
-      game.scene="paris";game.x=46;game.y=267;walkTarget=null;notice("La noche de París te espera.");hud();save();return;
+      stopWalking();game.scene="paris";game.x=46;game.y=267;notice("La noche de París te espera.");hud();save();return;
     }
     if(Math.hypot(game.x-44,game.y-233)<47){changeRoom("study");return;}
     if(Math.hypot(game.x-436,game.y-233)<47){changeRoom("quarters");return;}
@@ -1485,7 +1485,7 @@
   }
   if(room==="paris"){
    if(Math.hypot(game.x-46,game.y-269)<44){
-    game.scene="house";game.x=240;game.y=232;walkTarget=null;hud();save();notice("Regresaste a la residencia.");return;
+    stopWalking();game.scene="house";game.x=240;game.y=232;hud();save();notice("Regresaste a la residencia.");return;
    }
    let nearest=null,best=999;
    for(const location of D.locations){
@@ -1513,7 +1513,7 @@
   }
  }
  function changeRoom(name){
-  game.scene=name;game.x=240;game.y=name==="house"?222:name==="study"?260:238;walkTarget=null;walkRoute=[];hud();save();
+  stopWalking();game.scene=name;game.x=240;game.y=name==="house"?222:name==="study"?260:238;hud();save();
   const r=C.residences[game.character.clan];
   notice(name==="study"?r.study:name==="quarters"?r.quarters:"Regresaste al salón.");
  }
