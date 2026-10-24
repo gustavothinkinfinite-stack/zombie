@@ -19,10 +19,10 @@ Se desarrolló un sistema de relaciones con los **16 encargados de los comercios
 
 - **Relaciones persistentes:** después de ayudar, investigar o intimidar, cada contacto registra la acción, nivel de confianza, noche de la decisión y consecuencias aún pendientes.
 - **Consecuencias diferidas:** desde la siguiente noche, ayudar puede habilitar un favor para reducir hasta 6 puntos de exposición o recibir una presentación para otro establecimiento. Una investigación exitosa puede generar una referencia comercial adicional; una fallida permite aclarar el malentendido. Amenazar causa una consecuencia adicional sobre la exposición (una sola vez) y mantiene la hostilidad.
-- **Efectos entre negocios:** la colaboración o las amenazas en un local modifican la predisposición de los demás comerciantes del mismo barrio. Las presentaciones y referencias pueden modificar ligeramente la dificultad de investigar en el local relacionado; nunca garantizan un éxito automático.
-- **Rumores nocturnos:** los contactos pueden compartir novedades ambientales en noches posteriores, como máximo una vez por contacto y por noche. Son texto contextual, no pruebas concluyentes del caso central.
+- **Efectos entre negocios:** ayudar a un vecino disminuye en 1 la dificultad de investigar en el otro negocio del barrio; intimidarlo la aumenta en 1. Las presentaciones y referencias pueden reducirla adicionalmente. La dificultad final se mantiene entre **5 y 9**, por lo que nunca se garantiza automáticamente una pista.
+- **Rumores nocturnos:** los contactos pueden compartir una de seis novedades ambientales de rotación determinista, en noches posteriores a la primera decisión, como máximo una vez por contacto y por noche. Las novedades cambian según la noche y quedan reflejadas en el diario, pero no conceden puntos ni pistas concluyentes del caso central.
 - **Paso del tiempo:** botón **Descansar hasta la próxima noche**, disponible sólo en el refugio. Es una acción voluntaria, confirmada mediante diálogo, que actualiza la noche y permite activar acontecimientos sociales pendientes.
-- **Información visible:** contador de contactos con novedades en el HUD, indicadores sobre sus locales, y resumen de contactos y referencias en el diario.
+- **Información visible:** contadores de contactos con asuntos pendientes, contactos cordiales y rumores escuchados en el HUD, indicadores sobre sus locales, y resumen de contactos y referencias en el diario.
 
 ### Compatibilidad, persistencia y pruebas
 
