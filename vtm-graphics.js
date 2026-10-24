@@ -91,6 +91,7 @@ function drawSprite(c,x,y,opts){
    rect(c,x+7-step*2,y+13+offset,2,5,"#302833aa");
    if(frame===0||frame===2)rect(c,x-4,y+24,8,1,"#c5b4a142");
   }
+  window.VTM_ART_POLISH?.character(c,x,y,opts);
   if(opts.npc||opts.master){
    rect(c,x-23,y-36,46,12,"#101420c9");
    text(c,opts.npc?(opts.npc.name.length>14?opts.npc.name.slice(0,12):opts.npc.name):"DOMITOR",x,y-27,7,"#ecd1b3");
@@ -487,6 +488,7 @@ function residenceBase(c,room,clan,data){
 function drawResidence(c,room,clan,C,game,time){
  const d=C.residences[clan];if(!d)return;
  if(!renderBackplate(c,room==="house"?"residence:"+clan:"room:"+clan+":"+room))drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
+ window.VTM_ART_POLISH?.residence(c,room,clan,time,!!window.VTM_VISUAL_FX_ENABLED);
  for(const obj of C.residenceObjects[room]||[]){
   const seen=!!game.observed[obj.id],pulse=.55+.25*Math.sin(time*3+obj.x);
   rect(c,obj.x-7,obj.y-38,14,14,"#111420d0");rect(c,obj.x-5,obj.y-36,10,10,seen?"#5e8276":"#c3a17f");
@@ -526,6 +528,7 @@ function venueBase(c,id,env){
 function drawVenue(c,id,N,game,time){
  const env=N.environments[id];if(!env)return;
  if(!renderBackplate(c,"venue:"+id))drawCached(c,"venue:"+id,ctx=>venueBase(ctx,id,env));
+ window.VTM_ART_POLISH?.venue(c,id,time,!!window.VTM_VISUAL_FX_ENABLED);
  text(c,env.label.toUpperCase(),240,24,12);
  if(game.activeQuest||Object.values(game.sideQuests||{}).some(q=>q.status==="active")){
   const pul=.1+.05*Math.sin(time*3);glow(c,130,140,25,"236,183,121",pul);
@@ -584,7 +587,8 @@ function character(c,x,y,opts={}){
  if(npc?.id==="lucien")rect(c,x-8,y-15+bob,14,4,"#22242c");
  if(npc?.id==="john")rect(c,x-2,y+5+bob,4,9,"#e0d0c6");
  if(npc?.id==="ingrid")rect(c,x+4,y-9+bob,5,4,"#567361");
- if(opts.appearance&&player)window.VTM_APPEARANCE?.overlay(c,x,y,opts.appearance,opts);
+ window.VTM_ART_POLISH?.character(c,x,y,opts);
+ if(opts.appearance&&player)window.VTM_APPEARANCE?.overlay(c,x,y,opts);
  if(npc){
    rect(c,x-24,y-32,48,11,"#11151dc9");
    text(c,npc.name.length>14?npc.name.slice(0,12)+"…":npc.name,x,y-24,7,"#f3d5b8");
