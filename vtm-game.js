@@ -297,7 +297,7 @@
   askMenu(name,clan.opening,choices,"TU DOMITOR · "+game.character.clan.toUpperCase());
  }
  function requestQuest(){
-  const choices=D.quests.filter(q=>q.id!=="archivos"||!game.arc.outcome);
+  const choices=D.quests.filter(q=>!game.arc.outcome||!["archivos","prensa"].includes(q.id));
   const index=game.arc.outcome?Math.max(0,game.questIndex-1):game.questIndex;
   const q=choices[index%choices.length];
   askMenu("Un encargo para "+game.character.name,
