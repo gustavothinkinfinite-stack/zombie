@@ -46,3 +46,5 @@ jobs:
         run: node tests/new-game-protection.test.js
       - name: Probar salida segura al menú
         run: node tests/menu-save-guard.test.js
+      - name: Probar recuperación de respaldos
+        run: node tests/save-backup.test.js
