@@ -358,10 +358,8 @@ window.VTM_DISTRICTS=(()=>{
    rect(c,spot.x-6,spot.y-20,12,6,d.lamp);
    rect(c,spot.x-4,spot.y-18,8,2,"#e8d8c6");
   }
-  // Señalización permanente de salida del barrio hacia el mapa general.
-  rect(c,64,252,39,20,"#1c222e");
-  rect(c,67,254,33,16,"#5a5260");
-  text(c,"MAPA",83,265,7,"#f6deb6");
+  // La antigua señal del mapa se pinta en primer plano al final de draw().
+  // Su punto de interacción histórico sigue en (83,263).
   for(const dir of Object.keys(edges)){
    const location=exits[dir],target=neighbour(d.id,dir);
    if(!target)continue;
@@ -432,6 +430,24 @@ window.VTM_DISTRICTS=(()=>{
   if(cached&&typeof c.drawImage==="function")c.drawImage(cached,0,0);
   else base(c,byId[id]);
  }
+ function drawMapExitSign(c,time,fx){
+  // Etiqueta sobre vegetación, mobiliario y suelo. El indicador apunta al
+  // punto histórico (83,263); el retorno directo también está en la interfaz.
+  const x=83,pulse=fx?.06+.025*Math.sin(time*1.5):0;
+  rect(c,56,215,55,29,"#0a1018cb");
+  rect(c,58,217,51,24,"#322e39");
+  rect(c,59,217,49,2,"#d9b189");
+  rect(c,61,221,11,14,"#56453d");
+  rect(c,63,224,7,7,"#d3af82");
+  text(c,"←",66,231,9,"#211a20");
+  text(c,"SALIDA",89,227,8,"#f6dfc5");
+  text(c,"A PARÍS",89,237,7,"#e2c8ae");
+  rect(c,82,242,2,14,"#cca989");
+  rect(c,80,254,6,2,"#cca989");
+  text(c,"v",83,263,8,"#f3d5a8");
+  if(pulse&&typeof c.createRadialGradient==="function")
+   light(c,83,246,14,"237,191,137",pulse);
+ }
  function draw(c,game,time,fx=true){
   const d=byId[game.district];if(!d)return;
   backplate(c,d.id);
@@ -468,6 +484,8 @@ window.VTM_DISTRICTS=(()=>{
     rect(c,x-3,y-13,6,3,"#36303b");
    }
   }
+  // Siempre visible incluso sin efectos, por encima de los transeúntes.
+  drawMapExitSign(c,time,fx);
  }
  function nearby(game,range=31){
   const d=byId[game.district];if(!d)return null;
