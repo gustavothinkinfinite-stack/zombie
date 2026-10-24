@@ -76,9 +76,21 @@ function drawSprite(c,x,y,opts){
  const direction={down:0,left:1,right:2,up:3}[opts.facing]??0;
  const row=opts.npc&&atlasRows[opts.npc.id]!=null?atlasRows[opts.npc.id]:
   !opts.master&&!opts.npc&&!opts.embraced?atlasRows.Ghoul:(atlasRows[opts.clan]??atlasRows.Ghoul);
- const frame=opts.walking?Math.floor((opts.cycle||0)*2.0)%4:0;
+ const moving=!!opts.walking;
+ const frame=moving?Math.floor(Math.abs(opts.cycle||0)*2.4)%4:0;
+ const bounce=moving&&(frame===1||frame===3)?-1:0;
+ const idleBreath=!moving&&Math.sin((opts.time||0)*1.35+row*.4)>.96?-1:0;
+ const offset=bounce+idleBreath;
  try{
-  c.drawImage(atlas,(direction*4+frame)*32,row*48,32,48,Math.round(x)-16,Math.round(y)-21,32,48);
+  // Sombra anclada al suelo; sólo el gráfico del personaje se mueve.
+  rect(c,x-9,y+22,18,3,"#0a101a70");
+  c.drawImage(atlas,(direction*4+frame)*32,row*48,32,48,Math.round(x)-16,Math.round(y)-21+offset,32,48);
+  if(moving){
+   const step=frame%2?1:-1,coat=opts.npc?.color||"#5c4a58";
+   rect(c,x-9+step*2,y+13+offset,3,6,coat+"aa");
+   rect(c,x+7-step*2,y+13+offset,2,5,"#302833aa");
+   if(frame===0||frame===2)rect(c,x-4,y+24,8,1,"#c5b4a142");
+  }
   if(opts.npc||opts.master){
    rect(c,x-23,y-36,46,12,"#101420c9");
    text(c,opts.npc?(opts.npc.name.length>14?opts.npc.name.slice(0,12):opts.npc.name):"DOMITOR",x,y-27,7,"#ecd1b3");
@@ -545,12 +557,16 @@ function character(c,x,y,opts={}){
  x=Math.round(x);y=Math.round(y);
  const palette={Toreador:"#986177",Tremere:"#847096",Brujah:"#975d57",Nosferatu:"#5d7d6b",Ventrue:"#647d96",Gangrel:"#657b60",Malkavian:"#85719a"};
  const jacket=npc?.color||palette[clan]||"#78817d",skin=npc?.skin||(clan==="Nosferatu"?"#a0a18b":"#d4ae98"),hair=npc?.hair||(clan==="Tremere"?"#a8a0a3":"#2b2830");
- const player=!master&&!npc,bob=walking?Math.round(Math.sin(cycle*10)*1.5):0,stride=walking?Math.round(Math.sin(cycle*10)*3):0;
+ const player=!master&&!npc;
+ const stride=walking?Math.round(Math.sin(cycle*12)*3):0;
+ const bob=walking?Math.round(Math.sin(cycle*12)*1.4):Math.sin(time*1.2+clan.length)>.96?-1:0;
+ const sway=walking?Math.round(Math.cos(cycle*12)*2):0;
  rect(c,x-12,y+18,24,5,"#0a0e1699");
  rect(c,x-7-stride,y+12,6,11,"#222833");rect(c,x+2+stride,y+12,6,11,"#1e222e");
  rect(c,x-8-stride,y+20,8,4,"#11151d");rect(c,x+1+stride,y+20,8,4,"#0d111b");
  rect(c,x-11,y-2+bob,22,17,"#151721");rect(c,x-9,y+bob,19,15,player?(embraced?"#734457":"#6e7b80"):jacket);
- rect(c,x-14,y+2+bob,5,13,jacket);rect(c,x+10,y+2+bob,5,13,jacket);
+ rect(c,x-14+sway,y+2+bob,5,13,jacket);rect(c,x+10-sway,y+2+bob,5,13,jacket);
+ rect(c,x-10-sway,y+11+bob,4,10,"#302634");rect(c,x+8+sway,y+11+bob,4,10,"#302634");
  rect(c,x-13,y+10+bob,4,3,skin);rect(c,x+11,y+10+bob,4,3,skin);
  rect(c,x-5,y-12+bob,11,14,skin);rect(c,x-6,y-15+bob,12,6,hair);
  rect(c,x-7,y-10+bob,3,8,hair);rect(c,x+5,y-10+bob,3,8,hair);
