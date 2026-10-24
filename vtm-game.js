@@ -379,6 +379,10 @@
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
   $("playState").textContent=game.embraced?"Vástago":"Ghoul";
+  $("stageName").textContent=game.character.name;
+  $("stageState").textContent=(game.embraced?"VÁSTAGO":"GHOUL")+" · "+game.character.clan.toUpperCase();
+  $("stageClock").textContent="NOCHE "+game.clock.night+" · "+formatClock();
+  $("stageRiskBar").style.width=game.exposure+"%";
   $("questTitle").textContent=game.activeQuest?questObj(game.activeQuest).title:"Sin encargo activo";
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
