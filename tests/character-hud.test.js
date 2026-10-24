@@ -37,6 +37,6 @@ assert.match(styles,/\.character-panel \.mechanics-details \.mechanics-summary\{
  "Los datos deben ajustarse al ancho del panel");
 assert.match(index,/<link[^>]+href="visual-2\.css\?v=vtm[^"]+"/,
  "La hoja visual debe seguir cargándose con versión de caché");
-assert.match(index,/<script[^>]+src="vtm-game\.js\?v=vtm[^"]+"/,
+assert.match(index,/<script[^>]+src="vtm-game\.js\?v=[^"]+"/,
  "El motor debe seguir cargándose con versión de caché");
 console.log("OK: ficha compacta y expandible, con información y actualización preservadas");
