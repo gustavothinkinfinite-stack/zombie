@@ -229,62 +229,179 @@ function riverside(c){
   stoneBridge(c,x,y);
  }
 }
+/* Cartografía noir de París: trama urbana ilustrada en lugar de mosaicos pixelados.
+   VISUAL ONLY. Mantiene intactos los centros de los 8 hotspots, el movimiento
+   en las 480x300 unidades lógicas y la compatibilidad con partidas guardadas. */
+function cartoStroke(c,points,w,color){
+ if(typeof c.beginPath!=="function"){
+  for(let i=1;i<points.length;i++){
+   const a=points[i-1],b=points[i];
+   rect(c,Math.min(a[0],b[0])-w/2,Math.min(a[1],b[1])-w/2,
+    Math.abs(b[0]-a[0])+w,Math.abs(b[1]-a[1])+w,color);
+  }
+  return;
+ }
+ c.beginPath();c.moveTo(points[0][0],points[0][1]);
+ for(let i=1;i<points.length;i++)c.lineTo(points[i][0],points[i][1]);
+ c.strokeStyle=color;c.lineWidth=w;c.lineJoin="round";c.lineCap="round";c.stroke();
+}
+function cartoCircle(c,x,y,r,fill,stroke,w=1){
+ if(typeof c.beginPath!=="function"){rect(c,x-r,y-r,r*2,r*2,fill);return;}
+ c.beginPath();c.arc(x,y,r,0,Math.PI*2);
+ if(fill){c.fillStyle=fill;c.fill();}
+ if(stroke){c.lineWidth=w;c.strokeStyle=stroke;c.stroke();}
+}
+function cartoPlate(c,x,y,w,h,color,border){
+ if(typeof c.beginPath!=="function"){rect(c,x,y,w,h,color);return;}
+ const r=4;
+ c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
+ c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+ c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);
+ c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();
+ c.fillStyle=color;c.fill();
+ if(border){c.strokeStyle=border;c.lineWidth=.65;c.stroke();}
+}
 function cityBackground(c){
- // Barrios: norte histórico, tejido bohemio occidental, residencias de
- // Passy al este y edificios industriales al sur.
- rect(c,0,0,W,H,"#242833");
- for(let j=0,y=0;y<300;j++,y+=45){
-  for(let i=0,x=0;x<480;i++,x+=60){
-   const garden=noise(i,j,63)>.86&&j!==0;
-   if(garden){
-    rect(c,x+3,y+4,54,36,"#18282c");
-    rect(c,x+5,y+6,50,33,"#29423d");
-    rect(c,x+5,y+6,50,2,"#758477");
-    for(let n=0;n<4;n++){
-     const tx=x+13+(n%2)*25,ty=y+14+Math.floor(n/2)*16;
-     streetTree(c,tx,ty,5);
+ // Papel nocturno azulado, discretas masas de barrios y ninguna retícula de autopistas.
+ if(typeof c.createLinearGradient==="function"){
+  const sky=c.createLinearGradient(0,0,440,300);
+  sky.addColorStop(0,"#1b2630");sky.addColorStop(.48,"#222832");sky.addColorStop(1,"#161f29");
+  c.fillStyle=sky;c.fillRect(0,0,W,H);
+ }else rect(c,0,0,W,H,"#1b252e");
+ // Trama muy fina: no se convierte en un damero de píxeles.
+ for(let y=6;y<298;y+=7)for(let x=5;x<478;x+=9){
+  const n=noise(x,y,90);
+  if(n>.72)rect(c,x,y,n>.94?2:1,1,n>.92?"#d7c2a314":"#b9c2c911");
+ }
+ // Parques y plazas de la ciudad, grabados con líneas vegetales oscuras.
+ const parks=[
+  [12,85,46,32],[339,18,49,28],[333,113,36,25],[23,211,47,26],
+  [180,231,37,27],[424,246,45,24],[57,19,40,19],[385,170,51,15]
+ ];
+ for(let i=0;i<parks.length;i++){
+  const [x,y,w,h]=parks[i];
+  cartoPlate(c,x,y,w,h,"#263d39","#48615a7a");
+  rect(c,x+5,y+5,w-10,h-10,"#213630");
+  cartoStroke(c,[[x+4,y+h/2],[x+w-5,y+h/2]],1,"#82918539");
+  for(let j=0;j<6;j++){
+   const xx=x+8+noise(j,i,8)*(w-16),yy=y+6+noise(i,j,6)*(h-12);
+   cartoCircle(c,xx,yy,2.5+j%2,"#3c5c4f","#60827455",.7);
+   rect(c,xx-1,yy-1,2,1,"#79958653");
+  }
+ }
+ // Cubiertas de pizarra: tamaños desiguales, patios, buhardillas y chimeneas.
+ // Son volúmenes tenues de fondo, no fichas de edificios repetidas.
+ const roofs=["#323b46","#38404a","#353945","#3f404a","#343c45","#41404a"];
+ for(let j=0,y=17;y<296;j++,y+=31){
+  const dy=(j%2)*8;
+  for(let i=0,x=-11;x<489;i++,x+=37){
+   const n=noise(i,j,131);
+   const bx=x+Math.floor(noise(i,j,3)*8),by=y+dy+Math.floor(noise(i,j,4)*6);
+   const bw=25+Math.floor(noise(i,j,5)*11),bh=18+Math.floor(noise(i,j,6)*8);
+   // Los parques y el Sena tienen derecho al vacío y a respirar.
+   if(by>167&&by<223)continue;
+   if(parks.some(([px,py,pw,ph])=>bx<px+pw&&bx+bw>px&&by<py+ph&&by+bh>py))continue;
+   const base=roofs[Math.floor(n*roofs.length)];
+   rect(c,bx+1,by+2,bw,bh,"#0b121c8a");
+   rect(c,bx,by,bw,bh,base);
+   rect(c,bx+2,by+2,bw-4,1,"#9d9a9860");
+   rect(c,bx+2,by+4,1,bh-7,"#79858b38");
+   rect(c,bx+bw-3,by+3,1,bh-5,"#141e2980");
+   // Eje diagonal del tejado, siempre distinto en los edificios vecinos.
+   const ridge=by+6+Math.floor(noise(i,j,9)*5);
+   rect(c,bx+4,ridge,bw-8,1,n>.48?"#76808b55":"#1119238a");
+   rect(c,bx+4,by+bh-5,bw-8,1,"#10192399");
+   if(n>.27){
+    for(let k=0;k<3;k++){
+     const wx=bx+6+k*8;
+     rect(c,wx,by+7,4,5,"#192733");
+     rect(c,wx+1,by+8,2,3,noise(i,k,j)>.82?"#aa958075":"#64717a70");
+     rect(c,wx,by+13,5,1,"#92919645");
     }
-    rect(c,x+27,y+9,2,26,"#a6a092");
-   }else buildingBlock(c,x,y,i,j);
+   }else{
+    rect(c,bx+6,by+7,bw-12,bh-12,"#263639");
+    rect(c,bx+8,by+9,bw-16,bh-16,"#4563583b");
+   }
+   if(n>.72){
+    rect(c,bx+bw-9,by-3,5,5,"#766b70");
+    rect(c,bx+bw-8,by-4,3,2,"#1c2731");
+   }
   }
  }
- // Pasajes verticales y calzadas con veredas dibujadas por encima de los
- // tejados: una misma gramática urbana en toda la vista.
- for(const x of [105,218,334,442]){
-  rect(c,x-5,0,23,300,"#706b71");
-  rect(c,x-3,0,19,300,"#2d323f");
-  rect(c,x-3,0,2,300,"#948987");
-  rect(c,x+14,0,2,300,"#aaa095");
-  for(let y=0;y<300;y+=25){
-   rect(c,x+5,y+6,2,10,"#bfb4a37a");
-   if(noise(x,y,53)>.7)rect(c,x+10,y+19,3,1,"#9baab646");
+ // Avenidas curvadas, callejones y travesías. El trazo es de plano urbano,
+ // no barras que atraviesan cada edificio en un enrejado idéntico.
+ const arteries=[
+  [[-20,68],[84,63],[166,69],[256,66],[353,75],[500,67]],
+  [[-20,140],[90,133],[173,145],[267,137],[376,145],[500,137]],
+  [[-20,270],[103,268],[222,271],[345,274],[500,267]],
+  [[97,-20],[93,70],[108,131],[103,177],[97,221],[105,320]],
+  [[230,-20],[238,78],[226,144],[235,180],[231,220],[220,320]],
+  [[378,-20],[369,65],[376,137],[361,181],[368,235],[375,320]],
+  [[-10,101],[58,98],[141,107],[207,100],[290,106],[481,103]]
+ ];
+ for(let i=0;i<arteries.length;i++){
+  const route=arteries[i],w=i===6?7:i>2?12:13;
+  cartoStroke(c,route,w+4,"#111923");
+  cartoStroke(c,route,w,"#48515a");
+  cartoStroke(c,route,w-2,"#313c48");
+  cartoStroke(c,route,.7,"#90949732");
+ }
+ // Callejones diagonales separan barrios; pocos, para conservar zonas de calma.
+ const lanes=[
+  [[0,34],[140,115]],[[145,0],[193,90]],[[298,2],[335,114]],
+  [[0,249],[165,289]],[[286,223],[343,300]],[[438,0],[471,119]],
+  [[156,151],[207,217]],[[426,155],[483,231]]
+ ];
+ for(const path of lanes){
+  cartoStroke(c,path,6,"#17212b");
+  cartoStroke(c,path,3.5,"#58626b8c");
+ }
+ // El Sena es una curva continua, con orillas de piedra, tres pasos y reflejos.
+ const north=[],south=[];
+ for(let x=-6;x<=486;x+=6){
+  const drift=3*Math.sin(x/58)+3*Math.sin(x/121+1.4);
+  north.push([x,182+drift]);south.push([x,212+drift]);
+ }
+ if(typeof c.beginPath==="function"){
+  c.beginPath();c.moveTo(north[0][0],north[0][1]);
+  north.slice(1).forEach(([x,y])=>c.lineTo(x,y));
+  south.slice().reverse().forEach(([x,y])=>c.lineTo(x,y));
+  c.closePath();c.fillStyle="#172f3c";c.fill();
+ }else rect(c,0,180,480,32,"#172f3c");
+ cartoStroke(c,north,2.7,"#a69b8b");
+ cartoStroke(c,south,2.7,"#a69b8b");
+ cartoStroke(c,north,1,"#e1c8a17a");
+ cartoStroke(c,south,1,"#e1c8a17a");
+ for(let x=12;x<480;x+=10){
+  const yy=196+3*Math.sin(x/58)+3*Math.sin(x/121+1.4);
+  const n=noise(x,91,56);
+  rect(c,x,yy+Math.round((n-.5)*19),5+n*4,1,
+   n>.7?"#d2b18f74":"#7898a05a");
+  if(n>.8)rect(c,x+2,yy+8,2,1,"#e2c5a454");
+ }
+ for(const bx of [100,231,367]){
+  const drift=3*Math.sin(bx/58)+3*Math.sin(bx/121+1.4);
+  cartoStroke(c,[[bx-5,175+drift],[bx-5,220+drift]],17,"#151c27");
+  cartoStroke(c,[[bx-5,175+drift],[bx-5,220+drift]],12,"#77777b");
+  cartoStroke(c,[[bx-5,175+drift],[bx-5,220+drift]],9,"#9b938f");
+  for(let yy=180;yy<220;yy+=7){
+   rect(c,bx-11,yy+drift,3,1,"#dcc19e8c");
+   rect(c,bx+2,yy+drift,3,1,"#dcc19e8c");
   }
  }
- for(const y of [69,140,222,277])boulevard(c,y,17);
- riverside(c);
- // Plazas y arbolado urbano en torno a los bulevares.
- for(const [x,y] of [[30,62],[67,126],[165,124],[303,65],[371,134],[459,262]]){
-  rect(c,x-12,y-4,25,18,"#767673");
-  rect(c,x-10,y-2,21,14,"#536456");
-  streetTree(c,x-2,y+5,7);
-  rect(c,x+9,y+8,3,3,"#bdaf99");
+ // Faroles de latón; pocas luces cálidas sirven de puntos de atención.
+ for(const [lx,ly] of [[56,67],[157,135],[311,72],[451,138],[77,270],[296,269],[409,269],[195,97]]){
+  glow(c,lx,ly,23,"234,183,127",.10);
+  cartoCircle(c,lx,ly,2.2,"#f2d1a0","#8e7159",.8);
+  cartoCircle(c,lx,ly,5,null,"#bd9f7440",.6);
  }
- // Marquesinas, jardines, bancos y coches aparcados complementan el tráfico
- // animado que ya existe en VTM_AMBIENCE.
- for(const [x,y,color] of [[19,96,"#646576"],[76,260,"#776267"],[291,116,"#52616c"],[455,109,"#5b6b70"]]){
-  rect(c,x+2,y+5,23,4,"#111820");
-  rect(c,x,y,27,10,color);
-  rect(c,x+5,y+2,14,5,"#293b4b");
-  rect(c,x+8,y+3,7,2,"#7897a5");
-  rect(c,x+2,y+9,4,2,"#1b202c");
-  rect(c,x+21,y+9,4,2,"#1b202c");
- }
- for(const [x,y] of [[54,118],[325,119],[36,252]]){
-  rect(c,x,y,15,3,"#a89078");rect(c,x+2,y+3,2,4,"#4c4245");rect(c,x+12,y+3,2,4,"#4c4245");
- }
- // Ligera viñeta ambiental: no oscurece la zona central ni tapa etiquetas.
- rect(c,0,0,480,3,"#0b111a66");
- rect(c,0,296,480,4,"#0a111a66");
+ // Orden visual: ribete suave, indicios de papel antiguo y nombre del río.
+ cartoStroke(c,[[3,3],[477,3],[477,297],[3,297],[3,3]],.75,"#c3a88945");
+ c.save();c.textAlign="center";c.font="italic 9px Georgia,serif";
+ c.fillStyle="#c4c8bb96";c.fillText("LA SEINE",58,199);
+ c.restore();
+ rect(c,0,0,480,2,"#101823b0");
+ rect(c,0,297,480,3,"#101823b0");
 }
 /* Los edificios y sus etiquetas son marcadores a escala de barrio, no paneles
    gigantes que tapen varias manzanas. El centro del marcador se conserva
@@ -407,44 +524,83 @@ function landmarkArchitecture(c,id,cx,cy,color){
  // Puertas resaltadas por el suelo mojado, sin alterar los hotspots.
  rect(c,cx-4,cy+15,8,2,"#d2b49a55");
 }
+/* Señalética de ciudad iluminada, reemplaza a las casitas pixeladas. */
+function cartoSymbol(c,id,x,y,accent){
+ c.save();
+ c.strokeStyle="#e9d6b8";c.fillStyle="#e9d6b8";c.lineWidth=1.25;
+ if(typeof c.beginPath!=="function"){
+  rect(c,x-5,y-4,10,7,accent);
+ }else{
+  const line=(pts)=>cartoStroke(c,pts,1.3,"#e9d6b8");
+  if(id==="hemeroteca"||id==="elysee"){
+   line([[x-7,y-4],[x,y-8],[x+7,y-4]]);
+   line([[x-7,y+5],[x+7,y+5]]);
+   for(const dx of [-5,0,5])line([[x+dx,y-3],[x+dx,y+4]]);
+  }else if(id==="stjuly"){
+   c.beginPath();c.arc(x,y,6,Math.PI,0);
+   c.lineTo(x+6,y+6);c.lineTo(x-6,y+6);c.closePath();c.stroke();
+   cartoCircle(c,x,y+1,1.1,"#e9d6b8");
+  }else if(id==="tuneles"){
+   c.beginPath();c.arc(x,y+5,7,Math.PI,0);c.stroke();
+   line([[x-7,y+5],[x+7,y+5]]);
+   for(const dx of [-4,0,4])line([[x+dx,y-1],[x+dx,y+5]]);
+  }else if(id==="policia"){
+   line([[x-6,y-6],[x+6,y-6],[x+6,y+6],[x-6,y+6],[x-6,y-6]]);
+   line([[x-3,y-2],[x+3,y-2]]);line([[x-3,y+1],[x+3,y+1]]);line([[x-3,y+4],[x+2,y+4]]);
+  }else if(id==="passy"){
+   line([[x-7,y-2],[x,y-8],[x+7,y-2],[x+7,y+6],[x-7,y+6],[x-7,y-2]]);
+   line([[x-2,y+6],[x-2,y],[x+2,y],[x+2,y+6]]);
+  }else if(id==="bastilla"){
+   line([[x-6,y-5],[x+6,y-5],[x+6,y+6],[x-6,y+6],[x-6,y-5]]);
+   line([[x-3,y-5],[x-3,y+1]]);line([[x+3,y-5],[x+3,y+1]]);
+   line([[x-6,y+1],[x+6,y+1]]);
+  }else if(id==="saintdenis"){
+   line([[x-7,y-2],[x-3,y-6],[x+1,y-2],[x+5,y-6],[x+7,y-2]]);
+   line([[x-7,y-2],[x-7,y+6],[x+7,y+6],[x+7,y-2]]);
+   line([[x-3,y+1],[x-3,y+5]]);line([[x+2,y+1],[x+2,y+5]]);
+  }
+ }
+ c.restore();
+}
 function mapDestination(c,loc,active,color,locked,time){
  const cx=Math.round((loc.x+loc.w/2)/2.1);
  const cy=Math.round((loc.y+loc.h/2)/2);
- landmarkArchitecture(c,loc.id,cx,cy,color);
- const label=mapNames[loc.id]||loc.name;
- const labelWidth=Math.max(37,Math.min(80,Math.ceil(label.length*4.2+10)));
- const lx=Math.round(cx-labelWidth/2),ly=cy+19;
- // Rótulo discreto, independiente del edificio y legible sobre tejados.
- rect(c,lx-1,ly-1,labelWidth+2,12,"#0d121bbd");
- rect(c,lx,ly,labelWidth,10,locked?"#3e303d":"#222733");
- rect(c,lx,ly,labelWidth,1,active?"#e2b981":color);
- text(c,label,cx,ly+8,7,active?"#ffe1aa":"#e0d4c4");
+ const accent=active?"#e5b97c":locked?"#9e818a":"#c4b49d";
+ // Sombra difusa, aro de latón y sello individual por institución.
+ glow(c,cx,cy,active?31:23,active?"226,159,102":"201,172,133",active?.2:.065);
+ cartoCircle(c,cx,cy+2,17,"#0b1520ad","#e7c89c36",1);
+ cartoCircle(c,cx,cy,14,"#25313b","#bda58a",1.5);
+ cartoCircle(c,cx,cy,11,"#34404a","#796a66",.8);
+ cartoSymbol(c,loc.id,cx,cy,accent);
  if(locked){
-  rect(c,cx+15,cy-15,8,8,"#4f3743");
-  rect(c,cx+17,cy-13,4,4,"#c98c92");
+  cartoCircle(c,cx+12,cy-12,4,"#5c3344","#c68f9c",.7);
  }
+ const label=mapNames[loc.id]||loc.name;
+ const width=Math.min(94,Math.max(49,Math.ceil(label.length*5.0+20)));
+ const xx=Math.max(5,Math.min(475-width,cx-width/2));
+ const yy=cy+17;
+ cartoPlate(c,xx,yy,width,16,"#101823ed",active?"#e3b67c":"#9483778c");
+ rect(c,xx+6,yy+3,2,10,active?"#dfb786":color||"#a99a87");
+ c.save();c.textAlign="center";c.font="600 9px Georgia,serif";
+ c.fillStyle=active?"#ffdfac":"#e8ded0";
+ c.fillText(label,xx+width/2+2,yy+11.5);
+ c.restore();
  if(active){
-  const pulse=Math.sin(time*2.8+cx)*.05+.16;
-  glow(c,cx,cy-21,14,"238,191,121",pulse);
-  rect(c,cx-2,cy-32,5,8,"#ecc58d");
-  text(c,"!",cx,cy-25,6,"#2a2230");
+  cartoCircle(c,cx+12,cy-13,4.5,"#f1cc92","#f9e0b5",.7);
+  c.save();c.font="bold 8px Georgia,serif";c.textAlign="center";c.fillStyle="#30202b";
+  c.fillText("!",cx+12,cy-10);c.restore();
  }
 }
 function mapResidence(c){
- // La residencia comparte escala con los otros destinos; el personaje aparece
- // encima, sin quedar encerrado dentro de un cartel rectangular de 85x55 px.
- const cx=43,cy=256;
- rect(c,cx-17,cy-13,34,17,"#12141d99");
- rect(c,cx-13,cy-17,27,5,"#a48a80");
- rect(c,cx-12,cy-12,25,15,"#4b3a45");
- rect(c,cx-8,cy-8,5,6,"#e0b38a");
- rect(c,cx+4,cy-8,5,6,"#ac9aa5");
- rect(c,cx-2,cy-8,5,11,"#211d29");
- // Rótulo sobre la casa, lejos de la barra inferior de controles.
- rect(c,10,220,70,13,"#11151ee8");
- rect(c,11,221,68,11,"#322b39");
- rect(c,12,221,66,1,"#b89a7c");
- text(c,"RESIDENCIA",45,229,7,"#f1d6b7");
+ const x=43,y=257;
+ // Residencia reconocible, sin ocultar el avatar ni mover la puerta.
+ glow(c,x,y,23,"215,173,139",.10);
+ cartoCircle(c,x,y,13,"#27313c","#d8b792",1.2);
+ cartoStroke(c,[[x-7,y-2],[x,y-8],[x+7,y-2]],1.3,"#e2c7a5");
+ cartoStroke(c,[[x-6,y-2],[x-6,y+6],[x+6,y+6],[x+6,y-2]],1.2,"#e2c7a5");
+ cartoPlate(c,8,220,77,16,"#101823ed","#bca17e");
+ c.save();c.textAlign="center";c.font="600 9px Georgia,serif";
+ c.fillStyle="#f1d6b7";c.fillText("RESIDENCIA",46,231.5);c.restore();
 }
 function drawCity(c,game,D,N,time){
  drawCached(c,"paris",cityBackground);
