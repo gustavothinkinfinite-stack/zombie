@@ -178,10 +178,34 @@ window.VTM_CITY_LIFE=(()=>{
   rect(c,238,57,4,4,info.open?"#83a584":"#a56a74");
   // Clientela distinta del encargado; itinerarios modestos entre dos vitrinas.
   for(let i=0;i<info.customers;i++){
-   const p=time*(3+i*.8)+i*37+g.clock.night*11,x=182+Math.sin(p*.14)*23+i*23;
-   const y=239+Math.sin(p*.2+i)*6;
+   const p=time*(3+i*.8)+i*37+g.clock.night*11,x=[151,180,311,342][i]+Math.sin(p*.14)*8;
+   const y=247+Math.sin(p*.2+i)*4;
    human(c,x,y,["#69556d","#63717b","#77635a","#637064"][i],undefined,time);
   }
+ }
+ function nearShopVisitor(g,time=0,range=22){
+  if(g?.scene!=="sidevenue")return null;
+  const shop=window.VTM_SHOPS?.byId[g.sidevenue],state=shopState(g,shop);
+  if(!shop||!state?.open)return null;
+  const entries=Array.from({length:state.customers},(_,i)=>{
+   const p=time*(3+i*.8)+i*37+g.clock.night*11;
+   const x=[151,180,311,342][i]+Math.sin(p*.14)*8,y=247+Math.sin(p*.2+i)*4;
+   return {id:shop.id+":customer:"+i,name:"Cliente nocturno",x,y,d:Math.hypot(g.x-x,g.y-y)};
+  });
+  return entries.filter(x=>x.d<=range).sort((a,b)=>a.d-b.d)[0]||null;
+ }
+ function interactShop(g,time=0){
+  const visitor=nearShopVisitor(g,time);if(!visitor)return false;
+  const state=init(g),key=g.clock.night+":"+visitor.id;
+  const shop=window.VTM_SHOPS?.byId[g.sidevenue],already=!!state.talked[key];
+  const body=already?"La persona continúa comprando y no tiene más novedades esta noche.":
+   "Un cliente examina los artículos y comenta que la actividad del establecimiento cambia notablemente después de medianoche. No conoce los secretos de los Vástagos.";
+  api?.ask?.("Cliente de "+shop.name,body+"\n\n"+shopReport(g,shop),
+   [{label:already?"Despedirte":"Escuchar y tomar nota",action:()=>{
+     if(!already){state.talked[key]=true;api?.log?.("Hablaste con un cliente nocturno de "+shop.name+".");}
+     api?.refresh?.();api?.save?.();
+   }}],"COMERCIO · VIDA COTIDIANA");
+  return true;
  }
  function bulletin(g){
   const rows=recent(g,null,7);
@@ -229,5 +253,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,
-  pedestrian,walkers,nearWalker,nearEvent,districtDraw,shopDraw,bulletin,interact,interactEvent,interactWalker,summary,version:"15.0"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,interact,interactShop,interactEvent,interactWalker,summary,version:"15.0"});
 })();
