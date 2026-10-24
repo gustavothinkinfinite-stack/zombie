@@ -1,6 +1,11 @@
 name: Hostinger — Validación de producción
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - tests/browser-smoke.cjs
+      - .github/workflows/production-smoke.yml
   workflow_dispatch:
 
 permissions:
@@ -26,10 +31,13 @@ jobs:
         run: npx playwright install chromium --with-deps
       - name: Recorrer la versión pública en navegador aislado
         run: node tests/browser-smoke.cjs
-      - name: Adjuntar captura si falla una comprobación
-        if: failure()
+      - name: Guardar diagnóstico de Chromium
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hostinger-error-navegador
-          path: browser-smoke-failure.png
-          if-no-files-found: ignore
+          name: chromium-hostinger-diag
+          path: |
+            browser-smoke-report.json
+            browser-smoke-trace.zip
+            browser-smoke-failure.png
+          if-no-files-found: warn
