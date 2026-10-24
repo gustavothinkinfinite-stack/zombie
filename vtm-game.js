@@ -610,9 +610,11 @@
   return {dice,success:net>0,net,botch,count,modifiers:traits.description};
  }
  function questAction(q,hard){
+  const prepared=!!ST.init(game).locations[q.place]?.success;
   const checks=hard?{skill:"Sigilo",attr:"Astucia",difficulty:q.difficulty+1}:{skill:q.skill,attr:q.attr,difficulty:q.difficulty};
+  if(prepared)checks.difficulty=Math.max(4,checks.difficulty-1);
   const rolled=dicePool(checks.attr,checks.skill,checks.difficulty);
-  const reward=rolled.success?q.praise+(hard?6:0):-(q.penalty+(hard?3:0));
+  const reward=rolled.success?q.praise+(hard?6:0)+(prepared?5:0):-(q.penalty+(hard?3:0)-(prepared?2:0));
   game.readyReport={id:q.id,success:rolled.success,praise:reward,detail:rolled.success?q.normal:q.fail,
    dice:rolled.dice,net:rolled.net,skill:checks.skill,attribute:checks.attr,difficulty:checks.difficulty};
   const narrative=rolled.success?q.normal:q.fail;
@@ -620,7 +622,7 @@
   const desc=narrative+"\n\nTirada: "+checks.attr+" ("+game.character.attr[checks.attr]+") + "+checks.skill+
    " ("+(game.character.skills[checks.skill]||0)+"), dificultad "+checks.difficulty+
    ". Dados: ["+rolled.dice.join(", ")+"] · Éxitos netos: "+rolled.net+(rolled.botch?" · PIFIA":"")+
-   ". Volvé con tu maestro para informar del resultado.";
+   (prepared?". La investigación previa facilitó el encargo.":"")+". Volvé con tu maestro para informar del resultado.";
   askMenu(rolled.success?"Objetivo cumplido":"La misión se complicó",desc,[{label:"Volver a informar",action:()=>{}}],rolled.success?"ÉXITO":"FRACASO");
   hud();save();
  }
@@ -800,14 +802,15 @@
  function resolvePersonalAtTarget(arc){
    const quest=game.sideQuests[arc.id];
    if(!quest||quest.status!=="active")return;
+   const prepared=!!quest.prepared;
    const choices=arc.options.map(option=>({
-    label:option.label+" · "+option.attr+" + "+option.skill+" (dif. "+option.difficulty+")",
+    label:option.label+" · "+option.attr+" + "+option.skill+" (dif. "+Math.max(4,option.difficulty-(prepared?1:0))+")",
     action:()=>{
-     const dice=dicePool(option.attr,option.skill,option.difficulty);
+     const dice=dicePool(option.attr,option.skill,Math.max(4,option.difficulty-(prepared?1:0)));
      const successful=dice.success;
      const result={
-       success:successful,method:option.key,exposure:successful?option.exposure:option.exposure+9,
-       bonus:successful?option.bonus:0,dice:dice.dice,net:dice.net,
+       success:successful,method:option.key,exposure:Math.max(0,(successful?option.exposure:option.exposure+9)-(prepared?4:0)),
+       bonus:successful?option.bonus+(prepared?3:0):0,dice:dice.dice,net:dice.net,
        description:successful?option.success:option.failure
      };
      quest.result=result;quest.status="ready";
