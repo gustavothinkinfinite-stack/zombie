@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -337,6 +337,7 @@
   if(CIV){CIV.init(game);CIV.tick(game);}
   if(CHASE)CHASE.init(game);
   M.init(game);
+  if(VITAE)VITAE.init(game);
   ST.init(game);
   TACT.init(game);
   EQUIP.init(game);
@@ -548,6 +549,10 @@
    if(line)line.textContent="Sigilo "+(stealth.crouched?"activo":"inactivo")+
     " · patrulla: "+stealth.mode+" · alerta "+stealth.alert+"/100 · huidas "+stealth.escapes;
   }
+  if(VITAE){
+   const line=$("vitaeStatus");
+   if(line)line.textContent=VITAE.summary(game);
+  }
   if(CIV){const summary=CIV.summary(game),line=$("consequencesStatus");
    if(line)line.textContent="Vigilancia en "+(summary.district||"París")+": "+summary.local+"/100 · testigos: "+summary.witnesses;
   }
@@ -727,10 +732,14 @@
  function traitsPowerUse(name){TACTUI.powersMenu();}
  function traitsHunt(){
    if(!game.embraced||!["paris","venue"].includes(game.scene)||M.used(game,"hunt:"+(game.venue||game.scene)))return;
-   const hunger=SU.checkHunger();
+   const restriction=VITAE?.feedingRestriction(game);
+   if(restriction){askMenu("Restricción de la sangre",restriction,[{label:"Regresar",action:traitsMenu}],"FASE XX · VENTRUE");return;}
+   if(VITAE&&M.init(game).blood<=2)VITAE.frenzy(game,"hambre antes de cazar");
+   else if(!VITAE)SU.checkHunger();
    const roll=dicePool("Percepción","Callejeo",7);
    const result=M.huntResult(game,roll);
    if(!result)return;
+   VITAE?.afterHunt(game,result,roll);
    const huntingCase=COURT.hunting(game,game.scene==="venue"?game.venue:null,{success:roll.success});
    if(huntingCase)log("La caza en otro dominio quedó anotada para su eventual revisión por la corte.");
    if(result.exposure)exposure(result.exposure,"La caza nocturna puso en riesgo la Mascarada.");
@@ -754,6 +763,7 @@
      ...(REACT?[{label:"París reactivo · investigar el robo de Bastilla",action:REACT.menu}]:[]),
      ...(REGION?[{label:"París reactivo · investigar los otros siete barrios",action:REGION.menu}]:[]),
      ...(CIV?[{label:"Mascarada y vigilancia policial · La ciudad recuerda",action:CIV.menu}]:[]),
+     ...(VITAE?[{label:"La Sangre y la Bestia · clanes, hambre y Frenesí",action:VITAE.menu}]:[]),
      ...(CHASE&&game.scene==="district"?[{
       label:"Sigilo · "+(CHASE.summary(game).crouched?"desactivar postura discreta":"caminar agachado y en silencio"),
       action:()=>{CHASE.toggle(game);hud();save();traitsMenu();}
@@ -770,7 +780,7 @@
    if(game.embraced){
      choices.push({label:"Disciplinas · poderes del clan",action:traitsPowers});
      choices.push({label:"Disciplinas aplicadas a personas y lugares",disabled:!WORLD.context(game),action:WORLDUI.menu});
-     choices.push({label:"Cazar · reponer Reserva de Sangre",disabled:!["paris","venue"].includes(game.scene)||m.blood>=10||M.used(game,"hunt:"+(game.venue||game.scene)),action:traitsHunt});
+     choices.push({label:"Cazar · reponer Reserva de Sangre",disabled:!["paris","venue"].includes(game.scene)||m.blood>=10||M.used(game,"hunt:"+(game.venue||game.scene))||!!VITAE?.feedingRestriction(game),action:traitsHunt});
    }
    choices.push({label:"Gastar Voluntad para mejorar futuras pruebas",disabled:m.will<=0||M.used(game,"will"),action:traitsWill});
    choices.push({label:"Cerrar",action:()=>{}});
@@ -785,11 +795,12 @@
   const politicalDie=faction>=25?1:faction<=-25?-1:0;
   const bonus=(game.access?.[buffs[skill]]?1:0)+politicalDie;
   const traits=M.modifiers(game,attribute,skill);
-  const count=Math.max(1,(c.attr[attribute]||1)+(c.skills[skill]||0)+bonus+traits.bonus);
+  const clan=VITAE?.weakness(game,attribute,skill)||{bonus:0,description:""};
+  const count=Math.max(1,(c.attr[attribute]||1)+(c.skills[skill]||0)+bonus+traits.bonus+clan.bonus);
   const dice=Array.from({length:count},()=>Math.floor(Math.random()*10)+1);
   const hits=dice.filter(d=>d>=difficulty).length,ones=dice.filter(d=>d===1).length;
   const net=Math.max(0,hits-ones),botch=hits===0&&ones>0;
-  return {dice,success:net>0,net,botch,count,modifiers:traits.description};
+  return {dice,success:net>0,net,botch,count,modifiers:[traits.description,clan.description].filter(Boolean).join("; ")};
  }
  function questAction(q,hard){
   const prepared=!!ST.init(game).locations[q.place]?.success;
@@ -1621,7 +1632,9 @@
    game.venueReturn=game.scene==="district"?{scene:"district",district:game.district,x:game.x,y:game.y}:null;
    game.venue=location.id;if(game.scene==="paris")game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;walkTarget=null;walkRoute=[];
    if(!game.arc.visited.includes(location.id))game.arc.visited.push(location.id);
-   log("Visitaste "+location.name+".");advanceClock(12);hud();save();
+   log("Visitaste "+location.name+".");
+   const beauty=VITAE?.observeBeauty(game);
+   advanceClock(12+(beauty?.lost||0));hud();save();
  }
  function venueInteract(){
   const npc=N.byLocation[game.venue],env=N.environments[game.venue];
@@ -1683,6 +1696,7 @@
   [{label:"Acepto el Abrazo y sus consecuencias",action:()=>{
     game.embraced=true;embraceFxUntil=visualTime+4;game.character.disciplines={};game.character.status="Vástago";
     M.init(game).blood=10;
+    VITAE?.init(game);
     log("Recibiste el Abrazo. Ya pertenecés al clan "+game.character.clan+".");
     save();hud();disciplineCeremony();
    }},
@@ -2302,6 +2316,11 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(VITAE){
+   const line=document.createElement("p");
+   line.textContent="Vida de Vástago: "+VITAE.summary(game);
+   root.appendChild(line);
+  }
   if(CHASE){
    const status=CHASE.summary(game),line=document.createElement("p");
    line.textContent="Persecución y sigilo: "+(status.crouched?"discreto":"normal")+
@@ -2360,9 +2379,9 @@
   COURTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock});
   POLUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
   ECONUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,actions:traitsMenu});
-  WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu,observedPower:(name,result)=>CIV?.power(game,name,result)});
-  TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu});
-  SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
+  WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu,observedPower:(name,result)=>{CIV?.power(game,name,result);VITAE?.ritual(game,name);}});
+  TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu,vitaeFrenzy:(reason)=>VITAE?.frenzy(game,reason),vitaeRitual:(name)=>VITAE?.ritual(game,name)});
+  SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,vitaeTerror:source=>VITAE?.terror(game,source)});
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
   if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
   if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
@@ -2370,6 +2389,7 @@
   if(REGION)REGION.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(CIV)CIV.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,faction:increaseFaction});
   if(CHASE)CHASE.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock});
+  if(VITAE)VITAE.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
   if(CITY){const line=document.createElement("p");line.id="cityLifeStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(REACT){const line=document.createElement("p");line.id="reactiveStatus";line.className="caption";
@@ -2379,6 +2399,8 @@
   if(CIV){const line=document.createElement("p");line.id="consequencesStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(CHASE){const line=document.createElement("p");line.id="stealthStatus";line.className="caption";
+    document.querySelector(".exploration-panel")?.appendChild(line);}
+  if(VITAE){const line=document.createElement("p");line.id="vitaeStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
