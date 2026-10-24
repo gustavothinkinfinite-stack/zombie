@@ -74,7 +74,7 @@ window.VTM_ELIZABETH=(()=>{
   return s;
  }
  const has=(s,id)=>s.evidence.includes(id);
- const localPlace=g=>g.scene==="venue"?g.venue:g.scene==="district"?g.district:null;
+ const localPlace=g=>g.scene==="venue"?g.venue:g.scene==="district"?g.district:(window.VTM_CASE_INTERIORS?.byId(g.scene)?.district||null);
  function canAttempt(g,id){
   const s=init(g),d=byId[id];
   if(!d)return "Pista inexistente.";
@@ -257,7 +257,15 @@ window.VTM_ELIZABETH=(()=>{
      [{label:"Comenzar la investigación",action:menu}],"ELIZABETH PARKER · NUEVO CASO");
    }});
   } else {
-   for(const d of scenes.filter(item=>item.place===place)){
+   if(!window.VTM_CASE_INTERIORS?.byId(g.scene)){
+    const portals={hemeroteca:["case-apartment","Entrar al apartamento de Elizabeth"],saintdenis:["case-garage","Entrar al garaje de Vasseur"],bastilla:["case-hideout","Entrar al refugio de Bapthiste"]};
+    const entry=portals[place];
+    if(entry){
+      const canOpen=entry[0]==="case-apartment"||entry[0]==="case-garage"&&["mathieu","lucien","erebos"].some(k=>s.evidence.includes(k))||entry[0]==="case-hideout"&&s.evidence.includes("garage")&&s.evidence.length>=4;
+      options.push({label:entry[1]+(canOpen?"":" · requiere más pistas"),disabled:!canOpen,action:()=>api?.enterInterior?.(entry[0])});
+    }
+   }
+   for(const d of (window.VTM_CASE_INTERIORS?.byId(g.scene)?[]:scenes.filter(item=>item.place===place))){
     const reason=canAttempt(g,d.id);
     options.push({label:d.label+(reason?" · "+reason:""),disabled:!!reason,action:()=>investigate(d.id)});
    }
@@ -282,5 +290,5 @@ window.VTM_ELIZABETH=(()=>{
    (id==="elysee"&&s.status==="reported"&&!s.court)||
    (id==="tuneles"&&s.status==="reported"&&!s.hunters);
  }
- return Object.freeze({bind,init,summary,start,canAttempt,attempt,canConfront,confront,canReport,report,court,hunters,atPlace,menu,scenes,endings});
+ return Object.freeze({bind,init,summary,start,canAttempt,attempt,canConfront,confront,canReport,report,court,hunters,atPlace,menu,scenes,endings,investigate,confrontation});
 })();
