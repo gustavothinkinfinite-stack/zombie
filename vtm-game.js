@@ -756,6 +756,11 @@
   const root=$("journalDetail");root.innerHTML="";
   const p=document.createElement("p");p.textContent="Domitor: "+D.clans[game.character.clan].master+" · Aprecio: "+game.appreciation+"/100 · Encargos completados: "+game.questIndex+" · Estado: "+(game.embraced?"Vástago":"Ghoul");root.appendChild(p);
   if(game.activeQuest){const q=questObj(game.activeQuest),r=document.createElement("p");r.textContent="Misión actual: "+q.title+" — "+q.summary+(game.readyReport?" / Regresá a informar.":"");root.appendChild(r);}
+  if(game.activeQuest==="archivos"||game.arc.outcome){
+   const p=document.createElement("p");p.textContent="Caso Dupont: "+game.arc.clues.length+" fuentes investigadas · "+game.arc.clues.map(k=>C.investigation.sources[k]?.name||k).join(", ")+". "+(game.arc.outcome?"Resolución: "+game.arc.outcome.approach+".":"Visitá dos fuentes y hablá con Dupont en la hemeroteca.");
+   root.appendChild(p);
+  }
+  const rep=document.createElement("p");rep.textContent="Exposición de la Mascarada: "+game.exposure+"/100 · Relación con Dupont: "+game.relations.dupont+" (−5 a +5) · Objetos examinados en la residencia: "+Object.keys(game.observed).filter(k=>game.observed[k]).length;root.appendChild(rep);
   game.history.forEach(entry=>{const r=document.createElement("p");r.textContent="• "+entry;root.appendChild(r);});
   $("journalModal").classList.remove("hidden");
  }
