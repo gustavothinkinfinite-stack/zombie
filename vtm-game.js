@@ -1218,7 +1218,7 @@
  function drawWorld(){
   if(!game)return;
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
-  if(G&&effectsEnabled)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime);
+  if(G&&effectsEnabled)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan);
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
