@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -303,6 +303,7 @@
   game.venueReturn=game.venueReturn||null;
   game.venue=game.venue||null;
   game.caseReturn=game.caseReturn||null;
+  if(ACT)ACT.init(game,P);
   if(game.scene?.startsWith("case-")&&!CI?.byId(game.scene)){
    game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.caseReturn=null;
   }
@@ -1436,6 +1437,7 @@
   if(CI.byId(game.scene))return;
   game.caseReturn={scene:game.scene,venue:game.venue,district:game.district,x:game.x,y:game.y};
   game.scene=id;game.x=p.start.x;game.y=p.start.y;walkTarget=null;walkRoute=[];keys.clear();
+  if(ACT)ACT.ensure(game,id,P);
   advanceClock(8);log("Entraste a "+p.title+".");hud();save();
  }
  function leaveCaseInterior(){
@@ -1936,9 +1938,8 @@
  function drawCaseInterior(){
   if(!CI?.byId(game.scene))return;
   CI.draw(g,game.scene,visualTime,game);
-  if(game.scene==="case-hideout"&&game.combat?.records?.bapthiste!=="won"&&G){
-    G.character(g,240,119,{npc:{id:"bapthiste",name:"Bapthiste",color:"#694b55",skin:"#885b49",hair:"#15151b"},clan:"Brujah",facing:"down",walking:false});
-  }
+  if(VIS)VIS.draw(g,game.scene,visualTime,game,effectsEnabled);
+  if(ACT)ACT.draw(g,game,visualTime,G);
   portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
  function drawWorld(){
@@ -1955,7 +1956,12 @@
  function nearInteractive(){
   if(!game)return "";
   const room=game.scene;
-  if(CI?.byId(room)){const spot=CI.nearest(game);return spot?"E · "+spot.name:"";}
+  if(CI?.byId(room)){
+   const spot=CI.nearest(game),actor=ACT?.nearby(game,37);
+   if(spot?.id==="exit"&&spot.d<24)return "E · "+spot.name;
+   if(actor)return "E · Hablar con "+actor.name;
+   return spot?"E · "+spot.name:"";
+  }
   if(room==="sidevenue"){
     const spot=K?.nearest(game);
     return spot?"E · "+spot.name:"";
@@ -2027,9 +2033,23 @@
   const near=nearInteractive();if(near)$("floatingHint").textContent=near;
   else $("floatingHint").textContent=["house","study","quarters"].includes(game.scene)?"WASD: mover · E: explorar la residencia":"WASD: mover · E: investigar / regresar";
  }
+ let caseSaveSeconds=0;
  function frame(time){
   const dt=Math.min(.045,(time-lastTime)/1000||0);lastTime=time;
-  visualTime+=dt;moveStep(dt);drawWorld();
+  visualTime+=dt;moveStep(dt);
+  if(game&&ACT&&CI?.byId(game.scene)&&!overlayOpen()&&!game.combat?.active){
+   const events=ACT.step(game,dt,P);
+   for(const event of events){
+    if(event.type==="suspicion"){
+     if(game.elizabeth)game.elizabeth.alert=Math.min(6,(game.elizabeth.alert||0)+1);
+     exposure(3,event.text);
+    }else if(event.type==="fled")log(event.text);
+    hud();save();
+   }
+   caseSaveSeconds+=dt;
+   if(caseSaveSeconds>12){caseSaveSeconds=0;save();}
+  }else caseSaveSeconds=0;
+  drawWorld();
   if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$("notice").classList.add("hidden");}
   window.requestAnimationFrame(frame);
  }
@@ -2135,6 +2155,7 @@
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
+  if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
   // El resumen completo incluye datos de combate y economía: mantenerlo accesible
