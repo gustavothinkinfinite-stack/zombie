@@ -43,7 +43,7 @@ window.VTM_TACTICS_UI=(()=>{
   const actions=[
    {label:"Pelear sin armas · Destreza + Pelea",id:"golpe"},
    {label:"Atacar con un arma improvisada · Destreza + Armas Cuerpo a Cuerpo",id:"arma"},
-   {label:"Usar un arma de fuego · Destreza + Armas de Fuego",id:"disparo",blocked:!(game.character.skills["Armas de Fuego"]>0)},
+   {label:"Usar un arma de fuego · Armas de Fuego y Recursos 2 o Aliados 2",id:"disparo",blocked:!(game.character.skills["Armas de Fuego"]>0&&(game.character.backgrounds.Recursos>=2||game.character.backgrounds.Aliados>=2))},
    {label:"Defender y esquivar · Destreza + Esquivar",id:"esquiva"},
    {label:"Intentar huir · Destreza + Atletismo",id:"huida"}
   ];
