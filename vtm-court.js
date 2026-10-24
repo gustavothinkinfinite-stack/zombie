@@ -160,6 +160,7 @@ window.VTM_COURT=(()=>{
   }
   if(sponsorship&&success)outcome.description+=" Tu recomendación fue reconocida por el protocolo.";
   addLog(g,rule.title+": "+(success?"aceptada":"aplazada")+".");
+  outcome.recognized=c.recognized;
   return outcome;
  }
  function hearable(g){
