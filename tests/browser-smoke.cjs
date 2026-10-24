@@ -73,7 +73,16 @@ const key="cronicas-paris-ghoul-v1";
     sessionStorage.removeItem("__cronicas_smoke_pending");
    }
   },key);
-  const places=["passy","stjuly","elysee","hemeroteca","saintdenis","policia","tuneles"];
+  const expectedTitles={
+   passy:"La valija del mensajero",
+   stjuly:"Una invitación falsificada",
+   elysee:"El pase extraviado",
+   hemeroteca:"Un legajo alterado",
+   saintdenis:"El cargamento desviado",
+   policia:"La carpeta extraviada",
+   tuneles:"La avería del conducto"
+  };
+  const places=Object.keys(expectedTitles);
   for(const district of places){
    await page.evaluate(([saveKey,id])=>{
     const game=JSON.parse(localStorage.getItem(saveKey));
@@ -92,7 +101,7 @@ const key="cronicas-paris-ghoul-v1";
     await page.keyboard.press("e");
     await page.waitForSelector("#dialog:not(.hidden)",{timeout:5000});
     const title=await page.locator("#dialogTitle").innerText();
-    assert.ok(title.length>0);
+    assert.equal(title.trim(),expectedTitles[district],`Escena equivocada en ${district}: ${title}`);
     await page.locator("#dialogClose").click();
     assert.equal(errors.length,0,errors.join("\n"));
    });
