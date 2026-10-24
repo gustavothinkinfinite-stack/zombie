@@ -412,10 +412,11 @@ function mapResidence(c){
  rect(c,cx-8,cy-8,5,6,"#e0b38a");
  rect(c,cx+4,cy-8,5,6,"#ac9aa5");
  rect(c,cx-2,cy-8,5,11,"#211d29");
- rect(c,13,278,66,13,"#11151ee8");
- rect(c,14,279,64,11,"#322b39");
- rect(c,15,279,62,1,"#b89a7c");
- text(c,"RESIDENCIA",46,287,7,"#f1d6b7");
+ // Rótulo sobre la casa, lejos de la barra inferior de controles.
+ rect(c,10,220,70,13,"#11151ee8");
+ rect(c,11,221,68,11,"#322b39");
+ rect(c,12,221,66,1,"#b89a7c");
+ text(c,"RESIDENCIA",45,229,7,"#f1d6b7");
 }
 function drawCity(c,game,D,N,time){
  drawCached(c,"paris",cityBackground);
