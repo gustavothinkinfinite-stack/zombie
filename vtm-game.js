@@ -675,7 +675,7 @@
      if(!seen){
        game.districtNotes[id]=true;
        log("Exploraste "+T.byId[game.district].name+": "+found.detail.title+".");
-       save();
+       hud();save();
      }
      askMenu(found.detail.title,found.detail.text+(seen?"\n\nYa observaste este rincón del barrio.":""),
       [{label:"Continuar el recorrido",action:()=>{}}],"EXPLORACIÓN · "+T.byId[game.district].name.toUpperCase());
