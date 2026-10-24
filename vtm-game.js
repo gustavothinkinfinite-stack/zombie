@@ -26,6 +26,9 @@
    btn.setAttribute("aria-pressed",String(effectsEnabled));
  }
  g.imageSmoothingEnabled=false;
+ // El lienzo físico tiene el doble de resolución; toda la simulación sigue
+ // utilizando exactamente las 480x300 coordenadas originales.
+ if(typeof g.setTransform==="function")g.setTransform(2,0,0,2,0,0);
  const ITEMS=[["concepto","Concepto"],["atributos","Atributos"],["habilidades","Habilidades"],["trasfondos","Trasfondos"],["virtudes","Virtudes"],["gratuitos","Puntos gratuitos"]];
  const PRIORITY_BUDGET_ATTR=[7,5,3],PRIORITY_BUDGET_SKILL=[13,9,5];
  const BASE_COLORS=["#17111c","#241c28","#302430","#433039","#785055","#c29b83","#ead4ac"];
@@ -2100,6 +2103,7 @@
  function drawWorld(){
   if(!game)return;
   canvas.classList.toggle("map-illustrated",game.scene==="paris");
+  g.imageSmoothingEnabled=game.scene==="paris";
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else if(CI?.byId(game.scene))drawCaseInterior();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,(game.scene==="paris"||game.scene==="district")?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
