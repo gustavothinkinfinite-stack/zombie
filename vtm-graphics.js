@@ -485,10 +485,10 @@ function residenceBase(c,room,clan,data){
  if(clan==="Toreador"){rect(c,230,6,30,28,"#b18b7d");rect(c,237,12,17,16,"#543446");}
  if(clan==="Ventrue")for(const x of [161,307]){rect(c,x,15,26,27,"#b7aba9");rect(c,x+4,20,18,15,"#4d5363");}
 }
-function drawResidence(c,room,clan,C,game,time){
+function drawResidence(c,room,clan,C,game,time,fx=true){
  const d=C.residences[clan];if(!d)return;
  if(!renderBackplate(c,room==="house"?"residence:"+clan:"room:"+clan+":"+room))drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
- window.VTM_ART_POLISH?.residence(c,room,clan,time,!!window.VTM_VISUAL_FX_ENABLED);
+ window.VTM_ART_POLISH?.residence(c,room,clan,time,fx);
  for(const obj of C.residenceObjects[room]||[]){
   const seen=!!game.observed[obj.id],pulse=.55+.25*Math.sin(time*3+obj.x);
   rect(c,obj.x-7,obj.y-38,14,14,"#111420d0");rect(c,obj.x-5,obj.y-36,10,10,seen?"#5e8276":"#c3a17f");
@@ -525,10 +525,10 @@ function venueBase(c,id,env){
  rect(c,302,156,130,73,"#352c39");rect(c,312,163,112,58,env.accent);rect(c,321,171,93,41,"#2f2836");
  lamp(c,24,100);lamp(c,456,100);door(c,240,298,"SALIR");
 }
-function drawVenue(c,id,N,game,time){
+function drawVenue(c,id,N,game,time,fx=true){
  const env=N.environments[id];if(!env)return;
  if(!renderBackplate(c,"venue:"+id))drawCached(c,"venue:"+id,ctx=>venueBase(ctx,id,env));
- window.VTM_ART_POLISH?.venue(c,id,time,!!window.VTM_VISUAL_FX_ENABLED);
+ window.VTM_ART_POLISH?.venue(c,id,time,fx);
  text(c,env.label.toUpperCase(),240,24,12);
  if(game.activeQuest||Object.values(game.sideQuests||{}).some(q=>q.status==="active")){
   const pul=.1+.05*Math.sin(time*3);glow(c,130,140,25,"236,183,121",pul);
