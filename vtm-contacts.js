@@ -105,8 +105,9 @@ window.VTM_CONTACTS=(()=>{
   };
  }
  function resolve(game,shop,choice){
-  init(game);
-  const e=game.contactMemory?.[shop?.id],available=followup(game,shop);
+  const available=followup(game,shop);
+  // followup normaliza y sustituye las entradas: tomar la referencia DESPUÉS.
+  const e=game.contactMemory?.[shop?.id];
   if(!e||!available||!available.options.includes(choice))return null;
   e.followup="settled";e.claimed=choice;e.settledNight=nightOf(game);
   let effect={type:choice,shopId:shop.id,deltaExposure:0,deltaFaction:0,lead:null,text:""};
