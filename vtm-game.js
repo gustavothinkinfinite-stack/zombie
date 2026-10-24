@@ -1996,7 +1996,9 @@
  function drawParis(){
   if(G){
     G.drawCity(g,game,D,N,visualTime);
-    if(B){B.street(g,visualTime,game,effectsEnabled);B.landmarkMarkers(g,game,visualTime,effectsEnabled);}
+    // En el plano ilustrado, los taxis del atlas anterior cruzaban edificios y ríos.
+    // Los rincones investigables siguen activos; sólo se omite tráfico decorativo.
+    if(B)B.landmarkMarkers(g,game,visualTime,effectsEnabled);
     portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
     return;
   }
