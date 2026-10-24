@@ -29,7 +29,7 @@ window.VTM_CASE_INTERIORS=(()=>{
    spots:[
     {id:"exit",name:"Abandonar el refugio",x:240,y:264,range:35},
     {id:"bapthiste",name:"Enfrentar a Bapthiste",x:240,y:148,range:55},
-    {id:"documents",name:"Documentos de la mesa",x:122,y:166,range:45},
+    {id:"documents",name:"Documentos de la mesa",x:162,y:182,range:45},
     {id:"escape",name:"Ruta de retirada",x:408,y:176,range:42}
    ]
   })
