@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–XI incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–XIII integradas en `main` (24 de octubre de 2026). Esta guía es un registro evolutivo: los pendientes descritos en fases anteriores son históricos cuando una fase posterior los resuelve.  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -167,20 +167,53 @@ La interfaz incorpora dos contadores de progreso: expedientes resueltos y prueba
 
 El módulo \`vtm-local-cases.js\` administra estado y compatibilidad. Las pruebas de regresión están en \`tests/local-cases.test.js\`. No se añadieron recursos gráficos externos ni se modificaron las colisiones; esta fase es principalmente narrativa y sistémica.
 
-## Próximos entregables de arte
+## Fase XII — Expediente Elizabeth Parker: «La sangre de los inocentes»
 
-### Fase II — Mundo y personajes
+La investigación principal se añade a las misiones del Domitor y a los cuatro expedientes ambientales de la fase XI; **no los reemplaza**. Desde **Acciones → Expediente Elizabeth Parker**, el jugador puede iniciar el encargo en Passy y contrastar ocho fuentes: John Winthrop, el apartamento de Elizabeth, la policía, el Elíseo, Mathieu, el garaje de Adrien Vasseur, Lucien y la red de Erebos. Las tiradas usan Atributo + Habilidad y permiten volver a intentarlo en otra noche sin borrar lo averiguado.
+
+La interfaz debe distinguir **pistas comprobadas**, **fuentes aún pendientes** y **consecuencias políticas**. Con cuatro pruebas, incluido el garaje, se abre la confrontación con Bapthiste en Bastilla. El caso conserva su propio estado persistente en `game.elizabeth`, independiente de `localCases` y de la progresión del Abrazo.
+
+**Límite de canon:** Elizabeth era mortal y desconocía la sociedad vampírica; el mechón obtenido por Bapthiste se utilizó para incriminar a John. La historia no debe revelar al jugador el secreto de Etienne Moreau ni atribuir culpabilidad automática a John. El sistema de investigación es una adaptación del videojuego, no una sustitución del manual de mesa.
+
+**Regresión obligatoria:** `tests/elizabeth-case.test.js`. Mantener visibles en el diario los indicios y decisiones ya guardados.
+
+## Fase XIII — Tres interiores explorables del expediente
+
+`vtm-case-interiors.js` aporta tres escenarios cenitales de **480 × 300 píxeles lógicos**, con colisiones de `vtm-physics.js`, navegación WASD, clic y controles táctiles:
+
+| Interior | Acceso narrativo | Interacción principal |
+|---|---|---|
+| Apartamento de Elizabeth | Hemeroteca, con el expediente iniciado | Escritorio, mensajes, fotografías y ventana |
+| Garaje de Adrien Vasseur | Saint-Denis, tras obtener una referencia de Mathieu, Lucien o Erebos | Registros, vehículo, cámaras y salida de servicio |
+| Refugio de Bapthiste | Bastilla, con cuatro pruebas que incluyan el garaje | Confrontación, retirada o combate por turnos |
+
+La salida inferior devuelve al personaje al escenario y coordenadas anteriores mediante `game.caseReturn`. El refugio **no ejecuta automáticamente** a Bapthiste: la confrontación y las decisiones posteriores requieren elecciones explícitas. Su combate usa los módulos `vtm-tactics.js` y `vtm-tactics-ui.js`, con una ficha simplificada para el videojuego.
+
+**Regresión obligatoria:** `tests/case-interiors.test.js` junto con `tests/elizabeth-case.test.js`. No desplazar puertas ni objetos sin comprobar rutas transitables, regreso y guardado.
+
+## Sistemas transversales que debe conservar cualquier rediseño
+
+- **Progresión:** ghoul al servicio del Domitor, aprecio, encargos, Abrazo eventual, Disciplinas, Humanidad y Mascarada; módulos `vtm-story.js`, `vtm-mechanics.js`, `vtm-world-powers.js` y `vtm-game.js`.
+- **Exploración:** ocho barrios conectados, mapa general, interiores de residencia y lugares públicos, dieciséis comercios y sus colisiones; `vtm-districts.js`, `vtm-shops.js`, `vtm-physics.js` y `vtm-graphics.js`.
+- **Relaciones e investigaciones:** memoria social entre noches, cuatro expedientes locales de dieciséis pruebas y caso Elizabeth Parker; `vtm-contacts.js`, `vtm-local-cases.js` y `vtm-elizabeth.js`.
+- **Sistemas complementarios:** equipo, combate táctico, economía, favores políticos, deudas y servicios; `vtm-equipment.js`, `vtm-tactics.js`, `vtm-economy.js` y `vtm-politics.js` con sus interfaces.
+- **Persistencia:** `vtm-save.js` mantiene la clave `cronicas-paris-ghoul-v1`, el respaldo `cronicas-paris-ghoul-v1-backup`, la versión de partida 1, la recuperación confirmada y las migraciones no destructivas. Nunca reiniciar datos antiguos, sobrescribir un respaldo válido con datos corruptos ni eludir confirmaciones de sustitución.
+- **Validación:** `.github/workflows/quality.yml` debe revisar la sintaxis de todos los scripts y ejecutar **todos** los `tests/*.test.js`, incluidos `save-backup.test.js`, `local-cases.test.js`, `elizabeth-case.test.js` y `case-interiors.test.js`. Un commit aprobado no confirma por sí mismo que Hostinger haya publicado el cambio.
+
+## Pendientes de arte y pulido (no son fases nuevas)
+
+### Sprites y mundo urbano
 - Sprite de ghoul (hombre/mujer y personalización básica), cuatro direcciones de movimiento, animaciones de caminar/idle.
 - Sprite propio de cada Domitor y PNJ importante.
 - Reemplazar patrones urbanos procedurales por tileset de París: adoquín, asfalto mojado, aceras, mansardas, farolas, árboles, Sena, puentes y señalización de edificios.
 - Calcular escala y colisiones antes de añadir animaciones complejas.
 
-### Fase III — Residencias e interiores
+### Residencias e interiores
 - Siete residencias con identidad espacial y, al menos, una estancia característica de cada clan.
 - St. July, Elíseo, Passy, túneles Nosferatu, Bastilla, comisaría y hemeroteca.
 - Tres capas por sala: suelo, obstáculos y primer plano; iluminación dinámica por zona y objetos examinables claramente identificados.
 
-### Fase IV — Efectos y pulido
+### Efectos y accesibilidad
 - Lluvia con dirección y profundidad, charcos y reflejos controlados.
 - Luces puntuales, velas, humo ambiental, niebla tenue y sombras suaves.
 - Transiciones de entrada/salida de edificios, microanimaciones en diálogos y accesibilidad.
