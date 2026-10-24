@@ -80,6 +80,24 @@ const key="cronicas-paris-ghoul-v1";
    assert.match(menu,/Conspiración del Principado/i);
    await page.locator("#dialogClose").click();
   });
+  await check("La Sangre y la Bestia abre su estado sin perder la partida",async()=>{
+   await page.locator("#actionsBtn").click();
+   await page.locator("#dialogOptions button").filter({hasText:"La Sangre y la Bestia"}).click();
+   assert.match(await page.locator("#dialogTitle").innerText(),/La Sangre y la Bestia/);
+   assert.match(await page.locator("#dialogText").innerText(),/Ghoul|Sangre/);
+   await page.locator("#dialogClose").click();
+  });
+  await check("El prólogo conspirativo se inicia y persiste con las misiones antiguas",async()=>{
+   await page.locator("#actionsBtn").click();
+   await page.locator("#dialogOptions button").filter({hasText:"Conspiración del Principado"}).click();
+   assert.match(await page.locator("#dialogTitle").innerText(),/Crónica del Principado/);
+   await page.locator("#dialogOptions button").filter({hasText:"Comenzar a contrastar registros"}).click();
+   assert.match(await page.locator("#dialogText").innerText(),/Fuentes corroboradas: 0\/4/);
+   await page.locator("#dialogClose").click();
+   const current=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
+   assert.equal(current.principado.accepted,true);
+   assert.ok(current.elizabeth||current.arc,"El caso y progreso existentes siguen guardados");
+  });
   // El guardado al salir de la página anterior no debe reemplazar la posición de prueba.
   // Aplicamos el escenario antes de que arranque el motor en la nueva navegación.
   await page.addInitScript(saveKey=>{
@@ -149,7 +167,7 @@ const key="cronicas-paris-ghoul-v1";
   assert.equal(httpFailures.length,0,"Recursos no disponibles:\n"+httpFailures.join("\n"));
   fs.writeFileSync("browser-smoke-report.json",JSON.stringify(report("passed"),null,2)+"\n");
   await context.tracing.stop({path:"browser-smoke-trace.zip"});
-  console.log("PASS: Smoke test real Chromium — Crónicas de París Fase XVIII");
+  console.log("PASS: Smoke test real Chromium — Crónicas de París Fase XX");
  }catch(e){
   checks.push({label:"Fallo observado",status:"failed",message:String(e)});
   try{await page.screenshot({path:"browser-smoke-failure.png",fullPage:true});}catch(_){}
