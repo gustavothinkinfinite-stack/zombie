@@ -450,25 +450,51 @@
     ]),"EL ABRAZO · CLAN "+game.character.clan.toUpperCase());
   };make();
  }
+
  function interact(){
-  if(!game||dialogOpen||game.scene==="")return;
-  if(game.scene==="house"){
-   const mDist=Math.hypot(game.x-240,game.y-98),doorDist=Math.hypot(game.x-240,game.y-269);
-   if(mDist<62){speak();return;}
-   if(doorDist<48){game.scene="paris";game.x=46;game.y=267;walkTarget=null;notice("Las noches de París se abren ante vos.");hud();save();return;}
-   notice("Acercate a tu Domitor o a la puerta principal.");
-  }else{
-   const doorDist=Math.hypot(game.x-46,game.y-269);
-   if(doorDist<44){game.scene="house";game.x=240;game.y=232;walkTarget=null;notice("Regresaste a la residencia.");hud();save();return;}
+  if(!game||dialogOpen)return;
+  const room=game.scene;
+  if(room==="venue"){venueInteract();return;}
+  if(["house","study","quarters"].includes(room)){
+   if(room==="house"){
+    if(Math.hypot(game.x-240,game.y-98)<62){speak();return;}
+    if(Math.hypot(game.x-240,game.y-269)<45){
+      game.scene="paris";game.x=46;game.y=267;walkTarget=null;notice("La noche de París te espera.");hud();save();return;
+    }
+    if(Math.hypot(game.x-44,game.y-233)<47){changeRoom("study");return;}
+    if(Math.hypot(game.x-436,game.y-233)<47){changeRoom("quarters");return;}
+   }else if(Math.hypot(game.x-240,game.y-268)<48){changeRoom("house");return;}
+   const objects=C.residenceObjects[room]||[];
+   const nearby=objects.map(o=>({item:o,d:Math.hypot(game.x-o.x,game.y-o.y)})).sort((a,b)=>a.d-b.d)[0];
+   if(nearby&&nearby.d<52){observeObject(nearby.item);return;}
+   notice(room==="house"?"Acercate al maestro, una puerta o un objeto señalado.":"Examiná los objetos o volvé al salón por la puerta.");
+   return;
+  }
+  if(room==="paris"){
+   if(Math.hypot(game.x-46,game.y-269)<44){
+    game.scene="house";game.x=240;game.y=232;walkTarget=null;hud();save();notice("Regresaste a la residencia.");return;
+   }
    let nearest=null,best=999;
-   for(const l of D.locations){
-    const cx=(l.x+l.w/2)/2.1,cy=(l.y+l.h/2)/2;
-    const dist=Math.hypot(game.x-cx,game.y-cy);
-    if(dist<best){best=dist;nearest=l;}
+   for(const location of D.locations){
+    const x=(location.x+location.w/2)/2.1,y=(location.y+location.h/2)/2;
+    const d=Math.hypot(game.x-x,game.y-y);
+    if(d<best){best=d;nearest=location;}
    }
    if(nearest&&best<43){locationAction(nearest);return;}
-   notice("Acercate a uno de los lugares destacados.");
+   notice("Acercate a alguno de los lugares del mapa.");
   }
+ }
+ function changeRoom(name){
+  game.scene=name;game.x=240;game.y=name==="house"?222:238;walkTarget=null;hud();save();
+  const r=C.residences[game.character.clan];
+  notice(name==="study"?r.study:name==="quarters"?r.quarters:"Regresaste al salón.");
+ }
+ function observeObject(obj){
+   const clan=game.character.clan,r=C.residences[clan],already=!!game.observed[obj.id],text=r.objects[obj.id];
+   if(!already){game.observed[obj.id]=true;log("Observaste: "+obj.title+".");save();}
+   const bonus=obj.id==="dossier"&&game.activeQuest==="archivos"?"\n\nUna referencia al periodista Pierre Dupont confirma que el encargo es delicado.":obj.id==="journal"?"\n\nLos sirvientes parecen conocer detalles que no aparecen en los documentos oficiales.":"";
+   askMenu(obj.title,text+bonus+(already?"\n\nYa examinaste este objeto.":""),
+     [{label:"Memorizar y continuar",action:()=>{}}],"OBJETO EXAMINABLE");
  }
  function pixel(x,y,w,h,col){g.fillStyle=col;g.fillRect(Math.floor(x),Math.floor(y),Math.ceil(w),Math.ceil(h));}
  function tileBackground(seed){
