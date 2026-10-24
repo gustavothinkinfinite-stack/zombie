@@ -40,3 +40,5 @@ jobs:
         run: node tests/district-navigation.test.js
       - name: Probar recuperación de interiores guardados
         run: node tests/venue-restoration.test.js
+      - name: Probar transiciones de la residencia
+        run: node tests/residence-transitions.test.js
