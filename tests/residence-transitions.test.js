@@ -33,7 +33,7 @@ for(const t of transitions){
  const game={scene:t.from,x:t.x,y:t.y,walking:true,character:{clan:"Toreador"}};
  const keys=new Set(["w","e"]);
  const context={game,keys,touchMove:"up",walkTarget:{x:333,y:200},
-  walkRoute:[{x:333,y:200},{x:300,y:150}],dialogOpen:false,
+  walkRoute:[{x:333,y:200},{x:300,y:150}],dialogOpen:false,CI:null,
   overlayOpen:()=>false,notice:()=>{},hud:()=>{},save:()=>{},
   C:{residences:{Toreador:{study:"Galería privada",quarters:"Habitaciones de servicio"}},
      residenceObjects:{house:[],study:[],quarters:[]}}};
