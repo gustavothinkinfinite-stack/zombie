@@ -112,22 +112,69 @@ function cityBackground(c){
  for(let x=25;x<480;x+=82)for(const y of [60,226]){lamp(c,x,y);if(noise(x,y)>.4){rect(c,x+16,y-7,20,10,"#426452");rect(c,x+20,y-13,12,18,"#486e59");rect(c,x+24,y+3,3,9,"#695751");}}
  for(const [x,y,col] of [[139,76,"#59697a"],[243,220,"#704e60"],[362,146,"#63726e"]]){rect(c,x,y,29,14,"#171c27");rect(c,x+2,y+2,24,10,col);rect(c,x+8,y+3,12,6,"#293848");rect(c,x+4,y+12,5,2,"#e6a088");}
 }
+/* Los edificios y sus etiquetas son marcadores a escala de barrio, no paneles
+   gigantes que tapen varias manzanas. El centro del marcador se conserva
+   exactamente sobre el centro del destino usado por la interacción. */
+const mapNames={hemeroteca:"Hemeroteca",stjuly:"St. July",elysee:"Elíseo",
+ saintdenis:"Saint-Denis",tuneles:"Túneles",policia:"Archivo policial",
+ passy:"Casa de Passy",bastilla:"Bastilla"};
+function mapDestination(c,loc,active,color,locked,time){
+ const cx=Math.round((loc.x+loc.w/2)/2.1);
+ const cy=Math.round((loc.y+loc.h/2)/2);
+ const label=mapNames[loc.id]||loc.name;
+ const labelWidth=Math.max(39,Math.min(82,Math.ceil(label.length*4.25+12)));
+ const left=Math.round(cx-labelWidth/2),labelTop=cy+6;
+ // Sombra sobre la calle, sombra de tejado, fachada y una puerta legible.
+ rect(c,cx-14,cy-11,30,20,"#11152299");
+ rect(c,cx-13,cy-15,26,4,"#151821");
+ rect(c,cx-12,cy-14,24,3,color);
+ rect(c,cx-11,cy-10,22,15,"#302c37");
+ rect(c,cx-10,cy-9,20,1,"#947a76");
+ rect(c,cx-8,cy-5,5,5,"#e0bc92");
+ rect(c,cx+3,cy-5,5,5,"#998898");
+ rect(c,cx-3,cy-4,6,9,"#1a1c2a");
+ rect(c,cx-1,cy-2,2,5,"#886f6f");
+ rect(c,cx-13,cy+5,26,2,"#121722");
+ // Una sola banda tipográfica, no un segundo edificio del tamaño de la calle.
+ rect(c,left-1,labelTop-1,labelWidth+2,13,"#0c111ae0");
+ rect(c,left,labelTop,labelWidth,11,locked?"#433340":"#20222e");
+ rect(c,left,labelTop,labelWidth,1,active?"#f1cc8e":color);
+ rect(c,left+2,labelTop+10,labelWidth-4,1,active?"#bd986c":"#5b515e");
+ text(c,label,cx,labelTop+8,7,active?"#ffe0aa":"#e7d5c1");
+ if(locked){rect(c,cx+8,cy-13,5,6,"#ab7180");}
+ if(active){
+  const pulse=Math.sin(time*3+cx)*.08+.21;
+  glow(c,cx,cy-14,16,"234,191,121",pulse);
+  rect(c,cx-3,cy-25,6,7,"#edc58d");
+  text(c,"!",cx,cy-19,6,"#23202b");
+ }
+}
+function mapResidence(c){
+ // La residencia comparte escala con los otros destinos; el personaje aparece
+ // encima, sin quedar encerrado dentro de un cartel rectangular de 85x55 px.
+ const cx=43,cy=256;
+ rect(c,cx-17,cy-13,34,17,"#12141d99");
+ rect(c,cx-13,cy-17,27,5,"#a48a80");
+ rect(c,cx-12,cy-12,25,15,"#4b3a45");
+ rect(c,cx-8,cy-8,5,6,"#e0b38a");
+ rect(c,cx+4,cy-8,5,6,"#ac9aa5");
+ rect(c,cx-2,cy-8,5,11,"#211d29");
+ rect(c,13,278,66,13,"#11151ee8");
+ rect(c,14,279,64,11,"#322b39");
+ rect(c,15,279,62,1,"#b89a7c");
+ text(c,"RESIDENCIA",46,287,7,"#f1d6b7");
+}
 function drawCity(c,game,D,N,time){
  drawCached(c,"paris",cityBackground);
  for(const loc of D.locations){
-  const x=Math.round(loc.x/2.1),y=Math.round(loc.y/2),w=Math.round(loc.w/2.1),h=Math.round(loc.h/2);
-  const active=D.quests.some(q=>q.id===game.activeQuest&&q.place===loc.id)||(game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(loc.id))||Object.values(game.sideQuests||{}).some(q=>q.status==="active"&&window.VTM_ARCS.personal[q.id]?.target===loc.id);
+  const active=D.quests.some(q=>q.id===game.activeQuest&&q.place===loc.id)||
+   (game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(loc.id))||
+   Object.values(game.sideQuests||{}).some(q=>q.status==="active"&&window.VTM_ARCS.personal[q.id]?.target===loc.id);
   const color=N.environments[loc.id]?.accent||"#806b74";
-  rect(c,x-3,y-3,w+6,h+6,active?"#d6b68c":"#151a26");rect(c,x,y,w,h,color);rect(c,x+5,y+5,w-10,h-10,"#292834");
-  rect(c,x+8,y+7,w-16,4,"#b69a87");for(let i=0;i<3;i++)rect(c,x+11+i*10,y+15,6,7,i===1?"#ddb38d":"#45475a");
-  const label=loc.name.length>18?loc.name.split(" ").slice(0,2).join(" "):loc.name;
-  text(c,label,x+w/2,y+h/2+8,7);
-  if(active){rect(c,x+w/2-4,y-14,8,9,"#e0bc8c");text(c,"!",x+w/2,y-7,9,"#342535");glow(c,x+w/2,y-10,18,"245,186,112",.15);}
-  if(loc.id==="elysee"&&!game.access.elysee)rect(c,x+w-12,y+h-12,8,8,"#a56980");
+  mapDestination(c,loc,active,color,loc.id==="elysee"&&!game.access?.elysee,time);
  }
- rect(c,4,241,85,55,"#171b27");rect(c,10,248,72,45,"#927b7b");rect(c,17,254,58,33,"#2e2c3b");text(c,"RESIDENCIA",45,273,8);
+ mapResidence(c);
 }
-
 
 function residenceBase(c,room,clan,data){
  const nos=clan==="Nosferatu",trem=clan==="Tremere";
