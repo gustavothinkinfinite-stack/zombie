@@ -463,3 +463,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 @media(max-width:380px){
  #play .canvas-wrap .stage-map-exit{top:54px;font-size:9px;max-width:70%}
 }
+
+/* Cartografía noir: suavizado solo en el mapa general; otras escenas mantienen pixel art. */
+#play #world.map-illustrated {image-rendering:auto!important;}
