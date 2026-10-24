@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XIV)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XV)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,37 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XV — París continúa viviendo (octubre de 2026)
+
+Se añadió \`vtm-city-life.js\`, una simulación nocturna **independiente de las acciones del jugador** que aprovecha los ocho barrios y los dieciséis comercios ya existentes.
+
+### Calles con vida
+
+- Cada barrio recibe peatones con distintas descripciones y rutas visibles por las avenidas. Se los puede abordar pulsando **E** cuando no hay una puerta u objeto de misión prioritario cerca; el contacto deja un registro de la conversación de esa noche, sin convertirlos en informantes sobrenaturales.
+- El tránsito aparece en carriles y modifica su densidad con la hora: hasta tres vehículos durante las horas concurridas, menos después de medianoche y solo uno de madrugada. Es tráfico de ambientación y no agrega colisiones nuevas con los vehículos.
+- Se producen **16 sucesos por noche** (dos por cada barrio), en horarios calculados a partir de la noche. Ejemplos: entrega fuera de horario, cambio de guardia, taxis detenidos, alarma industrial y actividad en los archivos. Se desarrollan **también fuera del barrio visitado**.
+- Los incidentes permanecen en una ventana de tiempo determinada; acercarse y presionar **E** permite registrar la observación una sola vez. Cuando termina la ventana, se conserva un resumen en el diario, no un encuentro repetible.
+- El sistema conserva los últimos 64 incidentes, limpia datos obsoletos y admite guardados antiguos. Los sucesos son de escala humana; no revelan el secreto de Etienne Moreau ni alteran automáticamente los hechos de la campaña.
+
+### Comercio y horarios
+
+- Los dieciséis locales utilizan turnos calculados según la actividad (cafés, talleres, librerías, oficinas, etc.). Señales de color muestran cuándo atienden al público.
+- En el interior puede verse clientela que se desplaza de manera autónoma. Se les puede hablar una vez por noche, sin recompensas acumulables.
+- La conversación con el encargado muestra el **horario** y si se trata de atención abierta o fuera de horario. Para proteger las campañas existentes, **no se bloquea el acceso a comercios, contactos ni investigaciones por un cierre horario**: el jugador puede entrar por las rutas narrativas ya definidas.
+
+### Paso del tiempo y acceso a información
+
+- En la pantalla jugable el tiempo transcurre **un minuto del juego cada 30 segundos reales**, aunque el jugador permanezca quieto. El contador se pausa al abrir diálogos o iniciar un combate; las acciones también pueden adelantar el reloj como antes.
+- Descansar una noche da por ocurridos los sucesos de la noche anterior, incluso si no se visitaron sus barrios.
+- Consultar **Acciones → París nocturno · sucesos, tránsito y horarios comerciales** abre un boletín de acontecimientos recientes. El diario muestra también los últimos registros y el panel lateral indica cuántos sucesos se produjeron y cuántos establecimientos están abiertos.
+
+### Compatibilidad, pruebas y límites
+
+- Script agregado: \`vtm-city-life.js\`; pruebas: \`node tests/city-life.test.js\`.
+- El guardado sigue utilizando \`cronicas-paris-ghoul-v1\`, con nuevo campo opcional \`cityLife\`, sin reemplazar expedientes, la política de la corte ni el sistema del Domitor.
+- La circulación de vehículos es visual y **no es una simulación de tráfico con accidentes ni tráfico urbano completo**. Los peatones son personajes ambientales con desplazamiento y conversación breve, no IA generativa con diálogos libres. Los sucesos siguen guiones escritos para conservar la coherencia de la crónica.
+- Verificar la experiencia visual en un navegador real y el despliegue de Hostinger por separado: el código del repositorio no confirma que el alojamiento ya esté actualizado.
 
 ## Fase XIV — Interiores con ambientación avanzada y PNJ autónomos (octubre de 2026)
 
