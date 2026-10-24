@@ -321,3 +321,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
  .appearance-fields{grid-template-columns:1fr}
  .appearance-preview canvas{width:150px;height:175px}
 }
+
+
+/* v0.5 — acciones de los rasgos en fichas extensas */
+#actionsBtn{border-color:#bb9b78;background:linear-gradient(125deg,#524050,#2d2736);color:#f1ddc1}
+#actionsBtn:hover:not(:disabled){background:#61495a}
+.mechanics-summary{margin-top:13px;padding-top:12px;border-top:1px solid #675665;color:#dcc5b2;font-size:11px;line-height:1.6}
+.dialogue-shell .dialog-options{max-height:min(49vh,420px);overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#806677 #241f2a;scrollbar-width:thin}
+.dialogue-shell .dialog-options button{min-height:42px}
+@media(max-width:680px){.dialogue-shell .dialog-options{max-height:43vh}}
