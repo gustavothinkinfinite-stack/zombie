@@ -89,6 +89,8 @@
   const box=document.createElement("div");box.className="field";
   const label=document.createElement("label");label.textContent=title;box.appendChild(label);
   const input=type==="select"?document.createElement("select"):document.createElement("input");
+  // Vincular la etiqueta visible al control para lectura de pantalla y clic en el texto.
+  input.id="creator-"+key;label.htmlFor=input.id;
   if(type==="select"){for(const opt of options){const o=document.createElement("option");o.value=opt;o.textContent=opt;input.appendChild(o)}}
   else{input.type="text";input.maxLength=48;input.placeholder="Nombre del personaje";}
   input.value=creator[key];input.addEventListener("change",()=>{creator[key]=input.value;renderSheet();refreshValidation();});
