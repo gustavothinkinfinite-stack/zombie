@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XVIII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XIX)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,39 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XIX — Combate táctico, persecuciones y sigilo (octubre de 2026)
+
+Implementación jugable que extiende los turnos de \`vtm-tactics.js\` sin reemplazar heridas, iniciativa, Sangre, Disciplinas, armas, PX ni desenlaces existentes, y convierte la vigilancia de Fase XVIII en **patrullas con navegación y persecución reales** en las calles de los ocho barrios.
+
+### Combate por turnos con posicionamiento
+
+El estado del enfrentamiento conserva los recursos existentes y añade opcionalmente \`combat.active.tactical\` con rango, cobertura propia, cobertura rival, puntería y flanqueo. Las nuevas acciones consumen intercambios normales y los enemigos conservan sus posibilidades de respuesta.
+
+- **Avanzar / retroceder:** distancia cuerpo a cuerpo, media o larga; golpes y armas cuerpo a cuerpo requieren acercarse. Los rivales no armados también avanzan para alcanzar al personaje, en vez de golpearlo a través de una escena.
+- **Cubrirse:** protección progresiva (máximo 2) que reduce los dados disponibles del atacante. La cobertura no anula automáticamente todos los ataques.
+- **Apuntar:** aumenta hasta dos dados del próximo disparo, con menor defensa mientras se concentra.
+- **Flanquear:** prueba de Destreza + Atletismo que permite anular momentáneamente cobertura enemiga y obtener ventaja para el siguiente ataque.
+- **IA táctica inicial:** un adversario sin arma de fuego busca el cuerpo a cuerpo; los custodios armados heridos pueden buscar cobertura. Huida, esquiva, equipo y las Disciplinas que ya existían continúan disponibles.
+
+Son abstracciones originales para el videojuego. No constituyen una reconstrucción completa del combate de mesa de tercera edición.
+
+### Sigilo y persecución física en las calles
+
+El archivo nuevo \`vtm-stealth-chase.js\` consulta el nivel de vigilancia persistente de \`vtm-city-consequences.js\`. Cuando hay patrulla, su posición se mantiene en la partida y se desplaza utilizando colisiones y rutas de \`vtm-physics.js\`.
+
+- **C:** alterna el modo sigilo, que reduce la velocidad y el radio de detección. **Mantener Shift:** correr más rápido, aumentando el riesgo de ser observado (salvo cuando el personaje está agachado).
+- **Línea de visión:** edificios y manzanas bloquean la visión policial. Se distingue entre vigilancia, búsqueda y persecución; se puede perder a una patrulla al ocultarse fuera de su campo visual.
+- **Intercepción:** al alcanzar al personaje, la policía solicita identificación. Se puede intentar explicar la situación, escapar con Atletismo o aceptar el control. Las resoluciones conservan los testimonios existentes y nunca producen automáticamente una condena por la Mascarada.
+- **Persistencia:** \`stealthChase\` guarda postura, patrullas, encuentros, huidas e historial. El pathfinding se recalcula periódicamente; las partidas antiguas no pierden datos ni cambian la clave \`cronicas-paris-ghoul-v1\`.
+- Las patrullas de esta fase persiguen al jugador sólo en el mapa de calles de los ocho barrios; el módulo de actores de interiores de Elizabeth Parker y los combates tácticos anteriores permanecen independientes.
+
+### Acceso, calidad y publicación
+
+- El menú **Acciones** permite activar sigilo con controles táctiles. El HUD y el diario muestran vigilancia, alertas, persecuciones y escapes. Los atajos aparecen junto a WASD y E.
+- **Pruebas:** \`node tests/phase19.test.js\` verifica rango, cobertura, flanqueo, IA, visión bloqueada, sigilo, persecución, controles e integración. Las pruebas de XV-XVIII continúan en su sitio.
+- La prueba \`tests/browser-smoke.cjs\` incluye ahora alternancia de sigilo y carrera tras cargar una partida.
+- **Publicación:** la incorporación a \`main\` no confirma que Hostinger tenga Fase XIX. Verificar despliegue y una ejecución real de Chromium antes de afirmar que la fase funciona en producción.
 
 ## Fase XVIII — La ciudad recuerda: sospecha policial, testigos y Mascarada (octubre de 2026)
 
