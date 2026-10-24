@@ -179,11 +179,11 @@ window.VTM_AMBIENCE=(()=>{
  function landmarkMarkers(c,game,time,enabled=true){
   for(const spot of hotspots){
    const viewed=!!game?.flags?.["street:"+spot.id];
-   const pulse=enabled?.12*Math.sin(time*2+spot.x):0;
+   const pulse=enabled ? 0.12*Math.sin(time*2+spot.x) : 0;
    rect(c,spot.x-7,spot.y-8,14,13,"#191925e0");
    rect(c,spot.x-5,spot.y-7,10,10,viewed?"#6a877a":"#ba9d80");
    rect(c,spot.x-2,spot.y-4,4,4,viewed?"#d3e4d6":"#f1e0b7");
-   if(!viewed&&enabled)glow(c,spot.x,spot.y-3,15,"233,193,139",.08+pulse);
+   if(!viewed&&enabled)glow(c,spot.x,spot.y-3,15,"233,193,139",Math.max(.035,.08+pulse));
   }
  }
  return Object.freeze({street,interior,foreground,nearestStreetPoint,landmarkMarkers,hotspots,version:"2.0-phase-VII"});
