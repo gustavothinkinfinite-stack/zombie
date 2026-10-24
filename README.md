@@ -252,6 +252,21 @@ Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 
+## Refinamiento gráfico — Barrios y mapa de París (24 de octubre de 2026)
+
+Se trabajó directamente sobre las escenas que el usuario mostró funcionando en Hostinger, en especial el **Barrio del Archivo Policial** y el **mapa general del Principado**. Se modificó el código renderizado; no se generaron imágenes de ejemplo.
+
+- **Ocho barrios con edificios diferenciados:** variantes por zona de fachadas históricas, piedra noble, oficinas públicas, comercios con toldos, edificios industriales y cristales iluminados. Se eliminaron numerosas repeticiones visuales de la misma fachada.
+- **Accesos principales personalizados:** fachada administrativa del Archivo Policial; pórtico del Elíseo; reja de los túneles; depósito de Saint-Denis; fachada nocturna del St. July y Bastilla; mansión de Passy y biblioteca de la Hemeroteca.
+- **Cruces a escala de calle:** aceras separadas, pasos peatonales, zonas asfaltadas, parches de calzada, alcantarillas, bancos y mobiliario específico en los barrios. Son decoraciones: no modifican las rutas ni la detección de las tiendas.
+- **Texto de barrios:** se sustituyó el encabezado excesivamente largo por variantes breves, de 8 píxeles, que entran en el espacio libre entre la insignia del jugador y el reloj.
+- **Protagonista:** sprite al 68 % dentro de los barrios y al 46 % en el plano general. Interiores conservan tamaño original. Las zonas de interacción y la posición lógica del personaje no cambian.
+- **Residencia:** en el mapa general se movió el rótulo hacia arriba (cerca del edificio) para impedir que lo tape la interfaz inferior.
+- **Caché de archivos:** `index.html` apunta a nuevas versiones de `vtm-districts.js`, `vtm-graphics.js` y `vtm-game.js`. De ser necesario, refrescar la pestaña tras un redeploy de Hostinger.
+- **Pruebas:** `node tests/district-visual-smoke.js` valida los ocho barrios, rótulos, centros de entrada y salida, escalas diferenciadas y no modificación de las partidas guardadas. Las pruebas sintácticas y de lógica realizadas finalizaron correctamente.
+
+**Estado:** modificaciones confirmadas en GitHub `main`. No se ha comprobado visualmente el redeploy efectivo de Hostinger. El renderizado es todavía pixel art procedural: no debe confundirse con una ciudad completamente dibujada a mano o con una nueva cámara por distritos.
+
 ## Renovación gráfica — Etapa 1: reconstrucción de París (24 de octubre de 2026)
 
 **Entregado en GitHub `main`:** el lienzo general de la ciudad fue sustituido por una base urbana procedural más detallada. No se han generado capturas ni imágenes estáticas; los cambios modifican el motor de dibujo que ejecuta la propia web.
