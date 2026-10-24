@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XVI)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XVII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,36 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XVII — Siete barrios reactivos y regresión de navegador (octubre de 2026)
+
+La lógica de **Bastilla** sigue en \`vtm-reactive-city.js\`. Se agregó el módulo independiente \`vtm-reactive-districts.js\`, que extiende el sistema narrativo reactivo a los siete barrios restantes con hechos distintos, testigos, responsables, pistas verificables, memoria social y rumores que circulan entre barrios. Es una extensión de primera escala: **ocho casos reactivos en total**, uno por barrio, además de los dieciséis sucesos ambientales recurrentes de Fase XV.
+
+| Barrio | Incidente reactivo | Actores / repercusiones |
+| --- | --- | --- |
+| Passy | **La valija del mensajero** | Portera y encargado de finca, numeración de entrega, rumores en St. July y Elíseo |
+| St. July | **Una invitación falsificada** | Camarera, jefe de seguridad, invitado rechazado, registros del café |
+| Elíseo | **El pase extraviado** | Chofer, seguridad civil, pase de acceso a un edificio oficial (no revela secretos vampíricos) |
+| Hemeroteca | **Un legajo alterado** | Auxiliar y responsable de sala, firmas y préstamos, vínculos con prensa y archivos |
+| Saint-Denis | **El cargamento desviado** | Conductor, capataz y operario, discrepancias del precinto y manifiesto |
+| Barrio policial | **La carpeta extraviada** | Mensajera, responsable de recepción y oficinista, sello y hoja de entregas |
+| Túneles | **La avería del conducto** | Operaria de mantenimiento, jefe de cuadrilla y peatón, válvulas y aislamiento de la zona |
+
+### Avance independiente y consecuencias
+
+- Cada caso tiene momentos de inicio, respuesta de una autoridad, búsqueda y desenlace durante la noche. El avance ocurre **por el reloj del juego**, aunque el PJ esté en otro barrio, dentro de un comercio o descansando.
+- Los personajes aparecen solo durante las fases pertinentes. Acercarse y pulsar **E** abre la investigación: \`Percepción + Investigación\` para indicios, \`Carisma + Empatía\` para testigos, \`Destreza + Atletismo\` para asistir y \`Manipulación + Intimidación\` para amenazas. Las tiradas no pueden repetirse varias veces durante la misma noche.
+- Con pruebas contrastadas se puede informar al responsable; también se puede ayudar sin esclarecer, no entregar información o **ocultar pruebas**. Los cinco resultados por caso son: esclarecido, auxilio sin esclarecimiento, pista tardía, encubrimiento o sin resolver.
+- Los testigos intimidados abandonan la escena. Se conservan relaciones de confianza con testigos, autoridades y vecinos y una cronología del incidente.
+- Las conversaciones en comercios distinguen **rumores del propio barrio** de los que llegan desde fuera; las pistas comerciales están vinculadas solo a un caso concreto y se obtienen una vez. No se inventa conocimiento de la Mascarada para civiles ni se revela el secreto de Etienne.
+- Los siete casos se guardan bajo \`reactiveDistricts\`. La migración añade solo ese campo; no sustituye el guardado \`cronicas-paris-ghoul-v1\`, ni las misiones de Elizabeth, la investigación de Bastilla, la economía, la corte o los contactos.
+
+### Pruebas y alojamiento
+
+- \`node tests/reactive-districts.test.js\` verifica los siete incidentes, el avance fuera de pantalla, rutas accesibles, distintos desenlaces, memoria de testigos, difusión de rumores y persistencia.
+- \`tests/browser-smoke.cjs\` y \`.github/workflows/browser-smoke.yml\` añaden **un smoke test en Chromium real**, en un navegador aislado que usa una partida sintética de prueba. Visita los siete barrios, comprueba diálogos, menú, diario y recarga del guardado. Se ejecuta en GitHub Actions en pushes y pull requests.
+- **Importante:** crear una prueba automatizada no equivale a haber observado su resultado. La verificación del navegador conectado de la sesión del 24/10/2026 mostró **Fase XV en Hostinger**, mientras que el repositorio ya había avanzado a Fase XVI. Por tanto, Hostinger requiere verificar/publicar el código actualizado y después probar esa versión real en producción.
+- Los siete incidentes tienen guiones finitos y no son una simulación ilimitada o con aprendizaje generativo; los transeúntes y el tráfico preexistentes conservan sus limitaciones.
 
 ## Fase XVI — París reactivo, primer caso jugable en Bastilla (octubre de 2026)
 
