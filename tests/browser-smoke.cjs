@@ -64,12 +64,21 @@ const key="cronicas-paris-ghoul-v1";
    assert.match(menu,/otros siete barrios/i);
    await page.locator("#dialogClose").click();
   });
+  // El guardado al salir de la página anterior no debe reemplazar la posición de prueba.
+  // Aplicamos el escenario antes de que arranque el motor en la nueva navegación.
+  await page.addInitScript(saveKey=>{
+   const pending=sessionStorage.getItem("__cronicas_smoke_pending");
+   if(pending){
+    localStorage.setItem(saveKey,pending);
+    sessionStorage.removeItem("__cronicas_smoke_pending");
+   }
+  },key);
   const places=["passy","stjuly","elysee","hemeroteca","saintdenis","policia","tuneles"];
   for(const district of places){
    await page.evaluate(([saveKey,id])=>{
     const game=JSON.parse(localStorage.getItem(saveKey));
     game.scene="district";game.district=id;game.x=236;game.y=216;game.clock.night=1;game.clock.minutes=23*60+50;
-    localStorage.setItem(saveKey,JSON.stringify(game));
+    sessionStorage.setItem("__cronicas_smoke_pending",JSON.stringify(game));
    },[key,district]);
    await page.reload({waitUntil:"load"});
    await page.locator("#continueGame").click();
