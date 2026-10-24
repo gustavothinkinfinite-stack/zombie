@@ -1475,24 +1475,31 @@
       askMenu("Un enemigo libre","El Brujah consigue escapar después de recuperar fuerzas. Las pruebas de la investigación permanecen.",[{label:"Continuar",action:()=>{}}],"CONSECUENCIAS");
     }}],"RESULTADO · BAPTHISTE");
  }
+ function caseBapthisteEncounter(){
+  if(game.combat?.records?.bapthiste==="won"){
+    if(!game.elizabeth.bapthisteOutcome)caseAfterBattle();
+    else askMenu("Refugio de Bapthiste","El encuentro ya terminó. Consultá el diario para conocer sus consecuencias.",[{label:"Continuar",action:()=>{}}],"EXPEDIENTE");
+    return;
+  }
+  const reason=ELI.canConfront(game);
+  askMenu("Bapthiste","El Brujah intenta desacreditar al Sheriff. Podés intentar una confrontación documentada, un combate o retirarte.",
+    [{label:"Confrontarlo con las pruebas"+(reason?" · "+reason:""),disabled:!!reason,action:ELI.confrontation},
+     {label:"Intentar reducirlo en combate",action:()=>TACTUI.battleEntry("bapthiste")},
+     {label:"Retirarte",action:()=>{}}],"ENCUENTRO · BRUJAH");return;
+ }
  function caseInteriorInteract(){
-  const spot=CI?.nearest(game);
+  const spot=CI?.nearest(game),actor=ACT?.nearby(game,37);
+  if(spot?.id==="exit"&&spot.d<24){leaveCaseInterior();return;}
+  if(actor){
+   if(actor.id==="bapthiste")caseBapthisteEncounter();
+   else ACT.talk(actor.id);
+   return;
+  }
   if(!spot){notice("Acercate a una pista, a una persona o a la salida.");return;}
   if(spot.id==="exit"){leaveCaseInterior();return;}
   if(game.scene==="case-apartment"&&spot.id==="desk"&&!ELI.canAttempt(game,"apartment")){ELI.investigate("apartment");return;}
   if(game.scene==="case-garage"&&spot.id==="ledger"&&!ELI.canAttempt(game,"garage")){ELI.investigate("garage");return;}
-  if(game.scene==="case-hideout"&&spot.id==="bapthiste"){
-    if(game.combat?.records?.bapthiste==="won"){
-      if(!game.elizabeth.bapthisteOutcome)caseAfterBattle();
-      else askMenu("Refugio de Bapthiste","El encuentro ya terminó. Consultá el diario para conocer sus consecuencias.",[{label:"Continuar",action:()=>{}}],"EXPEDIENTE");
-      return;
-    }
-    const reason=ELI.canConfront(game);
-    askMenu("Bapthiste","El Brujah intenta desacreditar al Sheriff. Podés intentar una confrontación documentada, un combate o retirarte.",
-      [{label:"Confrontarlo con las pruebas"+(reason?" · "+reason:""),disabled:!!reason,action:ELI.confrontation},
-       {label:"Intentar reducirlo en combate",action:()=>TACTUI.battleEntry("bapthiste")},
-       {label:"Retirarte",action:()=>{}}],"ENCUENTRO · BRUJAH");return;
-  }
+  if(game.scene==="case-hideout"&&spot.id==="bapthiste"){caseBapthisteEncounter();return;}
   const clues={
     desk:"En la agenda aparecen anotaciones sobre contactos insistentes y un recibo de transporte. Ya contrastaste este lugar.",
     phone:"Los mensajes indican que Elizabeth quería que una persona dejara de buscarla. Su identidad exige corroboración.",
