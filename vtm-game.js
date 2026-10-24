@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -200,7 +200,19 @@
   game.history.slice(0,5).forEach(t=>{const p=document.createElement("p");p.textContent="• "+t;target.appendChild(p);});
  }
  function notice(message){$("notice").textContent=message;$("notice").classList.remove("hidden");toastTimer=4;}
+ function expandSave(){
+  if(!game)return;
+  game.observed=game.observed||{};
+  game.arc=game.arc||{clues:[],outcome:null,visited:[]};
+  game.arc.clues=Array.isArray(game.arc.clues)?game.arc.clues:[];
+  game.arc.visited=Array.isArray(game.arc.visited)?game.arc.visited:[];
+  game.relations=game.relations||{dupont:0};
+  game.exposure=Number.isFinite(game.exposure)?clamp(game.exposure,0,100):0;
+  game.cityPos=game.cityPos||{x:46,y:267};
+  game.venue=game.venue||null;
+ }
  function enterGame(){
+  expandSave();
   show("play");keys.clear();walkTarget=null;closeDialog();
   const c=game.character,m=D.clans[c.clan];
   $("masterLabel").textContent=m.master;$("masterRole").textContent=m.title;
@@ -212,7 +224,8 @@
  }
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
-   activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0};
+   activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -225,9 +238,14 @@
   $("questTitle").textContent=game.activeQuest?questObj(game.activeQuest).title:"Sin encargo activo";
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
-  $("sceneLabel").textContent=game.scene==="house"?"RESIDENCIA · "+m.area.toUpperCase():"PARÍS · EL PRINCIPADO";
-  $("sceneTitle").textContent=game.scene==="house"?"La presencia del Domitor":"Las calles después del anochecer";
-  $("floatingHint").textContent=game.scene==="house"?"E: hablar con el maestro / salir por la puerta":"E: investigar lugar / regresar a la residencia";
+  const houseScene=["house","study","quarters"].includes(game.scene);
+  $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
+  $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":"Las calles después del anochecer";
+  $("floatingHint").textContent=houseScene?"E: examinar objetos, hablar o salir":"E: interactuar con objetos y personajes";
+  $("exposureText").textContent=game.exposure+" / 100";
+  $("exposureBar").style.width=game.exposure+"%";
+  $("dupontRelation").textContent=game.relations.dupont>=2?"Confía en vos":game.relations.dupont<=-2?"Desconfía de vos":"Neutral";
+  $("leadsStatus").textContent=game.activeQuest==="archivos"?"Pruebas: "+game.arc.clues.length+"/2 como mínimo. "+(game.readyReport?"Informá al Domitor.":"Investigá tres fuentes en París."):"Los sucesos nocturnos se ocultan entre rumores y silencios.";
  }
  function questObj(id){return D.quests.find(q=>q.id===id);}
  function askMenu(title,text,choices,label="CONVERSACIÓN"){
