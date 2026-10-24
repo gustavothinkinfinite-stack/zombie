@@ -367,7 +367,7 @@
     game.knownNpcs.push(npc.id);
     log("Conociste a "+npc.name+".");
   }
-  const trust=game.npcRelations[npc.id];
+  const trust=npc.id==="dupont"?clamp(game.relations.dupont,-3,3):game.npcRelations[npc.id];
   const opts=[];
   if(!state.impression){
    opts.push({label:"Presentarte con respeto · "+npc.check.attr+" + "+npc.check.skill,action:()=>{
@@ -375,7 +375,7 @@
     const roll=dicePool(npc.check.attr,npc.check.skill,npc.check.difficulty);
     const shift=roll.success?1:-1;
     game.npcRelations[npc.id]=clamp(game.npcRelations[npc.id]+shift,-3,3);
-    if(npc.id==="dupont")game.relations.dupont=clamp(game.relations.dupont+shift,-5,5);
+    if(npc.id==="dupont"){game.relations.dupont=clamp(game.relations.dupont+shift,-5,5);game.npcRelations.dupont=clamp(game.relations.dupont,-3,3);}
     log((roll.success?"Buena":"Mala")+" primera impresión ante "+npc.name+".");
     hud();save();
     askMenu("Primera impresión",roll.success?
@@ -394,7 +394,7 @@
   if(!state.aid){
    opts.push({label:"Solicitar una ayuda o referencia ("+(trust>=1?"confianza suficiente":"requiere confianza +1")+")",disabled:trust<1,action:()=>{
     state.aid=true;game.access[npc.aidKey]=true;
-    if(npc.id==="dupont")game.relations.dupont=clamp(game.relations.dupont+1,-5,5);
+    if(npc.id==="dupont"){game.relations.dupont=clamp(game.relations.dupont+1,-5,5);game.npcRelations.dupont=clamp(game.relations.dupont,-3,3);}
     log(npc.name+" te debe un pequeño favor.");hud();save();
     askMenu("Un favor limitado",npc.aid+"\n\n"+favorDescription(npc.aidKey),
       [{label:"Agradecer la ayuda",action:()=>{}}],"FAVOR DEBIDO");
@@ -501,6 +501,7 @@
     if(key==="steal"){favor=success?39:-17;rel=success?0:-2;risk=success?0:17;}
     if(key==="threaten"){favor=success?24:-27;rel=-3;risk=success?18:32;}
     game.relations.dupont=clamp(game.relations.dupont+rel,-5,5);
+    game.npcRelations.dupont=clamp(game.relations.dupont,-3,3);
     if(risk)exposure(risk,key==="threaten"?"Amenazaste a un testigo humano.":"Se dejaron rastros durante el encuentro.");
     game.arc.outcome={approach:key,success,dice:roll.dice,detail:success?a.success:a.failure,relationDelta:rel,exposureDelta:risk};
     const detail=(success?a.success:a.failure)+" Dados: ["+roll.dice.join(", ")+"] · éxitos netos: "+roll.net+".";
