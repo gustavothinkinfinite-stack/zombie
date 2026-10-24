@@ -21,7 +21,7 @@ function scenario(start,meeting){
  const f=new Function("game","A","CITY","M","ECON","processReactiveNight","processContactNight",
   "processPoliticalNight","log","hud","save","meetNPC",
   '"use strict";'+body+";return waitForNPC;");
- const wait=f(game,A,CITY,M,ECON,complete=>events.push(["react",game.clock.night,game.clock.minutes,complete]),
+ const wait=f(game,A,CITY,M,ECON,(complete=false)=>events.push(["react",game.clock.night,game.clock.minutes,complete]),
   ()=>events.push(["contacts"]),()=>events.push(["politics"]),s=>events.push(["log",s]),
   ()=>events.push(["hud"]),()=>events.push(["save"]),n=>events.push(["meet",n.id]));
  wait(npc);
