@@ -261,6 +261,8 @@
  function expandSave(){
   if(!game)return;
   game.character.appearance=V.normalize(game.character.appearance);
+  game.character.disciplines=game.character.disciplines||{};
+  game.character.backgrounds=game.character.backgrounds||{};
   game.observed=game.observed||{};
   game.arc=game.arc||{clues:[],outcome:null,visited:[]};
   game.arc.clues=Array.isArray(game.arc.clues)?game.arc.clues:[];
