@@ -273,7 +273,8 @@
   askMenu(name,clan.opening,choices,"TU DOMITOR · "+game.character.clan.toUpperCase());
  }
  function requestQuest(){
-  const q=D.quests[game.questIndex%D.quests.length];
+  const choices=D.quests.filter(q=>q.id!=="archivos"||!game.arc.outcome);
+  const q=choices[game.questIndex%choices.length];
   askMenu("Un encargo para "+game.character.name,
    q.summary+" Deberás desplazarte hasta "+D.locations.find(l=>l.id===q.place).name+". Tu forma de actuar determinará cuánto confiaré en vos.",
    [{label:"Aceptar con respeto (+2 aprecio)",action:()=>{game.activeQuest=q.id;game.readyReport=null;addAppreciation(2,"Aceptaste el encargo con cortesía.");notice("Salí de la residencia y buscá "+q.title+".");}},
@@ -307,6 +308,9 @@
    askMenu(location.name,location.detail+" No tenés un encargo activo para este lugar.",[{label:"Regresar a las calles",action:()=>{}}],"PARÍS");return;
   }
   const q=questObj(game.activeQuest);
+  if(q.id==="archivos"&&!game.readyReport&&["hemeroteca","policia","stjuly"].includes(location.id)){
+    enterVenue(location);return;
+  }
   if(q.place!==location.id){
    askMenu(location.name,location.detail+" Tu misión actual está vinculada con "+D.locations.find(x=>x.id===q.place).name+".",[{label:"Continuar explorando",action:()=>{}}],"UN LUGAR DE PARÍS");
    return;
@@ -316,6 +320,96 @@
    [{label:"Actuar con "+q.attr+" + "+q.skill+" (dificultad "+q.difficulty+")",action:()=>questAction(q,false)},
     {label:"Intentar un abordaje sigiloso con Astucia + Sigilo (dificultad "+(q.difficulty+1)+", mayor aprecio)",action:()=>questAction(q,true)},
     {label:"Abandonar el lugar sin intervenir",action:()=>{log("Te retiraste sin actuar.");}}],"MISIÓN · "+q.kind.toUpperCase());
+ }
+
+ function exposure(delta,reason){
+  game.exposure=clamp(game.exposure+delta,0,100);
+  if(delta)log((delta>0?"+":"")+delta+" exposición · "+reason);
+  if(game.exposure>=60)notice("Tu actividad está atrayendo miradas peligrosas.");
+  hud();save();
+ }
+ function rememberClue(location,success,description,roll){
+  const arc=game.arc;
+  if(!arc.clues.includes(location.id))arc.clues.push(location.id);
+  if(!success)exposure(9,"Tu investigación dejó un rastro.");
+  log("Pista: "+C.investigation.sources[location.id].name+". "+description);
+  const extra="Tirada: "+roll.dice.join(", ")+" · Éxitos netos "+roll.net+".";
+  askMenu("Una nueva pista",description+"\n\n"+extra+"\n\nPruebas reunidas: "+arc.clues.length+" de 2 necesarias."+
+    (arc.clues.length>=2?" Ahora podés enfrentar a Pierre Dupont en la hemeroteca.":" Investigá otra fuente."),
+    [{label:"Guardar esta información",action:()=>{}}],"INVESTIGACIÓN");
+  hud();save();
+ }
+ function researchLead(location){
+  const source=C.investigation.sources[location.id];
+  if(!source)return;
+  if(game.arc.clues.includes(location.id)){
+   askMenu(source.name,"Ya registraste esta fuente. Una vez guardada una pista, no podés conseguirla dos veces.",
+     [{label:"Regresar",action:()=>{}}],"PRUEBA OBTENIDA");return;
+  }
+  const bg=game.character.backgrounds.Contactos||0;
+  const choices=[{label:"Investigar con "+source.attr+" + "+source.skill+" (dificultad "+source.difficulty+")",action:()=>{
+   const roll=dicePool(source.attr,source.skill,source.difficulty);
+   rememberClue(location.id,roll.success,roll.success?source.success:source.failure,roll);
+  }}];
+  if(bg>=2)choices.push({label:"Pedir ayuda a tus Contactos ("+bg+" círculos; dificultad 6)",action:()=>{
+   const roll=dicePool("Carisma","Callejeo",6);
+   rememberClue(location.id,roll.success,roll.success?"Un contacto te facilita información: "+source.success:source.failure,roll);
+  }});
+  choices.push({label:"Aún no voy a arriesgarme",action:()=>{}});
+  askMenu(source.name,source.hint,choices,"BUSCAR EVIDENCIAS");
+ }
+ function confrontDupont(){
+  if(game.arc.clues.length<2){
+    askMenu("Pierre Dupont","El periodista te estudia con cautela. Sin al menos dos pistas, no tenés argumentos suficientes para forzar una conversación útil.",
+      [{label:"Seguir reuniendo pistas",action:()=>{}}],"HEMEROTECA");return;
+  }
+  const options=Object.entries(C.investigation.approaches).map(([key,a])=>({
+   label:a.label+" · "+a.attr+" + "+a.skill+" (dif. "+a.difficulty+")",
+   action:()=>{
+    const roll=dicePool(a.attr,a.skill,a.difficulty);
+    const success=roll.success;
+    let favor=0,rel=0,risk=0;
+    if(key==="persuade"){favor=success?34:-14;rel=success?3:-1;risk=success?-3:4;}
+    if(key==="steal"){favor=success?39:-17;rel=success?0:-2;risk=success?0:17;}
+    if(key==="threaten"){favor=success?24:-27;rel=-3;risk=success?18:32;}
+    game.relations.dupont=clamp(game.relations.dupont+rel,-5,5);
+    if(risk)exposure(risk,key==="threaten"?"Amenazaste a un testigo humano.":"Se dejaron rastros durante el encuentro.");
+    game.arc.outcome={approach:key,success,dice:roll.dice,detail:success?a.success:a.failure,relationDelta:rel,exposureDelta:risk};
+    const detail=(success?a.success:a.failure)+" Dados: ["+roll.dice.join(", ")+"] · éxitos netos: "+roll.net+".";
+    game.readyReport={id:"archivos",success,praise:favor,detail,dice:roll.dice,net:roll.net,skill:a.skill,attribute:a.attr,difficulty:a.difficulty};
+    log("Confrontación con Pierre Dupont: "+(success?"éxito":"complicaciones")+".");
+    hud();save();
+    askMenu("El destino de las pruebas",detail+"\n\nAhora debés informar a tu Domitor.",
+      [{label:"Regresar con los resultados",action:()=>{}}],"CONSECUENCIAS");
+   }
+  }));
+  options.push({label:"Aplazar la confrontación",action:()=>{}});
+  askMenu("Pierre Dupont","El periodista abre una carpeta repleta de fotografías y testimonios. Tenés "+game.arc.clues.length+
+   " fuentes contrastadas. ¿Qué precio estás dispuesto a pagar para proteger la Mascarada?",options,"DECISIÓN IMPORTANTE");
+ }
+ function enterVenue(location){
+   game.venue=location.id;game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;
+   if(!game.arc.visited.includes(location.id))game.arc.visited.push(location.id);
+   log("Visitaste "+location.name+".");hud();save();
+ }
+ function venueInteract(){
+  const src=C.investigation.sources[game.venue],exit=Math.hypot(game.x-240,game.y-270);
+  if(exit<42){
+   game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.venue=null;hud();save();return;
+  }
+  if(Math.hypot(game.x-130,game.y-143)<55){researchLead({id:game.venue});return;}
+  if(Math.hypot(game.x-240,game.y-104)<60){
+   if(game.venue==="hemeroteca"&&game.arc.clues.length>=2&&!game.readyReport)confrontDupont();
+   else askMenu(game.venue==="hemeroteca"?"Pierre Dupont":game.venue==="policia"?"Empleado del archivo":"Camarero del St. July",
+      game.venue==="hemeroteca"?"El periodista no comparte sus documentos con desconocidos. Reuní por lo menos dos pruebas.":src.hint,
+      [{label:"Continuar investigando",action:()=>{}}],"PERSONAJE");
+   return;
+  }
+  if(Math.hypot(game.x-350,game.y-146)<55){
+   askMenu("Un detalle del lugar",src.hint+" Parece que alguien estuvo aquí hace poco.",
+     [{label:"Examinar el entorno",action:()=>{}}],"OBSERVACIÓN");return;
+  }
+  notice("Examiná el archivo a la izquierda, hablá con la persona o regresá por la salida.");
  }
  function reportQuest(){
   const r=game.readyReport,q=questObj(r.id),master=D.clans[game.character.clan].master;
