@@ -23,7 +23,9 @@ const furniture={
   {x:302,y:156,w:130,h:73,id:"mobiliario"}
  ],
  district:[
-  // Manzanas coherentes con vtm-districts.js: avenidas centrales libres.
+  // Las manzanas y el edificio principal respetan vtm-districts.js.
+  // La puerta del edificio central se alcanza desde la calle al sur.
+  {x:206,y:74,w:68,h:47,id:"edificio-principal"},
   {x:19,y:51,w:151,h:70,id:"edificio-noroeste"},
   {x:310,y:51,w:151,h:70,id:"edificio-noreste"},
   {x:19,y:198,w:151,h:50,id:"edificio-suroeste"},
