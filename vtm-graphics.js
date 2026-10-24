@@ -22,30 +22,44 @@ const artResidences={
  Gangrel:"assets/residencias/gangrel.svg",
  Malkavian:"assets/residencias/malkavian.svg"
 };
+const artRooms={};
+for(const clan of Object.keys(artResidences)){
+ const stem=clan.toLowerCase();
+ artRooms[clan+":study"]="assets/residencias/"+stem+"-despacho.svg";
+ artRooms[clan+":quarters"]="assets/residencias/"+stem+"-habitaciones.svg";
+}
 const scenePictures={};
-function loadBackplates(items,prefix){
- if(typeof Image!=="function")return;
+function registerBackplates(items,prefix){
  for(const [name,url] of Object.entries(items)){
-   const entry={ready:false,failed:false,img:new Image()};
-   scenePictures[prefix+name]=entry;
-   entry.img.onload=()=>{entry.ready=!!entry.img.naturalWidth;entry.failed=!entry.ready;};
-   entry.img.onerror=()=>{entry.failed=true;entry.ready=false;};
-   entry.img.src="./"+url+"?v=escenarios-1";
+   scenePictures[prefix+name]={url:"./"+url+"?v=escenarios-2",img:null,ready:false,loading:false,failed:false};
  }
 }
-loadBackplates(artScenes,"venue:");
-loadBackplates(artResidences,"residence:");
+registerBackplates(artScenes,"venue:");
+registerBackplates(artResidences,"residence:");
+registerBackplates(artRooms,"room:");
 function renderBackplate(c,key){
  const entry=scenePictures[key];
- if(!entry?.ready)return false;
+ if(!entry)return false;
+ if(!entry.ready){
+   if(!entry.loading&&!entry.failed&&typeof Image==="function"){
+     entry.loading=true;
+     const img=new Image();
+     entry.img=img;
+     img.onload=()=>{entry.ready=!!img.naturalWidth;entry.failed=!entry.ready;entry.loading=false;};
+     img.onerror=()=>{entry.failed=true;entry.ready=false;entry.loading=false;};
+     img.src=entry.url;
+   }
+   if(!entry.ready)return false;
+ }
  try{
    c.drawImage(entry.img,0,0,480,300);
    return true;
- }catch(e){entry.ready=false;entry.failed=true;return false;}
+ }catch(e){entry.ready=false;entry.failed=true;entry.loading=false;return false;}
 }
 function backgroundStatus(){
  const keys=Object.keys(scenePictures);
  return {total:keys.length,ready:keys.filter(k=>scenePictures[k].ready).length,
+ loading:keys.filter(k=>scenePictures[k].loading).length,
  failed:keys.filter(k=>scenePictures[k].failed).map(k=>k)};
 }
 const atlasRows={Toreador:0,Ventrue:1,Tremere:2,Nosferatu:3,Brujah:4,Gangrel:5,Malkavian:6,Ghoul:7,
@@ -159,7 +173,7 @@ function residenceBase(c,room,clan,data){
 }
 function drawResidence(c,room,clan,C,game,time){
  const d=C.residences[clan];if(!d)return;
- if(room!=="house"||!renderBackplate(c,"residence:"+clan))drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
+ if(!renderBackplate(c,room==="house"?"residence:"+clan:"room:"+clan+":"+room))drawCached(c,"res:"+clan+":"+room,ctx=>residenceBase(ctx,room,clan,d));
  for(const obj of C.residenceObjects[room]||[]){
   const seen=!!game.observed[obj.id],pulse=.55+.25*Math.sin(time*3+obj.x);
   rect(c,obj.x-7,obj.y-38,14,14,"#111420d0");rect(c,obj.x-5,obj.y-36,10,10,seen?"#5e8276":"#c3a17f");
