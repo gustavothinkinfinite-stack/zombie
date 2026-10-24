@@ -105,6 +105,10 @@ window.VTM_TACTICS_UI=(()=>{
     extra+="\nTe auxiliaron tras quedar incapacitado; recuperás dos niveles de Salud, pero aumenta la exposición.";
    }
   }
+  if((result.damageToPlayer||0)>=2&&game.embraced&&(game.mechanics?.blood||0)<=3){
+   const impulse=bridge.vitaeFrenzy?.("heridas graves en combate");
+   if(impulse?.frenzy)extra+="\nLa Bestia se apoderó de tus instintos.";
+  }
   bridge.advance(7);bridge.refresh();bridge.save();
   detail(result.victory?"Enfrentamiento resuelto":result.defeat?"Quedaste fuera de combate":
     result.ended?"Huida lograda":"Intercambio de ataques",
@@ -149,6 +153,7 @@ window.VTM_TACTICS_UI=(()=>{
    detail("No podés activar el poder",res.error,[{label:"Volver",action:()=>powersOf(name)}],"DISCIPLINAS");return;
   }
   if(res.risk)bridge.exposure(res.risk,"Manifestación sobrenatural: "+res.label+".");
+  bridge.vitaeRitual?.(name);
   if(res.changed.exposure)bridge.exposure(res.changed.exposure,"La Ofuscación oculta rastros.");
   if(res.resisted)bridge.log(res.label+": el adversario superó la tirada enfrentada.");
   bridge.log("Disciplina "+name+" · "+res.label+" nivel "+res.level+" (−"+res.cost+" Sangre).");
