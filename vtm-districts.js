@@ -166,6 +166,14 @@ window.VTM_DISTRICTS=(()=>{
    rect(c,spot.x-6,spot.y-33,12,10,found?"#537667":"#ad8b6f");
    text(c,found?"✓":"?",spot.x,spot.y-25,9,"#faf0d8");
   }
+  // Un icono señala exclusivamente los contactos que tienen novedades pendientes.
+  for(const shop of window.VTM_SHOPS?.byDistrict[d.id]||[]){
+   if(game.contactMemory?.[shop.id]?.followup!=="ready")continue;
+   const y=shop.y-30+Math.sin(time*2+shop.side)*2;
+   rect(c,shop.x-7,y-14,14,14,"#24202de6");
+   rect(c,shop.x-5,y-12,10,10,"#d3ad78");
+   text(c,"!",shop.x,y-3,10,"#261d2b");
+  }
   if(fx){
    for(let i=0;i<25;i++){
     const x=(i*71+Math.floor(time*28))%W,y=(i*53+Math.floor(time*64))%H;
