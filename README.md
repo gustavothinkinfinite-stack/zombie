@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.0 · rediseño visual 2.0, fase XIII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.0 · rediseño visual 2.0, fase XIV)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,29 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XIV — Interiores con ambientación avanzada y PNJ autónomos (octubre de 2026)
+
+La investigación de Elizabeth Parker incorpora **cinco personajes con movimiento autónomo** y una capa visual animada en los tres interiores existentes. No son agentes conversacionales generativos: son personajes de mundo con **rutinas y estados deterministas**, compatibles con el juego offline.
+
+### Comportamiento jugable
+
+- **Apartamento de Elizabeth:** Madeleine Roche se desplaza cerca de la puerta y recuerda si ya dio su testimonio; Claire Renaud recorre el apartamento examinando detalles. Sus conversaciones ofrecen contexto y tiradas únicas; no sustituyen los indicios obligatorios de la misión.
+- **Garaje de Vasseur:** Adrien Vasseur patrulla entre la oficina y el acceso de servicio. Si la investigación tiene una alerta alta, evita al jugador y huye cuando se le acerca; su retirada se recuerda durante el resto de esa noche.
+- **Refugio de Bapthiste:** Bapthiste se mueve y puede detenerse a observar al jugador. Para confrontarlo hay que aproximarse al **personaje en movimiento**, no a una marca fija del mapa. Un vigilante mortal recorre la zona y, con una alerta elevada, avisa de la presencia del jugador una vez por noche.
+- **Interacciones persistentes:** las entrevistas requieren tiradas de Atributo + Habilidad; los resultados, posiciones, sospechas y decisiones se guardan en \`caseActors\` junto a la partida. No existen recompensas infinitas al repetir los diálogos.
+- **Camino y seguridad:** los PNJ usan \`vtm-physics.js\` para evitar muebles; el jugador conserva acceso directo a las salidas y las investigaciones ya existentes. Las conversaciones y movimientos se detienen durante diálogos y combates.
+
+### Arte y presentación
+
+\`vtm-case-visuals.js\` agrega efectos de iluminación, marcos, fotografías, papeles, polvo, reflejos de lluvia, aceite, marcas industriales, lámparas y sombras. Son capas **pixel art Canvas** independientes de \`vtm-case-interiors.js\`. Los sprites PNJ se apoyan en el render existente \`vtm-graphics.js\`. El botón **FX** conserva el control de los efectos animados.
+
+### Código, pruebas y límites
+
+- Módulos nuevos: \`vtm-case-actors.js\`, \`vtm-case-visuals.js\` y \`tests/case-actors-visuals.test.js\`.
+- Compatible con guardados anteriores (\`cronicas-paris-ghoul-v1\`) y el respaldo local existente. Se conserva el progreso del expediente Elizabeth y de las investigaciones secundarias. El guardado automático dentro de los interiores se realiza periódicamente, además de los guardados al salir, conversar o cambiar de aplicación.
+- Ejecutar \`node tests/case-actors-visuals.test.js\`, \`node tests/case-interiors.test.js\` y \`node tests/elizabeth-case.test.js\`. La comprobación final de experiencia visual en navegador real y el despliegue público en Hostinger deben verificarse por separado.
+- Limitaciones: los PNJ no simulan una ciudad entera ni caminan autónomamente entre barrios; no tienen IA de conversación libre. La estética es arte 2D procedural y no una colección de ilustraciones externas.
 
 ## Fase XIII — Interiores 2D y confrontación de Bapthiste (octubre de 2026)
 
