@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -294,6 +294,7 @@
   game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
   M.init(game);
   ST.init(game);
+  TACT.init(game);
   if(P){
    const pos=P.nearestFree(game.scene,game.x,game.y);
    if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
@@ -392,7 +393,7 @@
  function hud(){
   if(!game)return;
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
-  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary();
+  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game);
   $("playHumanity").textContent=game.character.humanity;
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
@@ -558,24 +559,8 @@
    advanceClock(15);hud();save();
    traitsResult("Trasfondo: "+name,result,roll);
  }
- function traitsPowers(){
-   if(!game.embraced)return;
-   const m=M.init(game),choices=[];
-   for(const name of D.clans[game.character.clan].disciplines){
-     const level=game.character.disciplines[name]||0,cost=M.powers[name]?.cost||1,done=M.used(game,"power:"+name);
-     choices.push({label:name+" ("+level+" círculos) · "+cost+" Sangre"+(done?" · usado":""),
-       disabled:!level||m.blood<cost||done,action:()=>traitsPowerUse(name)});
-   }
-   choices.push({label:"Regresar",action:traitsMenu});
-   askMenu("Dones de la sangre","Las Disciplinas necesitan el Abrazo, círculos adquiridos y Reserva de Sangre. El nivel determina cuánto pueden potenciar las tiradas. Cada poder puede activarse una vez por noche.\n\n"+M.summary(game),choices,"DISCIPLINAS");
- }
- function traitsPowerUse(name){
-   const result=M.powerResult(game,name);
-   if(!result)return;
-   if(result.exposure)exposure(result.exposure,"Activaste una Disciplina sobrenatural.");
-   log("Disciplina "+name+": "+result.cost+" punto(s) de Sangre gastados.");
-   hud();save();traitsResult("Disciplina: "+name,result,null);
- }
+ function traitsPowers(){TACTUI.powersMenu();}
+ function traitsPowerUse(name){TACTUI.powersMenu();}
  function traitsHunt(){
    if(!game.embraced||!["paris","venue"].includes(game.scene)||M.used(game,"hunt:"+(game.venue||game.scene)))return;
    const hunger=SU.checkHunger();
@@ -596,6 +581,7 @@
  }
  function traitsMenu(){
    if(!game)return;
+   if(game.combat?.active){TACTUI.battleMenu();return;}
    const m=M.init(game),choices=[
      {label:"Talentos · diez acciones",action:()=>traitsCategory("Talentos")},
      {label:"Técnicas · diez acciones",action:()=>traitsCategory("Técnicas")},
@@ -970,6 +956,7 @@
    const mainHere=!!q&&q.place===location.id&&!game.readyReport;
    const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
    const actions=[];
+   if(TACT.ENEMIES[location.id])actions.push({label:"Enfrentar físicamente una amenaza del lugar",action:()=>TACTUI.battleEntry(location.id)});
    if(ST.scenes[location.id])actions.push({label:"Resolver una situación del lugar según mi ficha",action:()=>SU.openScene(location)});
    if(dupontHere)actions.push({label:"Investigar el caso Pierre Dupont",action:()=>researchLead(location)});
    else if(mainHere)actions.push({label:"Investigar el encargo de tu Domitor",action:()=>resolveStandardQuest(q)});
@@ -1288,6 +1275,7 @@
 
  function interact(){
   if(!game||dialogOpen)return;
+  if(game.combat?.active){TACTUI.battleMenu();return;}
   const room=game.scene;
   if(room==="venue"){venueInteract();return;}
   if(room==="sidevenue"){shopInteract();return;}
@@ -1676,7 +1664,7 @@
  function moveStep(dt){
   if(!game)return;
   if(!$("appearanceModal").classList.contains("hidden")){game.walking=false;return;}
-  if(dialogOpen){game.walking=false;return;}
+  if(dialogOpen||game.combat?.active){game.walking=false;return;}
   let dx=0,dy=0;
   if(keys.has("w")||keys.has("arrowup")||touchMove==="up")dy--;
   if(keys.has("s")||keys.has("arrowdown")||touchMove==="down")dy++;
@@ -1719,7 +1707,7 @@
   const root=$("sheetDetail");root.innerHTML="";
   const header=document.createElement("p");header.textContent=c.name+" · "+c.concept+" · "+c.nature+" / "+c.demeanor+" · "+(game.embraced?"Vástago":"Ghoul")+" del clan "+c.clan;root.appendChild(header);
   const grid=document.createElement("div");grid.className="sheet-detail-grid";root.appendChild(grid);
-  const note=document.createElement("p");note.textContent="RASGOS JUGABLES · "+M.summary(game)+" · "+SU.summary();root.insertBefore(note,grid);
+  const note=document.createElement("p");note.textContent="RASGOS JUGABLES · "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game);root.insertBefore(note,grid);
   const training=document.createElement("button");training.textContent="Mejorar rasgos con experiencia";training.addEventListener("click",()=>{$("sheetModal").classList.add("hidden");SU.training();});root.appendChild(training);
   for(const [title,entries] of sections){
    const section=document.createElement("section");const h=document.createElement("h4");h.textContent=title;section.appendChild(h);
@@ -1763,7 +1751,7 @@
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
-  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary();root.appendChild(resources);
+  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary()+" · "+TACT.status(game);root.appendChild(resources);
   for(const [place,state] of Object.entries(ST.init(game).locations)){
    const entry=document.createElement("p");entry.textContent="Escena "+(D.locations.find(l=>l.id===place)?.name||place)+": "+(state.success?"resuelta":"pendiente")+" · "+state.method+" · noche "+state.night;root.appendChild(entry);
   }
@@ -1773,6 +1761,7 @@
   $("journalModal").classList.remove("hidden");
  }
  function setup(){
+  TACTUI.bind({getGame:()=>game,ask:askMenu,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>SU.openScene(D.locations.find(l=>l.id===id)),actions:traitsMenu});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
