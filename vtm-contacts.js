@@ -8,7 +8,7 @@ window.VTM_CONTACTS=(()=>{
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
  const validChoice=new Set(["help","inquire","pressure"]);
  const defaultEntry=(night=1)=>({choice:null,success:false,trust:0,decisionNight:night,followup:"none",
-  nextNight:0,notified:false,settledNight:null,claimed:null,complicationApplied:false});
+  nextNight:0,notified:false,settledNight:null,claimed:null,complicationApplied:false,seenNewsNight:0,newsHeard:0});
  const validIds=new Set(window.VTM_SHOPS?.definitions.map(s=>s.id)||[]);
  function nightOf(game){return Math.max(1,Math.floor(Number(game?.clock?.night)||1));}
  function init(game){
@@ -35,6 +35,8 @@ window.VTM_CONTACTS=(()=>{
    normalized.trust=clamp(Math.trunc(Number(normalized.trust)||0),-2,2);
    normalized.decisionNight=Math.max(1,Math.floor(Number(normalized.decisionNight)||current));
    normalized.nextNight=Math.max(0,Math.floor(Number(normalized.nextNight)||0));
+   normalized.seenNewsNight=Math.max(0,Math.floor(Number(normalized.seenNewsNight)||0));
+   normalized.newsHeard=clamp(Math.floor(Number(normalized.newsHeard)||0),0,500);
    normalized.followup=["none","pending","ready","settled"].includes(normalized.followup)?normalized.followup:"settled";
    if(!validChoice.has(normalized.choice))normalized.choice=null;
    if(normalized.followup==="pending"&&normalized.nextNight&&current>=normalized.nextNight)normalized.followup="ready";
@@ -138,17 +140,66 @@ window.VTM_CONTACTS=(()=>{
   }
   return effect;
  }
+
+ const streetMessages=[
+  "Algunos vecinos comentan cambios en los turnos nocturnos, pero no hay nombres ni documentos.",
+  "La lluvia borró los anuncios de la semana; alguien los reemplazó antes del amanecer.",
+  "Los repartidores evitan un cruce desde hace unos días. Ninguno explica por qué.",
+  "Un coche oscuro aguardó bastante tiempo en la esquina y se marchó sin pasajeros.",
+  "Se oye hablar de entregas a horas inusuales, aunque nadie aporta pruebas.",
+  "Los comerciantes comparan horarios para comprobar quién sigue abierto durante la noche."
+ ];
+ function districtContext(game,shop){
+  if(!shop)return{helped:0,pressured:0,label:""};
+  const neighbours=(window.VTM_SHOPS?.byDistrict?.[shop.district]||[]).filter(s=>s.id!==shop.id);
+  let helped=0,pressured=0;
+  for(const other of neighbours){
+   const decision=game.localPlaces?.[other.id]?.decision;
+   if(decision==="help")helped++;
+   if(decision==="pressure")pressured++;
+  }
+  return {helped,pressured,
+    label:pressured?"Aquí también escucharon que intimidaste a otro comerciante.":helped?"Aquí recuerdan que colaboraste con un negocio vecino.":""};
+ }
+ function inquiryDifficulty(game,shop){
+  const {helped,pressured}=districtContext(game,shop);
+  const introduction=!!game.contactIntroductions?.[shop.id];
+  const lead=(game.contactLeads||[]).some(s=>typeof s==="string"&&s.endsWith("->"+shop.id));
+  // Los efectos locales se acumulan con las referencias, pero nunca garantizan
+  // automáticamente una pista ni bloquean el acceso a las misiones principales.
+  return clamp(7+pressured-helped-(introduction?1:0)-(lead?1:0),5,9);
+ }
+ function nightNews(game,shop){
+  const e=game.contactMemory?.[shop?.id];const current=nightOf(game);
+  if(!e?.choice||current<=e.decisionNight||e.seenNewsNight>=current)return null;
+  const seed=shop.id.split("").reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
+  return streetMessages[(seed+current)%streetMessages.length];
+ }
+ function hearNews(game,shop){
+  init(game);
+  const message=nightNews(game,shop);
+  if(!message)return null;
+  const e=game.contactMemory[shop.id];
+  e.seenNewsNight=nightOf(game);
+  e.newsHeard=clamp(e.newsHeard+1,0,500);
+  return message;
+ }
  function mood(game,shop){
   const e=game.contactMemory?.[shop?.id];
-  if(!e||!e.choice)return "desconocido";
-  return e.trust>=2?"agradecido":e.trust>=1?"cordial":e.trust<=-2?"hostil":e.trust<=-1?"receloso":"neutral";
+  const context=districtContext(game,shop);
+  if(!e?.choice&&!context.helped&&!context.pressured)return "desconocido";
+  const trust=clamp((e?.trust||0)+context.helped-context.pressured,-2,2);
+  return trust>=2?"agradecido":trust>=1?"cordial":trust<=-2?"hostil":trust<=-1?"receloso":"neutral";
  }
  function summary(game){
   const all=Object.values(game.contactMemory||{});
   return {known:all.length,ready:all.filter(e=>e.followup==="ready").length,
     settled:all.filter(e=>e.followup==="settled").length,
     introductions:Object.keys(game.contactIntroductions||{}).length,
-    leads:(game.contactLeads||[]).length};
+    leads:(game.contactLeads||[]).length,
+    rumors:all.reduce((n,e)=>n+(Number(e.newsHeard)||0),0),
+    friendly:all.filter(e=>e.trust>=1).length,
+    hostile:all.filter(e=>e.trust<=-1).length};
  }
- return Object.freeze({init,remember,tick,followup,resolve,mood,summary,version:"1.0"});
+ return Object.freeze({init,remember,tick,followup,resolve,mood,summary,districtContext,inquiryDifficulty,nightNews,hearNews,version:"1.1"});
 })();
