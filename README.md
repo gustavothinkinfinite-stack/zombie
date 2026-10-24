@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.9 · rediseño visual 2.0, fase X)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.9 · rediseño visual 2.0, fase XI)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -10,6 +10,31 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
 
+
+## Fase XI — Cuatro expedientes de investigación interbarrial (octubre de 2026)
+
+Se añadieron **cuatro investigaciones secundarias independientes**, cada una con **cuatro pruebas** repartidas entre distintos comercios. Las dieciséis tiendas creadas en la fase IX participan en exactamente un expediente. **Estos casos son ficción ambiental nueva del videojuego**, no revelaciones anticipadas de la conspiración principal de la campaña.
+
+| Expediente | Ruta de cuatro fuentes |
+|---|---|
+| Entregas sin destinatario | Conserjería de Passy → Floristería St. July → Lavandería Saint-Denis → Almacén de los túneles |
+| Las páginas extraviadas | Librería de la Hemeroteca → Encuadernación → Copistería policial → Estudio de documentos del Elíseo |
+| La ruta de los coches | Café St. July → Taller Saint-Denis → Cafetería policial → Bar de Bastilla |
+| Objetos fuera de lugar | Anticuario Passy → Galería Elíseo → Estudio de música Bastilla → Electrónica de los túneles |
+
+### Reglas de investigación
+
+- Hablá con el encargado de la **siguiente fuente indicada** y seleccioná **Contrastar indicios**. Los diálogos y el diario indican el progreso, el comercio y el barrio siguientes.
+- Cada investigación usa una tirada de **Percepción + Investigación**; su dificultad incorpora los modificadores vecinales y las referencias de la fase X, entre 5 y 9. Si fallás, aumenta ligeramente la exposición y no podés repetir ese intento en el mismo comercio hasta otra noche.
+- La evidencia obtenida previamente en partidas anteriores se reconoce automáticamente y se valida en el orden correspondiente, sin volver a pagar bonificaciones.
+- Al reunir las cuatro pruebas, volvé al último comercio y elegí una **resolución definitiva**: entregar informe político (pequeño aumento de reputación y riesgo), archivar discretamente (reducir exposición) o advertir a los testigos (pequeño reconocimiento social).
+- Cada expediente sólo se resuelve **una vez** y no concede pistas ficticias de la trama central ni crea accesos ilegítimos al Elíseo.
+
+### Implementación, compatibilidad y límites
+
+\`vtm-local-cases.js\` contiene las cuatro rutas, comprobación estricta de etapas, estado \`localCases\`, guardado y migración, y efectos de las tres salidas. \`vtm-game.js\` integra diálogos, tiradas, tiempos y diario; \`index.html\` añade **Expedientes resueltos (0/4)** y **Pruebas contrastadas (0/16)**. El archivo \`tests/local-cases.test.js\` contiene regresiones para cadena, reintentos nocturnos, migración, guardado y resolución única; ejecutalo con \`node tests/local-cases.test.js\`.
+
+Se probaron directamente dieciséis condiciones del módulo, incluidos los cuatro pasos de un expediente, las tres variantes de cierre y la recuperación de pistas anteriores. La sintaxis y los elementos HTML de la integración fueron comprobados. Aún falta una revisión interactiva visual completa en un navegador y verificar el despliegue en Hostinger.
 
 ## Fase X — Memoria social y consecuencias entre noches (octubre de 2026)
 
