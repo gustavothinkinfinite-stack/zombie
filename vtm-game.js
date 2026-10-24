@@ -1351,6 +1351,14 @@
   const opts=[];
   if(game.embraced&&POL.PLAYERS[npc.id])opts.push({label:"Negociar favores, deudas y servicios políticos",action:()=>POLUI.npcMenu(npc.id)});
   if(npc.id==="guardiana")opts.push({label:"Pedir acceso a los asuntos de la corte de Pierre Duvalier",action:COURTUI.page});
+  // La campaña usa las conversaciones con informantes presentes, no sólo el menú Acciones.
+  if(CONSP&&game.conspiracy?.started&&!game.conspiracy?.ending&&(
+     CONSP.LEADS.some(lead=>lead.act===game.conspiracy.chapter&&lead.witness===npc.id&&lead.place===game.venue)||
+     (npc.id==="guardiana"&&game.conspiracy.chapter===4))){
+   opts.unshift({label:npc.id==="guardiana"?
+     "Presentar el dossier y deliberar sobre el futuro del Principado":
+     "Contrastar los testimonios de la conspiración",action:CONSP.menu});
+  }
   if(!state.impression){
    opts.push({label:"Presentarte con respeto · "+npc.check.attr+" + "+npc.check.skill,action:()=>{
     state.impression=true;
