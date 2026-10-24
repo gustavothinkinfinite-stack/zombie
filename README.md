@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–III)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–IV)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,21 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Rediseño visual 2.0 — Fase IV: escenarios ilustrados (octubre de 2026)
+
+**Nueva entrega de fondos originales e independientes:**
+
+- **Ocho escenarios públicos:** St. July, Elíseo, Passy, túneles Nosferatu, Bastilla, Saint-Denis, hemeroteca y archivo policial. Cada fondo SVG tiene composición arquitectónica, mobiliario e iluminación específicos.
+- **Siete salones de Domitores:** Toreador, Ventrue, Tremere, Nosferatu, Brujah, Gangrel y Malkavian. Se respetan las posiciones de maestro, puertas y objetos.
+- **Integración:** `vtm-graphics.js` carga los quince SVG locales de forma asíncrona y los dibuja en Canvas detrás de los personajes. Si falla algún archivo, recurre a los fondos anteriores.
+- **Luz ambiental:** variaciones de brillo y temperatura por escenario y clan, respetando la opción existente de desactivar FX.
+- **Sin cambios de reglas:** ficha de creación, aprecio, tiradas, encargos, secretos y guardados se conservan.
+- **Recursos documentados:** [escenarios](assets/escenarios/README.md) y [residencias](assets/residencias/README.md).
+
+**Pruebas:** verificación de sintaxis JS, presencia de los 15 archivos SVG, carga simulada de los siete salones y ocho escenarios con gráficos externos, fallback de despacho/habitaciones, navegación y guardado previo sin pérdida de aprecio. No se confirmó todavía el resultado visual en todos los navegadores reales ni la actualización del despliegue de Hostinger.
+
+**Limitaciones:** los nuevos fondos son ilustraciones vectoriales 2D para el prototipo, no modelos 3D ni ilustraciones detalladas pintadas a mano. Las salas secundarias siguen siendo procedurales y comparten algunas disposiciones básicas.
 
 ## Rediseño visual 2.0 — Fase III, primera entrega (23 de octubre de 2026)
 
