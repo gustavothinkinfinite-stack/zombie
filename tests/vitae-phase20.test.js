@@ -118,7 +118,7 @@ run("Los módulos están integrados y el formato de partida existente se conserv
  for(const term of ["VITAE.init(game)","VITAE?.feedingRestriction(game)","VITAE?.weakness(game","VITAE.menu",
  "VITAE?.observeBeauty(game)","VITAE?.afterHunt(game","VITAE?.frenzy(game","SAVE_KEY=\"cronicas-paris-ghoul-v1\""])
   assert.ok(main.includes(term),term);
- assert.ok(ui.includes("api.vitaeTerror?.("));
+ assert.ok(ui.includes("const fear=S.fearTest(g)"));
  assert.ok(fs.readFileSync(path.join(root,"vtm-tactics-ui.js"),"utf8").includes("bridge.vitaeFrenzy?.("));
  new Function(main);
 });
