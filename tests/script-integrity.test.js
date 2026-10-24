@@ -30,7 +30,7 @@ const required = [
   "vtm-economy.js", "vtm-economy-ui.js", "vtm-world-powers.js",
   "vtm-world-powers-ui.js", "vtm-case-interiors.js", "vtm-elizabeth.js",
   "vtm-save.js", "vtm-politics.js", "vtm-politics-ui.js",
-  "vtm-city-consequences.js", "vtm-advanced-tactics.js", "vtm-stealth-chase.js"
+  "vtm-city-consequences.js", "vtm-advanced-tactics.js", "vtm-stealth-chase.js", "vtm-vitae.js"
 ];
 for (const file of required) {
   assert.ok(modules.includes(file), `Módulo indispensable no incluido: ${file}`);
@@ -50,6 +50,8 @@ before("vtm-court.js", "vtm-city-consequences.js");
 before("vtm-city-consequences.js", "vtm-game.js");
 before("vtm-advanced-tactics.js", "vtm-tactics.js");
 before("vtm-stealth-chase.js", "vtm-game.js");
+before("vtm-mechanics.js", "vtm-vitae.js");
+before("vtm-vitae.js", "vtm-game.js");
 
 const styles = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g)]
   .map(match => match[1].split("?")[0]);
