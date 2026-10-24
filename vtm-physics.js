@@ -31,7 +31,10 @@ const furniture={
  ],
  paris:[]
 };
-const sceneKey=(scene)=>["house","study","quarters","venue","sidevenue","district"].includes(scene)?(scene==="sidevenue"?"venue":scene):"paris";
+// Los comercios secundarios tienen además un mostrador central dibujado
+// en vtm-shops.js; no se debe poder caminar a través de él.
+furniture.sidevenue=[...furniture.venue,{x:202,y:191,w:76,h:42,id:"mostrador-central"}];
+const sceneKey=(scene)=>["house","study","quarters","venue","sidevenue","district"].includes(scene)?scene:"paris";
 function obstacles(scene){return furniture[sceneKey(scene)]||[];}
 function canStand(scene,x,y,r=R){
  if(!Number.isFinite(x)||!Number.isFinite(y))return false;
@@ -125,5 +128,5 @@ function path(scene,start,end){
  if(clear)route.push(goal);
  return route;
 }
-return {obstacles,canStand,nearestFree,slide,path,version:"1.0"};
+return {obstacles,canStand,nearestFree,slide,path,version:"1.1"};
 })();
