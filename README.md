@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.3)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,36 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Versión 0.4 — Facciones, encargos personales y horarios (octubre de 2026)
+
+**Tres cadenas de encargos personales nuevas**, independientes del encargo principal del Domitor:
+
+- **Ingrid — «Nombres bajo la piedra»:** desde los túneles Nosferatu al archivo policial. Elegís recuperar los datos discretamente o intentar borrar la referencia, con tiradas, riesgos y reputación.
+- **Lucien — «Testigos de Saint-Denis»:** desde Bastilla a Saint-Denis. Podés escuchar a testigos o presionar a un sospechoso. La resolución repercute tanto en los Brujah como en la Camarilla.
+- **Isabelle Dubois — «El sello de Passy»:** desde el St. July a Passy. Podés tramitar formalmente una copia o buscarla sin permiso. Afecta a la casa Tremere y, parcialmente, a la corte.
+
+**Funcionamiento de los encargos:**
+1. Hablar con Ingrid, Lucien o Isabelle en su lugar habitual.
+2. Aceptar el encargo, sin perder la misión principal.
+3. Visitar la ubicación objetivo y examinar el mueble marcado como \`EXAMINAR\`.
+4. Elegir entre dos enfoques con Atributo + Habilidad y dificultad diferentes.
+5. Volver al PNJ de origen a rendir el informe. Podés decir la verdad o exagerar tus resultados arriesgándote a una nueva tirada.
+6. La relación con el PNJ y la reputación política varían según el resultado. Una misión terminada no se puede repetir para obtener recompensas ilimitadas.
+
+**Sistemas nuevos:**
+
+- **Facciones independientes:** Camarilla, Brujah de París, red Nosferatu y casa Tremere. Reputación de −100 a +100 con historial en el diario. El sistema es una mecánica propia del videojuego, no un valor oficial de la tercera edición.
+- **Ventajas y penalizaciones:** a partir de +25/−25 de reputación se suma o resta un dado en determinadas Habilidades (Etiqueta y Política para Camarilla, Pelea para Brujah, Callejeo para Nosferatu, Ocultismo para Tremere). A partir de +20/−20 la reputación modifica la confianza efectiva en encuentros relacionados. Los bonos de favores ya obtenidos siguen funcionando.
+- **Reloj nocturno:** número de noche, hora y horarios de presencia específicos para los ocho PNJ de los locales. El tiempo avanza al desplazarse entre edificios y durante las misiones. Si un personaje no está presente, podés **esperar hasta su regreso**. Al llegar el amanecer se salta a la siguiente noche (todavía no hay simulación diurna).
+- **Mascarada:** cuando la exposición llega a 60 por primera vez, la Camarilla aplica una reducción de 8 puntos a tu reputación; el efecto no se repite por volver a superar el umbral. Si la exposición alcanza 25, podés pedir al Domitor ayuda para contener los rumores, mediante una tirada y con coste potencial de aprecio, **una vez por noche**.
+- **HUD y mapa:** cuatro barras de facciones, reloj, encargos paralelos, nuevos indicadores de objetivos y pistas recogidas. El diario añade una sección de reputación y el estado de los encargos.
+- **Compatibilidad:** se inicializan los campos de facciones, reloj, encuentros y encargos al continuar partidas previas. No se eliminan personajes ni partidas existentes.
+- **Personajes ausentes:** cuando el horario indica que un PNJ no está en su local, se muestra su puesto vacío y se ofrece esperar; los objetos del lugar siguen siendo explorables.
+
+**Pruebas ejecutadas:** migración de una partida anterior, aceptación de las tres misiones, resolución y entrega de informes, investigación simultánea de Dupont y una misión secundaria en el mismo lugar, recompensas únicas, horario de Isabelle y opción de espera, efecto de fracaso de un encargo, sanción de la Camarilla sin repetición, ayuda del Domitor no repetible en la misma noche y transición al anochecer siguiente.
+
+**Límites:** las misiones nuevas tienen dos etapas y decisiones con dados, pero todavía no constituyen escenas de sigilo o combate en tiempo real. Los horarios se basan en un reloj simulado, no en el tiempo real de París. Las reputaciones no sustituyen los sistemas oficiales de Estatus, Influencia o Prestigio; son una capa mecánica específica del videojuego. No se agregaron revelaciones sobre el verdadero origen de la Senescal.
 
 ## Versión 0.3 — Vida social y París nocturno (octubre de 2026)
 
@@ -31,7 +61,7 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 Entrá en el despacho del Domitor, examiná los documentos, visitá la ciudad, conocé a Isabelle Dubois en el St. July y pedí una referencia después de mejorar su confianza. Probá el acceso al Elíseo. También podés encontrar una invitación examinando la mesa del salón de tu residencia. Pedile al Domitor la investigación de Pierre Dupont y reuní pruebas antes de confrontarlo. Volvé a informar para modificar el aprecio.
 
-**Publicación:** los commits están en `main`. Último despliegue observado en hPanel al cerrar este trabajo: **2026-10-23 20:13**, rama `main`, directorio `public_html`, indicado como **despliegue manual**. No se confirmó que Hostinger sirva la versión 0.3. Para publicarla, abrir GIT en hPanel, pulsar **Redeploy** y recargar el sitio. La página externa no fue accesible desde la herramienta de verificación.
+**Publicación:** los commits están en `main`. Revisar el último despliegue de Hostinger y pulsar **Redeploy** si todavía sirve una versión anterior; cambiar el código en GitHub por sí solo no confirma el despliegue del sitio.
 
 ## Versión 0.2 — Residencia e investigación ramificada (23 de octubre de 2026)
 
