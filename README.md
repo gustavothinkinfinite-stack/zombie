@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fase I)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,20 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Rediseño visual 2.0 — Fase I (23 de octubre de 2026)
+
+**Nueva presentación, sin alterar las reglas ni los datos guardados:**
+- **HUD y panel de juego:** tipografía y jerarquía visual renovadas, nueva paleta nocturna gótica, indicadores superpuestos sobre el escenario para nombre/condición/hora y exposición de la Mascarada. Paneles laterales más claros para Domitor, aprecio, misiones y política.
+- **Diálogos:** presentación cinematográfica, retrato a la izquierda cuando habla un personaje, respuestas numeradas y mejor legibilidad. Los cuadros narrativos sin personaje hablante aprovechan toda la anchura.
+- **Retratos:** primeros bustos de mayor resolución interna (144 × 176) para los siete Domitores y los PNJ existentes, con colores, atuendo, rostro y cabello diferenciados. Siguen siendo ilustraciones programáticas provisionales, no imágenes finales ilustradas.
+- **Presentación responsive:** escritorio y móvil, con controles táctiles conservados, estados acompañados de texto y opción de movimiento reducido.
+- **CSS independiente:** el archivo \`visual-2.css\` se carga después de \`style.css\` para separar el rediseño del motor del juego y permitir iteraciones seguras.
+- **Guía artística:** [GUIA_VISUAL_2_0.md](GUIA_VISUAL_2_0.md) define paleta, composición, retratos, especificación de assets y futuras fases.
+
+**Importante:** esta fase **no** sustituye todavía los tilesets y sprites del mapa por arte definitivo. La recreación completa de París, residencias y animaciones pertenece a las fases II–IV.
+
+**Pruebas realizadas:** compilación sintáctica de los archivos JS, correspondencia entre IDs de HTML y referencias del motor, reglas CSS equilibradas, carga de una partida previa, sincronización del HUD, renderizado de retratos de los siete Domitores, ocultación de retratos en diálogos narrativos y conservación del acceso a misiones.
 
 ## Versión 0.4 — Facciones, encargos personales y horarios (octubre de 2026)
 
