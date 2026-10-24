@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -215,6 +215,12 @@
   game.npcFlags=game.npcFlags||{};
   game.knownNpcs=Array.isArray(game.knownNpcs)?game.knownNpcs:[];
   game.access=game.access||{};
+  game.sideQuests=game.sideQuests||{};
+  game.factions=game.factions||{camarilla:0,brujah:0,nosferatu:0,tremere:0};
+  for(const key of Object.keys(A.factions))if(!Number.isFinite(game.factions[key]))game.factions[key]=0;
+  game.clock=game.clock||{night:1,minutes:20*60+15};
+  game.clock.night=Math.max(1,Math.floor(Number(game.clock.night)||1));
+  game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number(game.clock.minutes)||1200)));
  }
  function enterGame(){
   expandSave();
@@ -230,9 +236,75 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{}};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
+ }
+
+ function formatClock(){
+   const t=game.clock.minutes;
+   return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+ }
+ function advanceClock(amount){
+   game.clock.minutes+=Math.max(0,Math.round(amount));
+   if(game.clock.minutes>=1440)game.clock.minutes-=1440;
+   // El prototipo sólo representa actividad nocturna; se omiten las horas de sol.
+   if(game.clock.minutes>=360&&game.clock.minutes<1080){
+     game.clock.minutes=1200;game.clock.night++;
+     log("La noche siguiente cae sobre París.");
+   }
+   hud();save();
+ }
+ function npcIsPresent(npcId){
+   const schedule=A.schedules[npcId];if(!schedule)return true;
+   const hour=game.clock.minutes/60;
+   return schedule.end<=schedule.start?(hour>=schedule.start||hour<schedule.end):(hour>=schedule.start&&hour<schedule.end);
+ }
+ function waitForNPC(npc){
+   const schedule=A.schedules[npc.id];
+   if(!schedule)return;
+   const current=game.clock.minutes,target=schedule.start*60;
+   if(current>=target||current<360)game.clock.night++;
+   game.clock.minutes=target;
+   log("Esperaste hasta que "+npc.name+" regresara al lugar.");
+   hud();save();
+   meetNPC(npc);
+ }
+ function increaseFaction(id,delta,reason){
+   if(!A.factions[id])return;
+   game.factions[id]=clamp(game.factions[id]+delta,-100,100);
+   log("Reputación con "+A.factions[id].name+": "+(delta>=0?"+":"")+delta+". "+reason);
+   updateFactionHud();save();
+ }
+ function updateFactionHud(){
+   const names=Object.keys(A.factions).map(id=>({id,value:game.factions[id]||0}));
+   names.sort((a,b)=>b.value-a.value);
+   const top=names[0];
+   $("standingLabel").textContent=top.value>0?A.factions[top.id].name+" ("+top.value+")":"Sin alianzas";
+   $("nightClock").textContent=game.clock.night+" · "+formatClock();
+   const root=$("factionBars");root.innerHTML="";
+   for(const id of Object.keys(A.factions)){
+     const f=A.factions[id],value=game.factions[id]||0;
+     const line=document.createElement("div");line.className="faction-row";
+     const title=document.createElement("span");title.textContent=f.name;
+     const amount=document.createElement("b");amount.textContent=(value>0?"+":"")+value;
+     const bar=document.createElement("i");bar.className="faction-track";
+     const fill=document.createElement("i");fill.className="faction-fill";
+     fill.style.width=(Math.abs(value)/100*50)+"%";
+     fill.style.left=value>=0?"50%":(50-Math.abs(value)/100*50)+"%";
+     fill.style.background=value>=0?f.color:"#bb6677";
+     bar.appendChild(fill);line.append(title,amount,bar);root.appendChild(line);
+   }
+   const target=$("sideQuestList");target.innerHTML="";
+   const active=Object.values(game.sideQuests).filter(q=>q.status==="active"||q.status==="ready");
+   if(!active.length)target.textContent="Visitá a Ingrid, Lucien o Isabelle para conseguir encargos personales.";
+   for(const sq of active){
+     const data=A.personal[sq.id],line=document.createElement("div");line.className="side-entry";
+     const title=document.createElement("strong");title.textContent=data.title;
+     const desc=document.createElement("span");
+     desc.textContent=sq.status==="ready"?"Regresá con "+N.byLocation[data.origin].name+".":data.objective;
+     line.append(title,desc);target.appendChild(line);
+   }
  }
  function hud(){
   if(!game)return;
@@ -252,6 +324,7 @@
   $("dupontRelation").textContent=game.relations.dupont>=2?"Confía en vos":game.relations.dupont<=-2?"Desconfía de vos":"Neutral";
   $("knownNpcs").textContent=game.knownNpcs.length+" / 8";
   $("elyseeStatus").textContent=game.access.elysee?"Concedido":game.observed.invitation||game.access.courtReferral?"Con recomendación":"Pendiente";
+  updateFactionHud();
   $("leadsStatus").textContent=game.activeQuest==="archivos"?"Pruebas: "+game.arc.clues.length+"/2 como mínimo. "+(game.readyReport?"Informá al Domitor.":"Investigá tres fuentes en París."):"Los sucesos nocturnos se ocultan entre rumores y silencios.";
  }
  function questObj(id){return D.quests.find(q=>q.id===id);}
