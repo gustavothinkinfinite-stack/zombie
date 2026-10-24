@@ -136,4 +136,55 @@ function drawVenue(c,id,N,game,time){
  }
 }
 
-// Continúa: sprites y efectos.
+
+function character(c,x,y,opts={}){
+ const {master=false,clan="Toreador",npc=null,embraced=false,facing="down",walking=false,cycle=0,time=0}=opts;
+ x=Math.round(x);y=Math.round(y);
+ const palette={Toreador:"#986177",Tremere:"#847096",Brujah:"#975d57",Nosferatu:"#5d7d6b",Ventrue:"#647d96",Gangrel:"#657b60",Malkavian:"#85719a"};
+ const jacket=npc?.color||palette[clan]||"#78817d",skin=npc?.skin||(clan==="Nosferatu"?"#a0a18b":"#d4ae98"),hair=npc?.hair||(clan==="Tremere"?"#a8a0a3":"#2b2830");
+ const player=!master&&!npc,bob=walking?Math.round(Math.sin(cycle*10)*1.5):0,stride=walking?Math.round(Math.sin(cycle*10)*3):0;
+ rect(c,x-12,y+18,24,5,"#0a0e1699");
+ rect(c,x-7-stride,y+12,6,11,"#222833");rect(c,x+2+stride,y+12,6,11,"#1e222e");
+ rect(c,x-8-stride,y+20,8,4,"#11151d");rect(c,x+1+stride,y+20,8,4,"#0d111b");
+ rect(c,x-11,y-2+bob,22,17,"#151721");rect(c,x-9,y+bob,19,15,player?(embraced?"#734457":"#6e7b80"):jacket);
+ rect(c,x-14,y+2+bob,5,13,jacket);rect(c,x+10,y+2+bob,5,13,jacket);
+ rect(c,x-13,y+10+bob,4,3,skin);rect(c,x+11,y+10+bob,4,3,skin);
+ rect(c,x-5,y-12+bob,11,14,skin);rect(c,x-6,y-15+bob,12,6,hair);
+ rect(c,x-7,y-10+bob,3,8,hair);rect(c,x+5,y-10+bob,3,8,hair);
+ if(facing==="down"){rect(c,x-3,y-7+bob,2,2,"#26232c");rect(c,x+3,y-7+bob,2,2,"#26232c");rect(c,x-1,y-3+bob,3,1,"#9d6e6c");}
+ else if(facing==="up"){rect(c,x-6,y-12+bob,12,10,hair);rect(c,x-3,y+3+bob,6,7,"#303240");}
+ else{const dir=facing==="left"?-1:1;rect(c,x+dir*4,y-7+bob,2,2,"#26232c");rect(c,x+dir*7,y-3+bob,2,1,"#b17b78");}
+ if(master||npc){
+   rect(c,x-11,y+7+bob,4,14,"#1c1a25");rect(c,x+8,y+7+bob,4,14,"#181923");
+   rect(c,x-6,y+3+bob,3,7,"#d8bcab");rect(c,x+5,y+3+bob,3,7,"#bda293");
+ }
+ if(clan==="Tremere"){rect(c,x-12,y+2,3,15,"#615779");rect(c,x+9,y+2,3,15,"#615779");}
+ if(clan==="Nosferatu"){rect(c,x-7,y-11+bob,4,9,"#5c7968");rect(c,x+4,y-9+bob,4,8,"#506b59");}
+ if(embraced&&player)rect(c,x-2,y+4+bob,5,3,"#b9778d");
+ if(npc?.id==="isabelle")rect(c,x-3,y-15+bob,8,3,"#383039");
+ if(npc?.id==="lucien")rect(c,x-8,y-15+bob,14,4,"#22242c");
+ if(npc?.id==="john")rect(c,x-2,y+5+bob,4,9,"#e0d0c6");
+ if(npc?.id==="ingrid")rect(c,x+4,y-9+bob,5,4,"#567361");
+}
+function effects(c,mode,time){
+ if(mode==="paris"){
+   // Lluvia en dos capas, sin arrays ni partículas almacenadas en cada fotograma.
+   for(let i=0;i<56;i++){
+    const x=(i*73+Math.floor(time*41))%480,y=(i*43+Math.floor(time*73))%300;
+    rect(c,x,y,1,i%3?4:6,i%4?"#b4c7d266":"#d8dfe4a0");
+   }
+   for(let i=0;i<13;i++){
+    const x=(i*37+7)%470,y=75+(i%3)*71;
+    rect(c,x,y,1,7,i%2?"#e7cba42e":"#b6b8c120");
+   }
+ }else{
+   for(let i=0;i<15;i++){
+    const x=(i*53+Math.floor(Math.sin(time*.5+i)*11)+480)%480;
+    const y=(i*61-Math.floor(time*(3+i%4))+3000)%300;
+    rect(c,x,y,1,1,i%3?"#f2d9b14f":"#ebddd47c");
+   }
+ }
+}
+function clearCache(){cache.clear();}
+return {drawCity,drawResidence,drawVenue,character,effects,clearCache,version:"2.0-phase-II"};
+})();
