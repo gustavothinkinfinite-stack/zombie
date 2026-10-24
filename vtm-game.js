@@ -521,23 +521,37 @@
    log("Visitaste "+location.name+".");hud();save();
  }
  function venueInteract(){
-  const src=C.investigation.sources[game.venue],exit=Math.hypot(game.x-240,game.y-270);
+  const source=C.investigation.sources[game.venue];
+  const npc=N.byLocation[game.venue];
+  const env=N.environments[game.venue];
+  const location=D.locations.find(l=>l.id===game.venue);
+  const exit=Math.hypot(game.x-240,game.y-270);
   if(exit<42){
-   game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.venue=null;hud();save();return;
+   game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.venue=null;
+   hud();save();return;
   }
-  if(Math.hypot(game.x-130,game.y-143)<55){researchLead({id:game.venue});return;}
-  if(Math.hypot(game.x-240,game.y-104)<60){
-   if(game.venue==="hemeroteca"&&game.arc.clues.length>=2&&!game.readyReport)confrontDupont();
-   else askMenu(game.venue==="hemeroteca"?"Pierre Dupont":game.venue==="policia"?"Empleado del archivo":"Camarero del St. July",
-      game.venue==="hemeroteca"?"El periodista no comparte sus documentos con desconocidos. Reuní por lo menos dos pruebas.":src.hint,
-      [{label:"Continuar investigando",action:()=>{}}],"PERSONAJE");
+  if(Math.hypot(game.x-130,game.y-143)<55){
+   if(game.activeQuest==="archivos"&&!game.readyReport&&source){
+    researchLead(location);
+   }else if(game.activeQuest&&!game.readyReport&&questObj(game.activeQuest).place===game.venue){
+    resolveStandardQuest(questObj(game.activeQuest));
+   }else{
+    const info=source?source.hint:env.description;
+    askMenu("Examinando "+location.name,info+"\n\nAquí no queda un objetivo inmediato de tu encargo.",
+      [{label:"Seguir explorando",action:()=>{}}],"OBSERVACIÓN");
+   }
    return;
   }
-  if(Math.hypot(game.x-350,game.y-146)<55){
-   askMenu("Un detalle del lugar",src.hint+" Parece que alguien estuvo aquí hace poco.",
-     [{label:"Examinar el entorno",action:()=>{}}],"OBSERVACIÓN");return;
+  if(Math.hypot(game.x-240,game.y-104)<60){
+   meetNPC(npc);return;
   }
-  notice("Examiná el archivo a la izquierda, hablá con la persona o regresá por la salida.");
+  if(Math.hypot(game.x-350,game.y-146)<55){
+   const key="inspect_"+game.venue;
+   if(!game.flags[key]){game.flags[key]=true;log("Examinaste "+location.name+".");save();}
+   askMenu("Detalles del lugar",env.description+"\n\n"+location.detail,
+    [{label:"Continuar",action:()=>{}}],"OBSERVACIÓN");return;
+  }
+  notice("Acercate al personaje, examiná los objetos o regresá por la salida.");
  }
  function reportQuest(){
   const r=game.readyReport,q=questObj(r.id),master=D.clans[game.character.clan].master;
