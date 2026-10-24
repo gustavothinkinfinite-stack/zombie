@@ -153,7 +153,11 @@ window.VTM_CITY_CONSEQUENCES=(()=>{
   const d=district(g);
   if(g?.scene!=="district"||!d)return[];
   const s=state(g),out=[],level=heat(g,d);
-  if(level>=20)out.push({id:"patrol",x:WALK.x,y:WALK.y,title:level>=55?"Patrulla investigadora":"Patrulla nocturna"});
+  if(level>=20){
+   const patrol=window.VTM_STEALTH_CHASE?.position(g);
+   out.push({id:"patrol",x:patrol?.x??WALK.x,y:patrol?.y??WALK.y,
+    title:level>=55?"Patrulla investigadora":"Patrulla nocturna"});
+  }
   if(Object.values(s.witnesses).some(w=>w.district===d&&w.firstNight>=g.clock.night-2))
    out.push({id:"witness",x:WITNESS.x,y:WITNESS.y,title:"Testigo del barrio"});
   return out;
@@ -243,6 +247,7 @@ window.VTM_CITY_CONSEQUENCES=(()=>{
  }
  function draw(c,g,time=0){
   for(const p of visible(g)){
+   if(p.id==="patrol"&&window.VTM_STEALTH_CHASE?.position(g))continue;
    const x=p.x,y=p.y,police=p.id==="patrol";
    c.fillStyle="#11121c99";c.fillRect(x-8,y+9,16,4);
    c.fillStyle=police?"#3c5b77":"#6b5a69";c.fillRect(x-6,y-7,12,17);
