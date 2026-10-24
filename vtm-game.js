@@ -2021,7 +2021,15 @@
     notice(effectsEnabled?"Efectos ambientales activados.":"Efectos ambientales desactivados.");
   });
   updateFxButton();
-  $("titleBtn").addEventListener("click",()=>{save();show("welcome");$("continueGame").disabled=!load();});
+  $("titleBtn").addEventListener("click",()=>{
+   // No abandonar la partida si falló la escritura o no se puede recuperar.
+   if(!save())return;
+   if(!load()){
+    notice("No se pudo verificar el guardado. Seguís en la partida para evitar perder el progreso.");
+    return;
+   }
+   show("welcome");$("continueGame").disabled=false;
+  });
   $("touchUse").addEventListener("click",interact);
   for(const b of document.querySelectorAll("[data-move]")){
    const dir=b.dataset.move;b.addEventListener("pointerdown",e=>{if(overlayOpen())return;e.preventDefault();touchMove=dir;b.setPointerCapture?.(e.pointerId);});
