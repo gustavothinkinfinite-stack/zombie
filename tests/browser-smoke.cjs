@@ -107,6 +107,7 @@ const key="cronicas-paris-ghoul-v1";
    await page.locator("#continueGame").click();
    if(district==="passy"){
     await check("Sigilo y carrera — controles de la Fase XIX",async()=>{
+     await page.evaluate(()=>document.activeElement?.blur());
      await page.keyboard.press("c");
      const crouched=await page.evaluate(k=>JSON.parse(localStorage.getItem(k))?.stealthChase?.crouched,key);
      assert.equal(crouched,true,"La tecla C debe guardar el modo sigilo");
