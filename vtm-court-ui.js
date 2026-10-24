@@ -76,7 +76,7 @@ window.VTM_COURT_UI=(()=>{
    buttons.push({label:"Solicitar una licencia limitada de caza",disabled:!!problem,action:huntingPermit});
    buttons.push({label:"Solicitar investigación discreta sobre documentos",disabled:!!problem,action:()=>petition("inquiry")});
    if(c.cases.some(x=>["warning","sanctioned"].includes(x.status)))
-    buttons.push({label:"Solicitar que se reconsidere una amonestación",disabled:!!problem,action:()=>petition("apology")});
+    buttons.push({label:"Solicitar que se reconsidere una amonestación",disabled:!!C.canAudience(g,true),action:()=>petition("apology")});
   }
   buttons.push({label:"Consultar los requisitos y regresar",action:page});
   ask("Antes de la audiencia",
@@ -87,7 +87,7 @@ window.VTM_COURT_UI=(()=>{
  }
  function petition(type,place){
   const g=game(),r=C.PETITIONS[type];if(!r)return;
-  const legal=C.canAudience(g);
+  const legal=C.canAudience(g,type==="apology");
   if(legal)return;
   if(type!=="present"&&!C.init(g).recognized)return;
   if(type==="inquiry"&&C.init(g).research.fragments.length<2){
