@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–VII incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–VIII incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -130,6 +130,14 @@ Las figuras de ambiente **no son objetivos de misiones, no se pueden atacar, no 
 Se conservaron las coordenadas de entrada a edificios y los interiores de siete clanes. Todo funciona a 480 × 300 px lógicos con el motor y el atlas de la fase VI.
 
 Para ampliar esta fase, priorizar calles conectadas de varios sectores, ciclos de PNJ realmente persistentes, rutas peatonales físicas y posibles encuentros narrativos, separando siempre decoración de actores interactivos.
+
+## Fase VIII — Exploración de barrios
+
+Nuevo módulo \`vtm-districts.js\`: ocho escenas exteriores conectadas por accesos cardinales y el mapa general existente. Cada escena tiene bloques de edificios, avenidas transitables, una entrada al local previamente existente, dos puntos de observación y pasos hacia los barrios adyacentes. El motor mantiene una cámara de 480×300 píxeles lógicos; cada cambio de barrio transfiere al jugador al borde opuesto de la nueva escena.
+
+La escena \`district\` conserva el sistema de colisiones, las rutas al hacer clic y las animaciones de la fase anterior. El progreso de ocho zonas y dieciséis rincones se guarda en dos propiedades nuevas del archivo de partida. La visita a un local desde un barrio conserva su punto de regreso. La escena \`paris\` no desaparece y los jugadores pueden seguir entrando directamente en sus destinos mediante el menú de navegación.
+
+Esta primera topología es un **grafo lúdico**, no un plano geográfico preciso de París. Las próximas iteraciones deberían añadir edificios secundarios interactivos, mayor diferenciación por barrio, interiores adicionales, eventos contextuales y cartografía a escala.
 
 ## Próximos entregables de arte
 
