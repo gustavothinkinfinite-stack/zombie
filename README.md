@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.0 · rediseño visual 2.0, fase XIV)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XIV)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -157,6 +157,37 @@ Los rumores de estos comercios **son contenido ambiental original**, no pruebas 
 Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de acceso a los 16 locales, renderizado de 16 interiores y de sus puntos de interacción; ejecución completa de una visita con conversación, recompensa no repetible, guardado y retorno a la misma calle.
 
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
+
+
+## Versión 1.1 — Las audiencias y las Seis Tradiciones
+
+**Política del Principado de París:** se incorporó un módulo jugable de audiencias ante el príncipe **Pierre Duvalier**, respetando los papeles públicos del Sheriff **Lord Thomas Wyndham**, la Guardiana del Elíseo, los Tremere, los Brujah y la red Nosferatu. Se mantienen los secretos de la Senescal **Etienne Moreau**: sus motivos, naturaleza y secretos no aparecen en descripciones, diálogos, pistas automáticas, acusaciones ni fallos de esta expansión.
+
+**Accesos:** desde **Acciones → Corte del príncipe · audiencias, Tradiciones y expedientes** se puede consultar el estado político y el código de la Camarilla. Una vez admitido en el Elíseo, el jugador puede hablar con la Guardiana o investigar el lugar para acceder a las comparecencias.
+
+**Audiencias ante Duvalier:**
+- **Presentación formal:** un Vástago admitido en el Elíseo puede solicitar reconocimiento mediante Etiqueta. Ser recibido no equivale a obtener un cargo, un dominio ni permiso para crear progenie. Una petición fallida puede repetirse otra noche.
+- **Licencia de caza:** después del reconocimiento, se puede solicitar autorización provisional para alimentarse en dominios identificados (Bastilla, St. July, Passy, Elíseo, túneles), con duración limitada y requisitos de Política.
+- **Investigación reservada:** una petición de pesquisa formal exige contrastar primero **dos irregularidades documentales** entre archivo policial, St. July, Passy y túneles Nosferatu. Estas irregularidades no identifican culpables ni revelan secretos.
+- **Reconsideración de amonestaciones:** las restricciones y advertencias pueden revisarse mediante nuevas comparecencias y decisiones.
+
+**Disputas disponibles:**
+- **Saint-Denis y Bastilla:** acusaciones cruzadas tras los altercados Brujah; tomar partido sin pruebas repercute en la corte.
+- **Passy y St. July:** la trazabilidad administrativa de una correspondencia de la Casa Tremere.
+- **Túneles y archivo policial:** referencias de accesos subterráneos en documentación mortal.
+
+Cada disputa admite **mediación, expediente contrastado o acusación formal**, con tiradas distintas, requisitos reales de pruebas y consecuencias en reputación, prestigio y referencias. Una acusación sin pruebas suficientes perjudica al personaje, pero no convierte automáticamente al acusado en culpable. Los acuerdos se registran una sola vez para impedir recompensas repetidas.
+
+**Seis Tradiciones de la Camarilla:** La Mascarada, El Dominio, La Progenie, La Responsabilidad, La Hospitalidad y La Destrucción. Se presentan en un códice contextual. Las reglas narrativas se inspiran en *Vampiro: La Mascarada, tercera edición (Revised)*, pero las pruebas, sanciones, umbrales y procedimientos de juego son una **adaptación del prototipo**. **No son una tabla oficial de castigos.**
+- Cuando la exposición a mortales alcanza niveles crecientes, la corte puede abrir una **investigación preliminar** sobre la Mascarada; los rumores **no constituyen condena**.
+- Cazar con éxito en un dominio custodiado sin autorización puede abrir un expediente por Dominio; si el personaje no ha sido reconocido, también puede revisarse su presentación conforme a Hospitalidad.
+- El personaje puede responder con **testimonio, descargo documental o reparación verificable**. El fallo puede archivar la investigación, registrar una advertencia o imponer una censura política limitada; no hay destrucción arbitraria o Caza de Sangre automática.
+- Si un Vástago aún bajo tutela recibe una censura fundada, el Domitor es informado y su aprecio se resiente. No se presume la culpa del sire ni se crea una segunda condena sin prueba.
+- Las Tradiciones de Progenie y Destrucción quedan representadas en el código y el modelo de infracciones, pero **no se inventa la creación ni la destrucción de personajes** donde la jugabilidad actual no ofrece tales acciones. En particular, el enfrentamiento con Bapthiste sigue distinguiendo incapacitación, custodia y autorización.
+
+**Guardados:** el estado adicional se guarda en \`game.court\` (audiencias, reconocimiento, licencias, expedientes, pruebas, disputas, restricciones e historial). Se inicializa en partidas anteriores conservando todos los demás estados, y se integra con los guardados locales y la copia de respaldo existentes. Los fallos de las audiencias, las investigaciones y las acciones políticas quedan persistidos.
+
+**Pruebas:** validación sintáctica, pruebas de reglas para presentaciones, restricciones a ghouls, licencias, investigación documental, disputas, acusaciones sin pruebas, descargos, sanciones, cobros únicos y migraciones; prueba simulada de la interfaz desde una partida guardada del Elíseo hasta el diálogo de la Guardiana y la primera audiencia. **No se ha verificado el despliegue efectivo en Hostinger**: los cambios se confirmaron en GitHub \`main\`.
 
 
 ## Versión 1.0 — La política tiene consecuencias
