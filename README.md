@@ -190,6 +190,18 @@ Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
 
 
+## Corrección visual 1.1.1 — Proporciones del juego
+
+Esta corrección **modifica el juego real**, sin generar ni sustituir capturas, imágenes o escenarios. En la vista general de París:
+
+- Los ocho destinos se dibujan como **edificios de escala urbana y rótulos compactos**, ubicados en los mismos centros interactivos del mapa, en vez de enormes rectángulos que cubrían varias manzanas.
+- La **residencia** deja de ocupar un bloque desproporcionado en la esquina inferior; ahora aparece como una fachada discreta y un rótulo pequeño.
+- El **personaje** se dibuja al **58 % de su tamaño original exclusivamente en el mapa general**, conservando su tamaño completo en interiores, barrios y encuentros.
+- El juego en escritorio tiene **un ancho máximo de 1290 px**, con columna lateral de 310 px y paneles más compactos. El mapa conserva proporción 8:5, sin deformar píxeles, ni cambiar el canvas lógico 480 × 300.
+- El diseño se adapta a pantallas intermedias y móviles. Las coordenadas de interacción, desplazamiento, misiones y **partidas guardadas** se mantienen sin cambios.
+
+La corrección se encuentra en `vtm-graphics.js`, `vtm-game.js`, `visual-2.css` e `index.html`. Se modificaron las versiones de las referencias de caché en HTML para que el navegador vuelva a cargar el arte y los estilos. La publicación en Hostinger debe verificarse independientemente del commit de GitHub.
+
 ## Versión 1.1 — Las audiencias y las Seis Tradiciones
 
 **Política del Principado de París:** se incorporó un módulo jugable de audiencias ante el príncipe **Pierre Duvalier**, respetando los papeles públicos del Sheriff **Lord Thomas Wyndham**, la Guardiana del Elíseo, los Tremere, los Brujah y la red Nosferatu. Se mantienen los secretos de la Senescal **Etienne Moreau**: sus motivos, naturaleza y secretos no aparecen en descripciones, diálogos, pistas automáticas, acusaciones ni fallos de esta expansión.
