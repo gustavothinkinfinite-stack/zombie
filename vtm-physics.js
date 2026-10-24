@@ -12,7 +12,7 @@ const furniture={
  study:[
   {x:34,y:106,w:137,h:82,id:"biblioteca"},
   {x:309,y:108,w:142,h:81,id:"archivo"},
-  {x:180,y:193,w:120,h:51,id:"escritorio"}
+  {x:201,y:200,w:78,h:40,id:"escritorio"}
  ],
  quarters:[
   {x:41,y:117,w:151,h:89,id:"cama"},
