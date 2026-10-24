@@ -433,7 +433,7 @@ window.VTM_DISTRICTS=(()=>{
  function drawMapExitSign(c,time,fx){
   // Etiqueta sobre vegetación, mobiliario y suelo. El indicador apunta al
   // punto histórico (83,263); el retorno directo también está en la interfaz.
-  const x=83,pulse=fx?.06+.025*Math.sin(time*1.5):0;
+  const pulse=fx?(.06+.025*Math.sin(time*1.5)):0;
   rect(c,56,215,55,29,"#0a1018cb");
   rect(c,58,217,51,24,"#322e39");
   rect(c,59,217,49,2,"#d9b189");
