@@ -230,6 +230,10 @@
   $("playName").textContent=c.name;$("playClan").textContent=c.clan;
   $("playHumanity").textContent=c.humanity;$("playWill").textContent=c.willpower;
   $("playState").textContent=game.embraced?"Vástago":"Ghoul";
+  $("stageName").textContent=game.character.name;
+  $("stageState").textContent=(game.embraced?"VÁSTAGO":"GHOUL")+" · "+game.character.clan.toUpperCase();
+  $("stageClock").textContent="NOCHE "+game.clock.night+" · "+formatClock();
+  $("stageRiskBar").style.width=game.exposure+"%";
   $("history").innerHTML="";game.history.slice(0,5).forEach(x=>{const p=document.createElement("p");p.textContent="• "+x;$("history").appendChild(p);});
   hud();save();
  }
@@ -331,6 +335,7 @@
  function askMenu(title,text,choices,label="CONVERSACIÓN"){
   dialogOpen=true;$("dialog").classList.remove("hidden");$("dialogEyebrow").textContent=label;$("dialogTitle").textContent=title;$("dialogText").textContent=text;
   $("portraitPanel").classList.add("hidden");
+  document.querySelector(".dialogue-shell")?.classList.remove("has-portrait");
   const target=$("dialogOptions");target.innerHTML="";
   for(const choice of choices){
    const b=document.createElement("button");b.textContent=choice.label;
@@ -338,6 +343,7 @@
    b.addEventListener("click",()=>{closeDialog();choice.action?.();});
    target.appendChild(b);
   }
+  renderSpeakerPortrait(title);
  }
  function closeDialog(){$("dialog").classList.add("hidden");dialogOpen=false;keys.clear();walkTarget=null;}
  function addAppreciation(n,why){game.appreciation=clamp(game.appreciation+n,0,100);log((n>=0?"+":"")+n+" aprecio · "+why);hud();save();}
@@ -432,30 +438,103 @@
  }
 
 
+ function renderSpeakerPortrait(speaker){
+   if(!game)return;
+   let npc=Object.values(N.byLocation).find(n=>n.name===speaker);
+   if(!npc){
+     const entry=Object.entries(D.clans).find(([name,m])=>m.master===speaker);
+     if(entry){
+       const [clan,info]=entry;
+       npc={id:"domitor-"+clan.toLowerCase(),name:info.master,clan,role:info.title,
+         color:info.accent,skin:clan==="Nosferatu"?"#a6b29d":"#d0b1a4",
+         hair:clan==="Tremere"?"#a39ca9":clan==="Nosferatu"?"#343b36":"#28242b"};
+     }
+   }
+   if(npc)renderNpcPortrait(npc);
+ }
  function renderNpcPortrait(npc){
-  const portrait=$("npcPortrait"),ctx=portrait.getContext("2d");
-  ctx.imageSmoothingEnabled=false;
-  const p=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
-  const bg="#1b1825",hair=npc.hair||"#30242c",skin=npc.skin||"#cba99a",cloth=npc.color||"#6a5365";
-  p(0,0,72,72,bg);
-  for(let i=0;i<72;i+=8){p(i,0,2,72,"#28212d");p(0,i,72,1,"#372c38");}
-  p(8,55,56,17,"#231d28");p(12,47,48,25,cloth);
-  p(16,54,40,18,"#33232b");p(21,56,30,16,cloth);
-  p(25,33,22,25,skin);p(21,19,30,28,skin);
-  p(20,22,31,7,hair);p(16,25,9,24,hair);p(48,25,7,24,hair);
-  p(26,38,6,3,"#201922");p(40,38,6,3,"#201922");
-  p(30,43,3,3,"#9e7670");p(35,49,8,2,"#6c434b");
-  p(34,54,5,8,"#a18c80");p(26,62,20,10,cloth);
-  if(npc.id==="ingrid"){p(18,26,9,11,"#6c8276");p(45,24,10,9,"#6c8276");p(24,43,3,3,"#151b1b");}
-  if(npc.id==="marcus"){p(20,20,32,8,"#b8b0b6");p(16,35,8,19,"#9a8e98");}
-  if(npc.id==="lucien"){p(23,23,27,5,"#17151a");p(21,46,10,3,"#70504b");}
-  if(npc.id==="dupont"){p(17,56,39,12,"#777168");p(36,36,5,3,"#161319");p(32,49,13,2,"#56403a");}
-  if(npc.id==="guardiana"){p(18,21,34,6,"#3a232f");p(19,27,4,31,"#30202d");p(49,27,5,31,"#30202d");}
-  if(npc.id==="john"){p(19,23,34,5,"#2d2525");p(25,61,22,9,"#485568");}
-  if(npc.id==="isabelle"){p(17,25,7,38,hair);p(49,24,8,35,hair);p(20,62,31,7,"#987aa8");}
-  p(2,2,68,2,"#ad8b79");p(2,68,68,2,"#ad8b79");
-  $("portraitClan").textContent=npc.clan.toUpperCase()+" · "+npc.role;
-  $("portraitPanel").classList.remove("hidden");
+   const canvas=$("npcPortrait"),ctx=canvas.getContext("2d");
+   const w=canvas.width,h=canvas.height;
+   ctx.imageSmoothingEnabled=false;
+   const p=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));};
+   const poly=(points,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
+     for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
+     ctx.closePath();ctx.fill();};
+   const color=npc.color||"#7d6471",skin=npc.skin||"#c9aa9c",hair=npc.hair||"#30272f";
+   const isNos=npc.id==="ingrid"||npc.clan==="Nosferatu";
+   const isWoman=["isabelle","ingrid","guardiana"].includes(npc.id)||npc.id==="domitor-malkavian";
+   const senior=["marcus","domitor-tremere","domitor-toreador","domitor-ventrue"].includes(npc.id);
+   // Antiguo arco parisino y luz lateral para retratos de 144 x 176.
+   p(0,0,w,h,"#171823");
+   p(8,7,128,162,"#20202b");
+   for(let i=0;i<11;i++){p(i*14-3,12,4,148,i%2?"#282630":"#2d2936");}
+   p(18,28,108,118,"#38313c");p(24,32,96,111,"#1e202b");
+   p(24,32,4,104,"#79666c");p(116,32,4,104,"#79666c");
+   p(28,36,88,3,"#9f8977");
+   p(70,35,3,108,"#645763");
+   for(let i=0;i<7;i++){p((i*31+17)%135,18+(i*19)%100,3,12,"#a87a6650");}
+   p(37,44,25,64,"#3f4150");p(82,44,27,64,"#4c4050");
+   p(37,44,3,64,"#6b6274");p(107,44,3,64,"#6b6274");
+   // Halo cálido y cenefa, sin agregar efectos dependientes de red.
+   for(let i=0;i<11;i++){p(16+i*9,140,6,2,i%3?"#8b5c5b":"#bf9772");}
+   p(12,151,120,25,"#161722");
+   poly([[8,175],[13,136],[25,115],[48,107],[70,118],[92,108],[117,121],[132,146],[138,175]],"#15151e");
+   poly([[14,175],[22,134],[39,119],[56,116],[71,128],[91,115],[113,127],[127,175]],color);
+   p(21,143,7,32,"#151920");p(116,141,8,34,"#16161f");
+   poly([[49,115],[71,144],[91,115],[83,112],[71,121],[58,110]],"#dec6ae");
+   poly([[40,119],[59,115],[68,155],[50,144]],"#242331");
+   poly([[100,118],[87,115],[73,155],[93,144]],"#22232d");
+   poly([[59,119],[72,140],[85,118],[80,154],[65,154]],"#3f343c");
+   p(66,136,10,6,"#b9aaa0");p(68,140,5,26,"#4e2c3f");
+   // Cuello y mandíbula: hombros en escorzo; luz frontal.
+   poly([[62,102],[84,102],[86,124],[70,139],[58,124]],"#9e766f");
+   poly([[50,58],[61,44],[88,44],[99,62],[94,94],[83,111],[64,113],[51,96]],skin);
+   poly([[87,45],[99,62],[94,94],[83,111],[75,109],[80,84]],"#a58681");
+   p(55,71,4,23,"#e4c0ab");p(95,73,3,20,"#8c6263");
+   p(64,88,3,12,"#aa7f76");p(76,93,5,10,"#b88b80");
+   p(58,73,10,2,"#382932");p(80,73,12,2,"#342733");
+   p(59,79,9,4,"#ede0ca");p(80,79,9,4,"#d6c4b2");
+   p(63,80,3,3,"#293a42");p(83,80,3,3,"#27323c");
+   p(60,78,7,1,"#3b2932");p(81,78,7,1,"#3b2932");
+   p(68,97,8,2,"#9e736f");p(72,101,8,2,"#75525c");p(67,106,11,2,"#8f6365");
+   p(57,98,3,6,"#bf9890");p(90,93,3,5,"#7f535e");
+   // Peinado definido por el tipo de personaje.
+   poly([[48,66],[49,49],[60,35],[84,31],[103,43],[101,62],[94,62],[92,49],[80,45],[65,50],[59,62]],hair);
+   p(50,53,9,18,hair);p(92,48,9,23,hair);
+   p(65,40,25,4,senior?"#b4abb0":"#50404b");
+   if(isWoman){
+     p(47,58,8,63,hair);p(96,55,9,61,hair);
+     p(44,89,6,28,"#3a3039");p(104,89,4,24,"#292330");
+     p(55,51,39,4,hair);p(58,55,12,4,hair);
+     p(57,106,8,2,"#c99490");p(78,106,7,2,"#c99490");
+   }
+   if(senior){p(52,51,8,15,"#9e9192");p(91,53,8,10,"#99919b");p(66,45,27,4,"#7c7881");}
+   if(npc.id==="lucien"){p(51,47,44,7,"#242027");p(65,108,17,3,"#433138");p(61,112,23,4,"#4b333a");}
+   if(npc.id==="john"){p(46,52,10,14,"#272329");p(85,43,18,8,"#251f23");p(70,146,5,17,"#e6d6ca");p(71,151,4,14,"#526172");}
+   if(npc.id==="dupont"){
+     p(15,136,17,39,"#74706b");p(111,132,20,43,"#74706b");
+     p(64,76,10,3,"#a58b81");p(64,95,14,3,"#ac8077");
+     p(59,109,31,8,"#5c4544");p(57,113,36,3,"#4c3637");
+   }
+   if(isNos){
+     poly([[57,46],[91,45],[97,62],[91,101],[77,110],[62,107],[52,94]],"#8f9a83");
+     p(59,80,10,4,"#1f2625");p(79,79,10,4,"#1f2625");
+     p(69,98,10,3,"#586c5e");p(76,63,9,4,"#7a937c");p(57,72,7,3,"#556f5c");
+   }
+   if(npc.id==="marcus"||npc.id==="domitor-tremere"){
+     p(25,138,15,37,"#382a49");p(102,138,15,37,"#3b2d4c");
+     p(68,141,7,22,"#c4ada9");p(67,146,9,4,"#69556d");
+   }
+   if(npc.id==="guardiana"){p(17,139,18,35,"#332b36");p(110,140,18,35,"#342b36");p(67,142,13,3,"#cfaf84");}
+   if(npc.id==="isabelle"){p(20,148,26,26,"#563a60");p(97,146,25,28,"#593b62");p(68,147,11,4,"#b9a2c3");}
+   // Marco y firma visual cromática del personaje.
+   p(0,0,144,4,"#be9d82");p(0,172,144,4,"#be9d82");
+   p(0,0,4,176,"#7c6570");p(140,0,4,176,"#7c6570");
+   p(10,157,24,5,color);p(111,157,24,5,color);
+   p(12,14,42,2,"#c4ac92");p(88,14,42,2,"#c4ac92");
+   $("portraitClan").textContent=npc.clan.toUpperCase()+" · "+npc.role;
+   $("portraitPanel").classList.remove("hidden");
+   document.querySelector(".dialogue-shell")?.classList.add("has-portrait");
  }
 
  function offerPersonalQuest(npc){
@@ -641,7 +720,6 @@
   hud();save();
   askMenu(npc.name,npc.greeting+"\n\n"+npc.role+"\nRelación actual: "+trust+" (−3 a +3)",opts,
    npc.clan.toUpperCase()+" · ENCUENTRO");
-  renderNpcPortrait(npc);
  }
  function elyseeGate(){
   if(game.access.elysee){enterVenue(D.locations.find(l=>l.id==="elysee"));return;}
