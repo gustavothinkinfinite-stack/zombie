@@ -514,25 +514,115 @@
   if(type==="master"){pixel(x-14,y+19,28,4,"#15121b");pixel(x-7,y+23,6,3,"#14131a");pixel(x+2,y+23,6,3,"#14131a");}
   else{pixel(x-7,y+22,6,5,"#222128");pixel(x+2,y+22,6,5,"#222128");}
  }
- function drawHouse(){
-  tileBackground("#302630");
-  pixel(0,0,480,38,"#1b1620");pixel(10,20,460,5,"#6a5059");
-  for(let x=18;x<470;x+=64){pixel(x,0,8,260,"#271e29");pixel(x+3,20,2,224,"#533e49");}
-  pixel(63,40,90,76,"#493641");pixel(67,45,82,68,"#a18b70");pixel(72,48,72,62,"#423844");
-  pixel(328,40,90,76,"#493641");pixel(332,45,82,68,"#a18b70");pixel(338,48,70,62,"#423844");
-  pixel(158,0,164,31,"#2c2029");pixel(203,9,74,18,"#866b70");
-  pixel(179,144,122,55,"#463542");pixel(186,148,108,7,"#a88c78");pixel(190,156,100,32,"#513a45");
-  pixel(187,190,108,10,"#2a202a");
-  pixel(38,150,85,51,"#463743");pixel(45,154,68,9,"#8a6e63");pixel(48,164,62,31,"#5c4149");
-  pixel(350,150,82,53,"#47343c");pixel(355,155,73,39,"#69434d");pixel(360,161,65,8,"#956d65");
-  pixel(165,194,151,80,"#68434f");pixel(172,199,136,70,"#4e323b");pixel(181,205,117,57,"#76545b");
-  for(let x=183;x<302;x+=13)for(let y=208;y<260;y+=11){pixel(x,y,5,5,"#51323d");}
-  pixel(213,270,54,30,"#1c1b21");pixel(218,271,44,12,"#b98c72");pixel(228,279,24,18,"#3c2d36");
-  pixel(231,285,18,8,"#17131a");
-  portrait(240,96,"master",D.clans[game.character.clan].accent);
-  portrait(game.x,game.y,"player",game.embraced?"#9c505e":"#8a8a74");
-  textPixel("DOMITOR",240,61,"#e5bca4",10,"center");
-  textPixel("PUERTA",240,266,"#e4c29d",9,"center");
+
+ function drawHouse(){drawResidence(game.scene);}
+ function drawResidence(room){
+  const info=C.residences[game.character.clan],walls=info.wall,floor=info.floor,metal=info.metal,wood=info.furniture;
+  pixel(0,0,480,300,"#0f0e15");
+  // Mosaico de piedra / tablones, con grano pixelado.
+  for(let y=30;y<300;y+=18)for(let x=4;x<480;x+=28){
+   pixel(x,y,27,17,floor);pixel(x+2,y+1,23,1,"#30252f");
+   if((x*7+y*3)%5===0)pixel(x+5,y+9,3,2,"#695361");
+  }
+  pixel(0,0,480,40,walls);pixel(0,35,480,5,metal);
+  pixel(0,0,15,300,walls);pixel(465,0,15,300,walls);
+  for(let x=22;x<475;x+=73){pixel(x,0,9,220,"#16131c");pixel(x+2,0,3,212,wood);pixel(x-6,38,21,6,metal);}
+  // Ventanas arqueadas y reflejos
+  for(const x of [72,361]){
+    pixel(x-22,42,49,74,"#211925");pixel(x-17,47,39,64,"#5c586b");
+    pixel(x-13,51,31,56,room==="study"?"#5a5369":"#53536a");
+    pixel(x+2,51,3,57,metal);pixel(x-13,78,31,3,metal);
+    pixel(x-9,55,6,19,"#8d8191");pixel(x+9,85,5,13,"#73627d");
+    pixel(x-27,109,60,7,wood);
+  }
+  // Alfombra y baldosas: color de cada clan.
+  pixel(142,175,196,100,info.rug);pixel(151,181,178,87,"#211b27");pixel(159,187,162,75,info.rug);
+  for(let y=195;y<259;y+=13)for(let x=172;x<307;x+=21){pixel(x,y,8,3,"#d2b89b66");}
+  // Luminarias de pared
+  for(const x of [22,453]){
+   pixel(x-6,99,12,5,"#201b22");pixel(x-2,89,5,14,metal);
+   pixel(x-5,82,11,8,"#e0b36f");pixel(x-2,79,5,4,"#f0db9e");
+   pixel(x-12,81,24,24,"#e8b77618");
+  }
+  if(room==="house"){
+   // Trono discreto del maestro.
+   pixel(196,64,88,63,wood);pixel(203,55,74,49,"#231d29");pixel(209,66,62,29,info.rug);
+   pixel(183,103,22,33,metal);pixel(275,103,22,33,metal);
+   pixel(169,146,142,58,wood);pixel(177,153,126,12,"#b08c78");pixel(185,166,110,32,"#352530");
+   pixel(23,145,121,65,wood);pixel(28,151,109,51,"#382932");
+   pixel(338,131,114,70,wood);pixel(345,137,100,56,"#42333d");
+   // Libro antiguo, mapa o carta interactiva sobre una mesa.
+   pixel(81,144,58,24,"#b2a094");pixel(87,148,46,16,"#e5d4ae");
+   pixel(87,151,46,2,"#7b4a4b");
+   pixel(336,128,58,45,"#9e7c72");pixel(342,132,46,36,"#4b3b42");
+   pixel(348,137,34,26,"#d8bb9b");pixel(353,139,24,22,"#43323e");
+   portrait(240,98,"master",D.clans[game.character.clan].accent);
+   textPixel("DOMITOR",240,51,"#e4c7ae",9,"center");
+   // Puertas laterales y principal.
+   pixel(15,215,28,42,"#160e16");pixel(19,220,20,34,"#6a4b53");
+   pixel(437,215,28,42,"#160e16");pixel(440,220,21,34,"#6a4b53");
+   pixel(209,267,62,33,"#160d18");pixel(217,269,46,31,wood);
+   textPixel("DESPACHO",34,213,8,"#ddbf9e","left");
+   textPixel("HABITACIONES",449,212,8,"#ddbf9e","right");
+   textPixel("PARÍS",240,290,"#f1d1af",9,"center");
+  }else if(room==="study"){
+   // Estantes y archivo del maestro.
+   for(const x of [49,317]){
+    pixel(x,112,115,70,wood);pixel(x+5,118,105,58,"#241b28");
+    for(let yy=123;yy<170;yy+=20)for(let xx=x+9;xx<x+101;xx+=8){
+     const c=(xx+yy)%3;pixel(xx,yy,6,15,["#816973","#9d7c64","#696884"][c]);
+    }
+    pixel(x+4,138,107,3,metal);pixel(x+4,163,107,3,metal);
+   }
+   pixel(187,196,106,42,wood);pixel(196,199,90,32,"#997868");
+   pixel(207,206,64,18,"#d9c1a0");pixel(223,208,30,14,"#63566e");
+   pixel(118,121,55,39,"#d2ae86");pixel(128,126,34,28,"#e2cfb3");pixel(133,131,10,2,"#504659");
+   pixel(316,127,46,40,"#24202a");pixel(324,133,30,22,metal);pixel(339,138,4,6,"#1d161b");
+   textPixel(info.study.toUpperCase(),240,22,metal,12,"center");
+   pixel(212,267,56,33,"#160d18");pixel(220,269,40,28,wood);textPixel("SALÓN",240,291,"#f0d1b4",9,"center");
+  }else{
+   // Cuartos privados: cama, baúl, espejo, mesa de lectura.
+   pixel(47,118,136,78,wood);pixel(53,124,124,66,"#ded0b7");pixel(60,130,44,28,"#a1a09e");
+   pixel(290,113,133,74,wood);pixel(298,122,117,56,"#6c515d");
+   pixel(303,126,107,47,"#b5aa98");pixel(330,130,60,32,"#d9c9b0");
+   pixel(113,117,57,32,"#5e483d");pixel(119,121,45,23,"#a17e65");
+   pixel(304,130,58,22,"#e0cab2");pixel(315,133,37,14,"#534451");
+   pixel(219,74,46,51,metal);pixel(225,80,34,39,"#584960");pixel(231,84,21,31,"#78849d");
+   textPixel(info.quarters.toUpperCase(),240,22,metal,12,"center");
+   pixel(212,267,56,33,"#160d18");pixel(220,269,40,28,wood);textPixel("SALÓN",240,291,"#f0d1b4",9,"center");
+  }
+  const items=C.residenceObjects[room]||[];
+  for(const item of items){
+   const seen=game.observed[item.id];
+   pixel(item.x-4,item.y-35,8,8,seen?"#829b7b":"#e3bd75");
+   textPixel(seen?"✓":"?",item.x,item.y-28,"#171420",8,"center");
+  }
+  portrait(game.x,game.y,"player",game.embraced?"#9c505e":"#9a9b83");
+  pixel(0,0,480,3,metal);
+ }
+ function drawVenue(){
+  const venue=D.locations.find(l=>l.id===game.venue),source=C.investigation.sources[game.venue];
+  if(!venue||!source){pixel(0,0,480,300,"#1a1820");return;}
+  pixel(0,0,480,300,"#201b24");
+  for(let y=37;y<300;y+=20)for(let x=20;x<460;x+=25){
+    pixel(x,y,24,19,(x+y)%3===0?"#39313b":"#332b35");pixel(x+5,y+8,7,1,"#514351");
+  }
+  pixel(0,0,480,40,"#26212c");pixel(0,38,480,4,"#b49787");pixel(14,42,13,248,"#18131f");pixel(453,42,13,248,"#18131f");
+  for(let x=28;x<451;x+=82){pixel(x,65,16,125,"#473740");pixel(x+2,66,12,121,"#564550");}
+  for(const x of [85,340]){pixel(x-28,75,56,68,"#68545b");pixel(x-23,81,46,57,"#24242e");pixel(x-18,86,35,45,"#768197");}
+  pixel(48,178,385,92,game.venue==="stjuly"?"#5c403f":"#50444b");pixel(55,188,370,71,"#2c2530");
+  // Mesa de archivo, interlocutor y panel de prensa.
+  pixel(75,132,112,67,"#554452");pixel(84,138,94,15,"#b2977a");pixel(90,151,82,39,"#ac9480");
+  pixel(100,153,60,13,"#f0e0bd");pixel(103,169,58,5,"#4d4045");
+  pixel(302,131,105,70,"#493a47");pixel(308,138,92,52,game.venue==="stjuly"?"#76534e":"#b3a48d");
+  pixel(315,147,80,32,"#3c313d");
+  textPixel("ARCHIVO",130,123,"#eed2a5",9,"center");
+  textPixel("OBSERVAR",350,123,"#d7c2ac",9,"center");
+  portrait(240,103,"master",game.venue==="stjuly"?"#bca07b":"#758e9d");
+  textPixel(game.venue==="hemeroteca"?"DUPONT":game.venue==="stjuly"?"CAMARERO":"EMPLEADO",240,64,"#efdbba",10,"center");
+  pixel(211,270,58,30,"#201621");pixel(217,274,46,20,"#715966");textPixel("SALIR",240,289,"#f3d5a7",9,"center");
+  portrait(game.x,game.y,"player",game.embraced?"#ac5f6c":"#889b98");
+  textPixel(venue.name.toUpperCase(),240,23,"#eacba9",13,"center");
  }
  function textPixel(t,x,y,color,size,align){g.font="bold "+(size||9)+"px monospace";g.fillStyle=color;g.textAlign=align||"left";g.fillText(t,x,y);}
  function drawParis(){
@@ -563,19 +653,33 @@
  }
  function drawWorld(){
   if(!game)return;
-  if(game.scene==="house")drawHouse();else drawParis();
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else drawParis();
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
  }
+
  function nearInteractive(){
   if(!game)return "";
-  if(game.scene==="house"){
-   if(Math.hypot(game.x-240,game.y-96)<62)return "E · Hablar con "+D.clans[game.character.clan].master;
-   if(Math.hypot(game.x-240,game.y-274)<46)return "E · Salir a las calles de París";
+  const room=game.scene;
+  if(["house","study","quarters"].includes(room)){
+   if(room==="house"){
+    if(Math.hypot(game.x-240,game.y-98)<62)return "E · Hablar con "+D.clans[game.character.clan].master;
+    if(Math.hypot(game.x-240,game.y-269)<45)return "E · Salir a París";
+    if(Math.hypot(game.x-44,game.y-233)<47)return "E · Entrar al despacho";
+    if(Math.hypot(game.x-436,game.y-233)<47)return "E · Entrar a las habitaciones";
+   }else if(Math.hypot(game.x-240,game.y-268)<48)return "E · Regresar al salón";
+   for(const obj of C.residenceObjects[room])if(Math.hypot(game.x-obj.x,game.y-obj.y)<52)return "E · "+obj.title;
    return "";
   }
-  if(Math.hypot(game.x-46,game.y-269)<42)return "E · Regresar a la casa";
+  if(room==="venue"){
+   if(Math.hypot(game.x-240,game.y-270)<42)return "E · Regresar a las calles";
+   if(Math.hypot(game.x-130,game.y-143)<55)return "E · Examinar archivo";
+   if(Math.hypot(game.x-240,game.y-104)<60)return "E · Hablar";
+   if(Math.hypot(game.x-350,game.y-146)<55)return "E · Observar el lugar";
+   return "";
+  }
+  if(Math.hypot(game.x-46,game.y-269)<42)return "E · Regresar a la residencia";
   for(const l of D.locations){
    const x=(l.x+l.w/2)/2.1,y=(l.y+l.h/2)/2;
    if(Math.hypot(game.x-x,game.y-y)<44)return "E · "+l.name;
@@ -598,11 +702,11 @@
   const length=Math.hypot(dx,dy);
   if(length){
    const speed=76*dt;
-   game.x=clamp(game.x+dx/length*speed,game.scene==="house"?22:11,game.scene==="house"?458:470);
-   game.y=clamp(game.y+dy/length*speed,game.scene==="house"?48:13,game.scene==="house"?280:290);
+   game.x=clamp(game.x+dx/length*speed,["house","study","quarters","venue"].includes(game.scene)?22:11,["house","study","quarters","venue"].includes(game.scene)?458:470);
+   game.y=clamp(game.y+dy/length*speed,["house","study","quarters","venue"].includes(game.scene)?48:13,["house","study","quarters","venue"].includes(game.scene)?280:290);
   }
   const near=nearInteractive();if(near)$("floatingHint").textContent=near;
-  else $("floatingHint").textContent=game.scene==="house"?"WASD: mover · E: hablar / salir":"WASD: mover · E: investigar / regresar";
+  else $("floatingHint").textContent=["house","study","quarters"].includes(game.scene)?"WASD: mover · E: explorar la residencia":"WASD: mover · E: investigar / regresar";
  }
  function frame(time){
   const dt=Math.min(.045,(time-lastTime)/1000||0);lastTime=time;
