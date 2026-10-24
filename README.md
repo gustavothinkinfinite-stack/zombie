@@ -9,6 +9,24 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
+
+## Versión 0.5 — La ficha funciona en el juego (octubre de 2026)
+
+Se incorpora **ACCIONES** junto al botón **Ficha**. Esta versión conserva la creación 7/5/3 de Atributos, 13/9/5 de Habilidades, 5 puntos de Trasfondos mortales, Virtudes, puntos gratuitos, misiones, facciones y guardados de la versión anterior.
+
+- **Nueve Atributos y treinta Habilidades:** todos los rasgos tienen combinaciones jugables. El botón ACCIONES ofrece 10 Talentos, 10 Técnicas y 10 Conocimientos con dificultades, resultados y consecuencias; las tiradas del argumento existente también pasan por el mismo motor de bonificadores. Las acciones dependen del lugar, consumen tiempo y tienen límite de un intento por habilidad, lugar y noche.
+- **Seis Trasfondos mortales:** Aliados, Contactos, Criados, Fama, Influencia y Recursos ofrecen favores activos (uno por noche) y ventajas automáticas en contextos apropiados. A partir de 2/4 círculos aplican +1/+2 dados; las acciones del Trasfondo pueden generar preparación, pistas, influencia o cobertura. Fama puede generar exposición.
+- **Ventajas consumibles:** pista, cobertura, influencia y preparación; máximo 3 de cada una. Se gastan al realizar una tirada apropiada o para disminuir una consecuencia de exposición; no permiten repetir recompensas sin límite.
+- **Atributos físicos y estado:** Destreza influye en la velocidad; Pelea y armas pueden causar lesiones; Medicina y Supervivencia permiten recuperar Salud. Las heridas graves y la incapacitación penalizan las tiradas.
+- **Voluntad:** se gasta para obtener preparación para futuras tiradas y se recupera parcialmente al pasar a una nueva noche.
+- **Disciplinas:** sólo se activan **después del Abrazo**, con círculos adquiridos. Son efectos contextualizados por Disciplina (Animalismo, Auspex, Celeridad, Dementación, Dominación, Fortaleza, Ofuscación, Potencia, Presencia, Protean y Taumaturgia), requieren Sangre y potencian tiradas relacionadas; algunos dones comprometen la Mascarada.
+- **Alimentación:** una vez por noche y por lugar se puede intentar una caza para reponer Sangre; un fracaso aumenta la exposición y reduce Voluntad. Con la reserva agotada, la sed penaliza tiradas.
+- **Ficha y Diario:** muestran Salud, Voluntad, Sangre y ventajas preparadas. Los valores se guardan con la partida anterior, con migración automática de campos ausentes.
+
+**Adaptaciones explícitas:** el menú de acciones, fichas de ventajas, límite de uso, costes resumidos de sangre y reglas de caza son mecánicas originales del videojuego inspiradas en la 3.ª edición; no son una transcripción literal del manual. La implementación prioriza consecuencias narrativas y no representa aún un sistema táctico completo de combate o todas las opciones individuales de cada círculo de Disciplina.
+
+**Pruebas de desarrollo:** sintaxis, correspondencia exacta de las 30 Habilidades y los dones de los siete clanes, continuidad de guardados previos y simulación del menú y una acción completa de Talentos. **La publicación efectiva en Hostinger debe comprobarse por separado.**
+
 ## Rediseño visual 2.0 — Fase VI: apariencia del protagonista y animación (octubre de 2026)
 
 **Cambios implementados**
