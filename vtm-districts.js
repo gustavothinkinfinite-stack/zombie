@@ -75,6 +75,14 @@ window.VTM_DISTRICTS=(()=>{
   rect(c,x+9,y+h-10,w-18,5,"#45434c");
   if(seed%3===0){rect(c,x+17,y+10,13,7,"#988579");rect(c,x+19,y+7,9,3,"#2b2930");}
  }
+ function painterDoor(c,x,y,d,side){
+  rect(c,x-16,y-12,32,12,"#1b202c");
+  rect(c,x-14,y-10,28,10,d.lamp);
+  rect(c,x-11,y-9,22,8,d.brick);
+  rect(c,x-6,y-7,12,6,"#252333");
+  rect(c,x+4,y-6,2,2,"#f1d2a6");
+  text(c,side?"TIENDA":"LOCAL",x,y-16,7,"#f0ddc3");
+ }
  function base(c,d){
   rect(c,0,0,W,H,"#242a37");
   // Cuatro manzanas dejan avenidas centrales transitables y aceras laterales.
@@ -93,6 +101,12 @@ window.VTM_DISTRICTS=(()=>{
   for(let y=46;y<295;y+=34){rect(c,237,y+8,5,19,"#c1aea0");}
   for(const yy of [130,182]){for(let xx=0;xx<480;xx+=20){rect(c,xx+2,yy,14,2,"#6d727e");}}
   for(const xx of [181,295]){for(let yy=48;yy<300;yy+=22){rect(c,xx,yy+1,2,13,"#87818a");}}
+  // Dos locales secundarios tienen entradas propias, separadas de las notas ambientales.
+  const local=window.VTM_SHOPS?.byDistrict[d.id]||[];
+  for(const shop of local){
+   const x=shop.x,y=shop.y;
+   painterDoor(c,x,y,d,shop.side);
+  }
   // El edificio de misión se identifica claramente sin entorpecer el pasillo.
   rect(c,206,74,68,47,"#1b1926");
   rect(c,212,79,56,37,d.brick);
@@ -178,6 +192,10 @@ window.VTM_DISTRICTS=(()=>{
   if(Math.hypot(x-240,y-122)<range+13)return{type:"venue",name:d.name};
   const map={x:83,y:263};
   if(Math.hypot(x-map.x,y-map.y)<range)return{type:"map",name:"Mapa de París"};
+  // Los locales secundarios ocupan una zona distinta de los rincones de calle.
+  const shop=window.VTM_SHOPS?.byDistrict[d.id]?.map(s=>({shop:s,d:Math.hypot(x-s.x,y-s.y)}))
+    .filter(v=>v.d<28).sort((a,b)=>a.d-b.d)[0];
+  if(shop)return{type:"shop",shop:shop.shop,name:shop.shop.name};
   for(const spot of d.details){
    if(Math.hypot(x-spot.x,y-spot.y)<range+3)return{type:"note",detail:spot,name:spot.title};
   }
