@@ -3,6 +3,30 @@
  Los fondos se almacenan en memoria; el estado del juego no cambia. */
 window.VTM_GRAPHICS=(()=>{
 const W=480,H=300,cache=new Map();
+const atlasRows={Toreador:0,Ventrue:1,Tremere:2,Nosferatu:3,Brujah:4,Gangrel:5,Malkavian:6,Ghoul:7,
+ isabelle:8,ingrid:9,lucien:10,john:11,marcus:12,dupont:13,guardiana:14,archivista:15};
+let atlas=null,atlasReady=false,atlasFailed=false;
+if(typeof Image==="function"){
+ atlas=new Image();
+ atlas.onload=()=>{atlasReady=!!atlas.naturalWidth;atlasFailed=!atlasReady;};
+ atlas.onerror=()=>{atlasReady=false;atlasFailed=true;};
+ atlas.src="./assets/personajes-paris-v2.svg?v=vtm20-f3";
+}
+function drawSprite(c,x,y,opts){
+ if(!atlasReady||!atlas)return false;
+ const direction={down:0,left:1,right:2,up:3}[opts.facing]??0;
+ const row=opts.npc&&atlasRows[opts.npc.id]!=null?atlasRows[opts.npc.id]:
+  !opts.master&&!opts.npc&&!opts.embraced?atlasRows.Ghoul:(atlasRows[opts.clan]??atlasRows.Ghoul);
+ const frame=opts.walking?Math.floor((opts.cycle||0)*2)%2:0;
+ try{
+  c.drawImage(atlas,(direction*2+frame)*32,row*48,32,48,Math.round(x)-16,Math.round(y)-21,32,48);
+  if(opts.npc||opts.master){
+   rect(c,x-23,y-36,46,12,"#101420c9");
+   text(c,opts.npc?(opts.npc.name.length>14?opts.npc.name.slice(0,12):opts.npc.name):"DOMITOR",x,y-27,7,"#ecd1b3");
+  }
+  return true;
+ }catch(e){atlasFailed=true;atlasReady=false;return false;}
+}
 const rect=(c,x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));};
 const text=(c,t,x,y,size=9,color="#ead2b4")=>{c.textAlign="center";c.font="bold "+size+"px monospace";c.fillStyle=color;c.fillText(t,x,y);};
 const noise=(x,y,z=0)=>{let n=Math.imul(x+31,374761393)^Math.imul(y+17,668265263)^Math.imul(z+91,1442695041);n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295;};
@@ -138,6 +162,7 @@ function drawVenue(c,id,N,game,time){
 
 
 function character(c,x,y,opts={}){
+ if(drawSprite(c,x,y,opts))return;
  const {master=false,clan="Toreador",npc=null,embraced=false,facing="down",walking=false,cycle=0,time=0}=opts;
  x=Math.round(x);y=Math.round(y);
  const palette={Toreador:"#986177",Tremere:"#847096",Brujah:"#975d57",Nosferatu:"#5d7d6b",Ventrue:"#647d96",Gangrel:"#657b60",Malkavian:"#85719a"};
@@ -193,5 +218,5 @@ function effects(c,mode,time){
  }
 }
 function clearCache(){cache.clear();}
-return {drawCity,drawResidence,drawVenue,character,effects,clearCache,version:"2.0-phase-II"};
+return {drawCity,drawResidence,drawVenue,character,effects,clearCache,assetStatus:()=>({atlasReady,atlasFailed}),version:"2.0-phase-III"};
 })();
