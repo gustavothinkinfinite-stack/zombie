@@ -67,7 +67,16 @@ function path(scene,start,end){
  const cols=Math.floor(W/STEP),rows=Math.floor(H/STEP);
  const encode=(x,y)=>y*cols+x;
  const cell=(x,y)=>({x:clamp(Math.floor(x/STEP),0,cols-1),y:clamp(Math.floor(y/STEP),0,rows-1)});
- const s=cell(origin.x,origin.y),e=cell(goal.x,goal.y),source=encode(s.x,s.y),finish=encode(e.x,e.y);
+ const center=(x,y)=>({x:x*STEP+STEP/2,y:y*STEP+STEP/2});
+ const closestCell=point=>{
+   const base=cell(point.x,point.y);let found=null,d=Infinity;
+   for(let yy=0;yy<rows;yy++)for(let xx=0;xx<cols;xx++){
+     const p=center(xx,yy),dd=(p.x-point.x)**2+(p.y-point.y)**2;
+     if(dd<d&&canStand(scene,p.x,p.y)){d=dd;found={x:xx,y:yy};}
+   }
+   return found||base;
+ };
+ const s=closestCell(origin),e=closestCell(goal),source=encode(s.x,s.y),finish=encode(e.x,e.y);
  const heuristic=(x,y)=>Math.abs(x-e.x)+Math.abs(y-e.y);
  const open=[{x:s.x,y:s.y,k:source,score:heuristic(s.x,s.y)}],g=new Map([[source,0]]),prev=new Map(),seen=new Set();
  const directions=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -82,7 +91,7 @@ function path(scene,start,end){
    const x=cur.x+dx,y=cur.y+dy;
    if(x<0||y<0||x>=cols||y>=rows)continue;
    const k=encode(x,y),px=x*STEP+STEP/2,py=y*STEP+STEP/2;
-   if(k!==finish&&!canStand(scene,px,py))continue;
+   if(!canStand(scene,px,py))continue;
    if(seen.has(k))continue;
    const cand=g.get(cur.k)+1;
    if(cand<(g.get(k)??Infinity)){
@@ -90,7 +99,7 @@ function path(scene,start,end){
    }
   }
  }
- if(!found)return [goal];
+ if(!found)return [];
  const route=[];
  let k=finish,safety=0;
  while(k!==source&&safety++<cols*rows){
@@ -98,8 +107,14 @@ function path(scene,start,end){
   route.push({x:cx*STEP+STEP/2,y:cy*STEP+STEP/2});
   k=prev.get(k);if(k==null)break;
  }
- route.reverse();route.push(goal);
- // Evitar punto intermedio innecesario al principio.
+ route.reverse();
+ // Si el último tramo atraviesa un mueble, se termina en la casilla libre.
+ const last=route.at(-1)||origin;let clear=true;
+ for(let t=.1;t<=1;t+=.1){
+   const x=last.x+(goal.x-last.x)*t,y=last.y+(goal.y-last.y)*t;
+   if(!canStand(scene,x,y)){clear=false;break;}
+ }
+ if(clear)route.push(goal);
  return route;
 }
 return {obstacles,canStand,nearestFree,slide,path,version:"1.0"};
