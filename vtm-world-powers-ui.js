@@ -33,6 +33,7 @@ window.VTM_WORLD_POWERS_UI=(()=>{
   const result=W.use(game,name,roll);
   if(result.error)return;
   if(result.exposure)bridge.exposure(result.exposure,"Consecuencias de "+name+" en "+result.place+".");
+  bridge.observedPower?.(name,result);
   bridge.log(name+": "+(result.success?"intervención lograda":"efecto fallido")+". Sangre gastada: "+result.cost+".");
   bridge.advance(8);bridge.refresh();bridge.save();
   let detail=result.description+"\n\n"+rule.attr+" + "+rule.skill+" (dif. "+rule.difficulty+
