@@ -110,7 +110,7 @@ test("Carga de módulos, integración de menús y prueba automática CI",()=>{
  assert.ok(html.indexOf("vtm-reactive-districts.js?")>0);
  assert.ok(html.indexOf("vtm-reactive-districts.js?")<html.indexOf("vtm-game.js?"));
  assert.ok(html.includes("FASE XVII"));
- for(const phrase of ["REGION.init(game)","REGION.tick(game","REGION.interact(game)","REGION.shopChoices(game,shop)","REGION.draw(g,game,visualTime)","REGION.overview(game)"])
+ for(const phrase of ["REGION.init(game)","REGION.tick(game","REGION?.interact(game)","REGION.shopChoices(game,shop)","REGION.draw(g,game,visualTime)","REGION.overview(game)"])
   assert.ok(game.includes(phrase),phrase);
  assert.ok(game.includes('SAVE_KEY="cronicas-paris-ghoul-v1"'));
  const yml=fs.readFileSync(path.join(root,".github/workflows/quality.yml"),"utf8");
