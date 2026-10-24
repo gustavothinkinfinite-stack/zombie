@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XX)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XXI)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -20,6 +20,39 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 
 
+
+## Fase XXI — La conspiración del Principado: tres actos, testigos y desenlaces (octubre de 2026)
+
+Se incorporó una **campaña principal completa en su estructura jugable**, que continúa el prólogo documental de la Fase XX. Las pistas, el destino de cada testigo y las alianzas son decisiones **persistentes**: ningún capítulo destruye ni modifica por su cuenta el expediente Elizabeth Parker, las investigaciones locales o la partida previa.
+
+### Puerta de entrada: el prólogo importa
+
+Para iniciar la campaña hay que **entregar el dossier del prólogo a la Guardiana en el Elíseo** y contar con permiso de acceso. La campaña aparece en **Acciones → Campaña principal · La conspiración del Principado de París**. Antes de cumplir el requisito, sólo se explica cómo abrir el expediente. No se revela la identidad ni el objetivo del responsable.
+
+### Estructura jugable y distintas fuentes
+
+| Etapa | Evidencia exigida | Lugares y temas |
+| --- | --- | --- |
+| Acto I · Una ausencia en los archivos | 3 de 4 pistas en lugares distintos | Archivo policial, Hemeroteca, St. July y túneles: firmas, horarios y ruta de mensajería |
+| Acto II · La ciudad de los testigos | 3 de 4 pistas | Ingrid, Lucien, Isabelle Dubois y el entorno de John Winthrop: declaraciones, lealtades y provocaciones |
+| Acto III · La identidad detrás del sello | 3 de 4 pistas | Passy, Hemeroteca, archivo policial y St. July: pruebas comparativas de identidad |
+| Acto IV · La noche del veredicto | Actos previos y acceso al Elíseo | Elegir qué hacer con la verdad, considerando testigos, reputación y presión |
+
+Cada indicio puede abordarse **por documentación** (Investigación, Ocultismo, Leyes, Política) o **entrevistando a una fuente** (Empatía, Etiqueta, Liderazgo, Subterfugio). Se efectúa una tirada basada en la ficha, con consecuencias por fracaso. Una misma fuente se puede reintentar otra noche; una prueba incorporada no concede experiencia dos veces. Tras un éxito, se puede **proteger** al informante o **presionarlo**, con cambios de confianza, denuncia, facciones y presión política.
+
+### Consecuencias y desenlaces
+
+- Los registros \`conspiracy.clues\`, \`conspiracy.witnesses\`, \`conspiracy.support\`, \`conspiracy.pressure\` y \`conspiracy.history\` persisten entre noches.
+- Las relaciones con Ingrid, Lucien y otras fuentes afectan apoyos entre Nosferatu, Brujah, Tremere y la Camarilla. La intimidación aumenta sospechas; proteger fuentes facilita decisiones menos destructivas.
+- La **revelación principal se bloquea** hasta que el jugador reúne evidencia en **los tres actos** y decide contrastar expresamente el tercer dossier. Antes de ese punto el diario, los menús y las pistas disponibles no dan automáticamente el secreto de campaña.
+- **Cuatro resoluciones políticas:** una exposición fundamentada ante la corte, una operación discreta con los informantes, una ruptura de alianzas o el sellado deliberado del expediente. Cada una tiene requisitos y consecuencias distintas. Sólo la vía pública con pruebas suficientes abre un **expediente preliminar de Dominio** en la corte; ninguna vía desencadena una ejecución automática.
+- La campaña es finita y orientada a investigación y diálogo; no simula todavía una batalla final física con todos los implicados ni hace que toda la ciudad cambie de gobierno instantáneamente al escoger un final.
+
+**Integración:** \`vtm-conspiracy.js\`, con \`vtm-principado.js\`, \`vtm-court.js\`, \`vtm-politics.js\` y el motor principal. Clave de guardado conservada: \`cronicas-paris-ghoul-v1\`.
+
+**Pruebas:** \`node tests/conspiracy-phase21.test.js\` cubre evidencia, desbloqueos, cuatro finales, pruebas sociales, protección de testigos, migración y control de revelaciones; \`tests/browser-smoke.cjs\` comprueba inicio bloqueado y disponible mediante Chromium. Comprobar también GitHub Actions y Hostinger antes de declarar validación completa en producción.
+
+---
 
 ## Fase XX — La Sangre, la Bestia y los siete clanes (octubre de 2026)
 
