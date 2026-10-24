@@ -93,10 +93,13 @@ window.VTM_CITY_CONSEQUENCES=(()=>{
   for(const c of flags){
    for(const [key,kind,heat] of [["intimidated","intimidation",9],["hidden","concealment",7],["concealed","concealment",7]]){
     if(!c.flags[key])continue;
-    const id="incident:"+c.d+":"+key;
+    const id="incident:"+c.d+":"+c.night+":"+key;
+    // La consecuencia de un hecho anterior se registra una sola vez,
+    // aunque el caso conserve sus flags durante muchas noches.
+    if(s.known["global:"+id])continue;
     const found=report(g,{kind,reason:c.label+": testigos o indicios alterados",
       source:id,heat,district:c.d,observed:true});
-    if(found)added.push(found);
+    if(found){s.known["global:"+id]=true;added.push(found);}
    }
    if(c.flags.reported){
     const id="resolved:"+c.d+":"+c.night;
@@ -151,7 +154,7 @@ window.VTM_CITY_CONSEQUENCES=(()=>{
   if(g?.scene!=="district"||!d)return[];
   const s=state(g),out=[],level=heat(g,d);
   if(level>=20)out.push({id:"patrol",x:WALK.x,y:WALK.y,title:level>=55?"Patrulla investigadora":"Patrulla nocturna"});
-  if(Object.values(s.witnesses).some(w=>w.district===d))
+  if(Object.values(s.witnesses).some(w=>w.district===d&&w.firstNight>=g.clock.night-2))
    out.push({id:"witness",x:WITNESS.x,y:WITNESS.y,title:"Testigo del barrio"});
   return out;
  }
