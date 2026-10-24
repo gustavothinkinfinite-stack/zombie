@@ -36,17 +36,17 @@ function canStand(scene,x,y,r=R){
  });
 }
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function nearestFree(scene,x,y){
- const withinX=clamp(x,R+16,W-R-16),withinY=clamp(y,R+42,H-R-7);
- if(canStand(scene,withinX,withinY))return{x:withinX,y:withinY};
+function nearestFree(scene,x,y,r=R){
+ const withinX=clamp(x,r+16,W-r-16),withinY=clamp(y,r+42,H-r-7);
+ if(canStand(scene,withinX,withinY,r))return{x:withinX,y:withinY};
  let best=null,dMin=Infinity;
  // Espiral determinista para partidas antiguas guardadas en muebles.
  for(let dist=STEP;dist<Math.max(W,H);dist+=STEP){
   for(let a=0;a<16;a++){
-   const t=a/16*Math.PI*2,cx=clamp(withinX+Math.cos(t)*dist,R+16,W-R-16);
-   const cy=clamp(withinY+Math.sin(t)*dist,R+42,H-R-7);
+   const t=a/16*Math.PI*2,cx=clamp(withinX+Math.cos(t)*dist,r+16,W-r-16);
+   const cy=clamp(withinY+Math.sin(t)*dist,r+42,H-r-7);
    const d=(cx-withinX)**2+(cy-withinY)**2;
-   if(canStand(scene,cx,cy)&&d<dMin){best={x:cx,y:cy};dMin=d;}
+   if(canStand(scene,cx,cy,r)&&d<dMin){best={x:cx,y:cy};dMin=d;}
   }
   if(best)return best;
  }
@@ -62,7 +62,8 @@ function slide(scene,x,y,dx,dy){
  return {x:px,y:py,moved:Math.hypot(px-x,py-y)>0.05};
 }
 function path(scene,start,end){
- const origin=nearestFree(scene,start.x,start.y),goal=nearestFree(scene,end.x,end.y);
+ const clearance=R+3;
+ const origin=nearestFree(scene,start.x,start.y,clearance),goal=nearestFree(scene,end.x,end.y,clearance);
  if(sceneKey(scene)==="paris")return [goal];
  const cols=Math.floor(W/STEP),rows=Math.floor(H/STEP);
  const encode=(x,y)=>y*cols+x;
@@ -72,7 +73,7 @@ function path(scene,start,end){
    const base=cell(point.x,point.y);let found=null,d=Infinity;
    for(let yy=0;yy<rows;yy++)for(let xx=0;xx<cols;xx++){
      const p=center(xx,yy),dd=(p.x-point.x)**2+(p.y-point.y)**2;
-     if(dd<d&&canStand(scene,p.x,p.y)){d=dd;found={x:xx,y:yy};}
+     if(dd<d&&canStand(scene,p.x,p.y,clearance)){d=dd;found={x:xx,y:yy};}
    }
    return found||base;
  };
@@ -91,7 +92,7 @@ function path(scene,start,end){
    const x=cur.x+dx,y=cur.y+dy;
    if(x<0||y<0||x>=cols||y>=rows)continue;
    const k=encode(x,y),px=x*STEP+STEP/2,py=y*STEP+STEP/2;
-   if(!canStand(scene,px,py))continue;
+   if(!canStand(scene,px,py,clearance))continue;
    if(seen.has(k))continue;
    const cand=g.get(cur.k)+1;
    if(cand<(g.get(k)??Infinity)){
@@ -112,7 +113,7 @@ function path(scene,start,end){
  const last=route.at(-1)||origin;let clear=true;
  for(let t=.1;t<=1;t+=.1){
    const x=last.x+(goal.x-last.x)*t,y=last.y+(goal.y-last.y)*t;
-   if(!canStand(scene,x,y)){clear=false;break;}
+   if(!canStand(scene,x,y,clearance)){clear=false;break;}
  }
  if(clear)route.push(goal);
  return route;
