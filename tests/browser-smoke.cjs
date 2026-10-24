@@ -32,7 +32,7 @@ const key="cronicas-paris-ghoul-v1";
  try{
   await page.goto(base,{waitUntil:"load"});
   await check("La portada carga la Fase XVII",async()=>{
-   assert.match(await page.locator(".brand-version").innerText(),/FASE XVIII/);
+   assert.match(await page.locator(".brand-version").innerText(),/FASE XIX/);
    assert.match(await page.title(),/Crónicas de París/);
    assert.equal(errors.length,0,errors.join("\n"));
   });
@@ -105,6 +105,18 @@ const key="cronicas-paris-ghoul-v1";
    },[key,district]);
    await page.reload({waitUntil:"load"});
    await page.locator("#continueGame").click();
+   if(district==="passy"){
+    await check("Sigilo y carrera — controles de la Fase XIX",async()=>{
+     await page.keyboard.press("c");
+     const crouched=await page.evaluate(k=>JSON.parse(localStorage.getItem(k))?.stealthChase?.crouched,key);
+     assert.equal(crouched,true,"La tecla C debe guardar el modo sigilo");
+     assert.match(await page.locator("#stealthStatus").innerText(),/Sigilo activo/);
+     await page.keyboard.down("Shift");await page.keyboard.down("d");
+     await page.waitForTimeout(75);await page.keyboard.up("d");await page.keyboard.up("Shift");
+     await page.keyboard.press("c");
+     assert.equal(await page.evaluate(k=>JSON.parse(localStorage.getItem(k))?.stealthChase?.crouched,key),false);
+    });
+   }
    await check("Mapa + objeto interactivo de "+district,async()=>{
     assert.equal(await page.locator("#play").isVisible(),true);
     const state=await page.locator("#sceneTitle").innerText();
