@@ -1947,24 +1947,32 @@
     pixel(x-7,y-23,17,2,"#725d53");pixel(x-10,y-26,24,15,"#e8c27a19");
     if((x+y)%3!==0){pixel(x+20,y-8,12,8,"#394b40");pixel(x+24,y-13,6,17,"#46614a");pixel(x+25,y+1,3,7,"#695349");}
   }
-  // Los destinos forman pequeñas zonas de interés con puertas iluminadas.
+  // Render de emergencia, con las mismas proporciones compactas del motor principal.
+  const mapLabel={hemeroteca:"Hemeroteca",stjuly:"St. July",elysee:"Elíseo",
+   saintdenis:"Saint-Denis",tuneles:"Túneles",policia:"Archivo policial",
+   passy:"Casa de Passy",bastilla:"Bastilla"};
   for(const l of D.locations){
-   const x=Math.round(l.x/2.1),y=Math.round(l.y/2),w=Math.round(l.w/2.1),h=Math.round(l.h/2);
+   const cx=Math.round((l.x+l.w/2)/2.1),cy=Math.round((l.y+l.h/2)/2);
    const env=N.environments[l.id],quest=game.activeQuest&&questObj(game.activeQuest);
-   const active=quest?.place===l.id || (game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(l.id)) || personalAtLocation(l.id).length>0;
-   pixel(x-3,y-3,w+6,h+6,active?"#bea47a":"#181c27");
-   pixel(x,y,w,h,env?.room||"#47404b");
-   pixel(x+4,y+4,w-8,h-8,env?.accent||"#75616b");
-   pixel(x+8,y+8,w-16,h-16,"#24232f");
-   pixel(x+8,y+8,w-16,2,"#bf9b88");
-   const title=l.name.length>18?l.name.split(" ").slice(0,2).join(" "):l.name;
-   textPixel(title,x+w/2,y+h/2+3,"#f0dab4",7,"center");
-   if(active){pixel(x+w/2-4,y-12,8,8,"#f0cf88");textPixel("!",x+w/2,y-5,"#2a2425",8,"center");}
-   if(l.id==="elysee"&&!game.access.elysee){pixel(x+w-12,y+h-12,8,8,"#ab6276");}
+   const active=quest?.place===l.id||(game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(l.id))||personalAtLocation(l.id).length>0;
+   const name=mapLabel[l.id]||l.name;
+   const width=Math.max(39,Math.min(82,Math.ceil(name.length*4.25+12)));
+   pixel(cx-13,cy-14,26,18,"#151924");
+   pixel(cx-12,cy-14,24,3,env?.accent||"#78667a");
+   pixel(cx-10,cy-9,20,13,"#332d3a");
+   pixel(cx-8,cy-5,5,5,"#e0bd94");pixel(cx+3,cy-5,5,5,"#ae9ba6");
+   pixel(cx-3,cy-3,6,7,"#141926");
+   pixel(cx-width/2-1,cy+5,width+2,13,"#11141d");
+   pixel(cx-width/2,cy+6,width,11,"#272432");
+   pixel(cx-width/2,cy+6,width,1,active?"#e8bf89":env?.accent||"#75616b");
+   textPixel(name,cx,cy+14,"#ecd8bf",7,"center");
+   if(active){pixel(cx-3,cy-25,6,7,"#ecc48a");textPixel("!",cx,cy-19,"#292633",6,"center");}
   }
-  // Residencia de origen: única zona segura marcada en el plano.
-  pixel(4,241,83,56,"#191723");pixel(10,247,71,47,"#947c74");pixel(17,253,57,35,"#352b3a");
-  pixel(23,256,46,3,"#be987a");textPixel("RESIDENCIA",45,271,"#f2d9ae",8,"center");
+  // Residencia a la misma escala que los otros edificios, sin bloquear al personaje.
+  pixel(29,242,27,5,"#ac8c81");pixel(31,247,24,17,"#503b49");
+  pixel(35,252,5,6,"#e4b68d");pixel(45,252,5,6,"#a798a4");
+  pixel(13,278,66,13,"#141620");pixel(14,279,64,11,"#302835");
+  textPixel("RESIDENCIA",46,287,"#f1d9b9",7,"center");
   pixel(0,0,480,3,"#c3a283");
   portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
