@@ -22,7 +22,7 @@ window.VTM_COURT_UI=(()=>{
   const actions=[
    {label:"Consultar las Seis Tradiciones de la Camarilla",action:codex},
    {label:"Ver expedientes, sanciones y pruebas",action:casebook},
-   {label:"Disputas pendientes en la corte",disabled:!court,action:disputes}
+   {label:"Disputas pendientes en la corte"+(!c.recognized?" · requiere reconocimiento":""),disabled:!court||!g.embraced||!c.recognized,action:disputes}
   ];
   if(court&&g.embraced){
    actions.unshift({label:"Solicitar audiencia al príncipe Pierre Duvalier",action:petitions});
