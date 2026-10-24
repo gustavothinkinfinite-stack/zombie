@@ -89,9 +89,9 @@ window.VTM_STEALTH_CHASE=(()=>{
   if(p.cooldown>0){p.cooldown=Math.max(0,p.cooldown-time);p.mode="cooldown";return events;}
   const distance=Math.hypot(g.x-p.x,g.y-p.y);
   const seen=sight(physics,p.x,p.y,g.x,g.y);
-  const crouch=!!s.crouched;
-  const speed=options.sprinting?1.7:crouch?.65:1;
-  const radius=(!crouch?112:48)+(options.sprinting?34:0)+(hot(g,g.district)>=60?18:0);
+  const crouch=!!s.crouched,sprinting=!!options.sprinting&&!crouch;
+  const speed=sprinting?1.7:crouch?.65:1;
+  const radius=(!crouch?112:48)+(sprinting?34:0)+(hot(g,g.district)>=60?18:0);
   const observable=seen&&distance<=radius;
   if(observable){
    p.alert=clamp(p.alert+time*(options.moving?34*speed:17),0,100);
