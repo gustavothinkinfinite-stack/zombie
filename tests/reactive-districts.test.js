@@ -102,7 +102,7 @@ test("Persistencia local sin reemplazar el formato de partidas de Vampiro",()=>{
  assert.equal(S.save(storage,"cronicas-paris-ghoul-v1",g,{Toreador:{}}),true);
  const restored=S.load(storage,"cronicas-paris-ghoul-v1",{Toreador:{}}).game;
  assert.equal(restored.reactiveDistricts.rumors.length,g.reactiveDistricts.rumors.length);
- assert.deepEqual(restored.previous.quests,[1,2,3]);
+ assert.deepEqual(Array.from(restored.previous.quests),[1,2,3]);
 });
 test("Carga de módulos, integración de menús y prueba automática CI",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
