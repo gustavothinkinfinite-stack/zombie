@@ -35,7 +35,7 @@ assert.match(styles,/\.character-panel \.mechanics-details\{grid-column:1 \/ -1;
  "El bloque no debe quedar atrapado en una sola columna");
 assert.match(styles,/\.character-panel \.mechanics-details \.mechanics-summary\{[^}]*overflow-wrap:anywhere;/,
  "Los datos deben ajustarse al ancho del panel");
-assert.match(index,/<link[^>]+href="visual-2\.css\?v=vtm[^"]+"/,
+assert.match(index,/<link[^>]+href="visual-2\.css\?v=[^"]+"/,
  "La hoja visual debe seguir cargándose con versión de caché");
 assert.match(index,/<script[^>]+src="vtm-game\.js\?v=[^"]+"/,
  "El motor debe seguir cargándose con versión de caché");
