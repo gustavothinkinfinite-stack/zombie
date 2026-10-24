@@ -330,3 +330,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .dialogue-shell .dialog-options{max-height:min(49vh,420px);overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#806677 #241f2a;scrollbar-width:thin}
 .dialogue-shell .dialog-options button{min-height:42px}
 @media(max-width:680px){.dialogue-shell .dialog-options{max-height:43vh}}
+
+/* Fase VIII — Exploración de barrios conectados */
+.exploration-panel{border-left:2px solid #a58c77!important}
+.exploration-panel .kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-color:#393644;padding:7px 0}
+.exploration-panel .kv span{font-size:11px;color:#b7abb0}
+.exploration-panel .kv b{font-size:13px;font-variant-numeric:tabular-nums;color:#ebd5b7}
+.exploration-panel .caption{font-size:11px;line-height:1.6;color:#b7b7bc;margin:12px 0}
+.exploration-panel button{font-size:11px;letter-spacing:.02em;width:100%;min-height:40px;padding:8px 10px;border:1px solid #816c73;background:#322c39}
+.exploration-panel button:not(:disabled):hover{background:#483744;border-color:#d7b88b}
+.exploration-panel button:disabled{opacity:.5;cursor:not-allowed}
