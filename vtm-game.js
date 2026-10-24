@@ -1001,6 +1001,34 @@
     }
    }});
   }
+  // Los Trasfondos alteran físicamente qué puertas puede abrir el personaje.
+  for(const way of [
+   {id:"influencia",trait:"Influencia",rank:2,attr:"Manipulación",skill:"Política",difficulty:6,label:"Solicitar acceso mediante Influencia institucional"},
+   {id:"aliados",trait:"Aliados",rank:3,attr:"Carisma",skill:"Liderazgo",difficulty:7,label:"Presentar un aliado que responda por tu conducta"},
+   {id:"fama",trait:"Fama",rank:3,attr:"Apariencia",skill:"Etiqueta",difficulty:7,label:"Usar tu notoriedad mortal para lograr una invitación"}
+  ]){
+   const rank=game.character.backgrounds[way.trait]||0;
+   if(rank<way.rank)continue;
+   const done=M.used(game,"gate:"+way.id);
+   opts.push({label:way.label+" · "+way.attr+" + "+way.skill+" (dif. "+way.difficulty+")"+(done?" · agotado":""),
+    disabled:done,action:()=>{
+     if(M.used(game,"gate:"+way.id))return;
+     M.mark(game,"gate:"+way.id);
+     const roll=dicePool(way.attr,way.skill,way.difficulty);
+     const risk=way.id==="fama"?(roll.success?4:12):(roll.success?0:5);
+     if(risk)exposure(risk,"Solicitud de acceso al Elíseo.");
+     if(roll.success){
+      game.access.elysee=true;
+      log("Acceso al Elíseo gracias a "+way.trait+".");
+      advanceClock(8);hud();save();enterVenue(D.locations.find(l=>l.id==="elysee"));
+     }else{
+      increaseFaction("camarilla",-2,"La Guardiana anotó una solicitud improcedente.");
+      advanceClock(8);hud();save();
+      askMenu("Acceso denegado","Las credenciales no convencieron al personal. Dados: ["+roll.dice.join(", ")+"] · "+roll.net+" éxitos.",
+       [{label:"Retirarte",action:()=>{}}],"ELÍSEO · TRASFONDOS");
+     }
+    }});
+  }
   opts.push({label:"Volver a la ciudad",action:()=>{}});
   askMenu("Las puertas del Elíseo","Una guardia discreta custodia la entrada. No basta con conocer el nombre del príncipe Pierre Duvalier para presentarse ante la corte.",opts,"ACCESO RESTRINGIDO");
  }
