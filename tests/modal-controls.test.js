@@ -105,3 +105,17 @@ assert.match(source,/function interact\(\)\{\s*if\(!game\|\|overlayOpen\(\)\)ret
 assert.match(source,/canvas\.addEventListener\("pointerdown",e=>\{\s*if\(!game\|\|overlayOpen\(\)\)return;/);
 assert.match(source,/pointerdown",e=>\{if\(overlayOpen\(\)\)return;/);
 console.log("OK: interacción, clic en mapa y cruceta táctil respetan paneles abiertos");
+
+// Los dos diálogos de lectura necesitan un nombre accesible para lectores de pantalla.
+const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
+for(const [modal,title] of [["sheetModal","sheetTitle"],["journalModal","journalTitle"]]){
+ const dialog=html.match(new RegExp('<div\\s+id="'+modal+'"[^>]*>'));
+ assert.ok(dialog,modal+" debe existir");
+ assert.match(dialog[0],/role="dialog"/);
+ assert.match(dialog[0],/aria-modal="true"/);
+ assert.ok(dialog[0].includes('aria-labelledby="'+title+'"'),
+  modal+" debe anunciar el título del diálogo");
+ assert.ok(html.includes('<h2 id="'+title+'">'),title+" debe identificar un encabezado visible");
+}
+console.log("OK: ficha y diario anuncian su título mediante aria-labelledby");
+
