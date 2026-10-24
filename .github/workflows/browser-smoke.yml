@@ -46,4 +46,5 @@ jobs:
             browser-smoke-report.json
             browser-smoke-trace.zip
             browser-smoke-failure.png
+            paris-map-preview.png
           if-no-files-found: warn
