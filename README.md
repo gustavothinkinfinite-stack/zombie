@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.6 · rediseño visual 2.0, fase IX)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.7 · rediseño visual 2.0, fase IX)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -46,6 +46,27 @@ Los rumores de estos comercios **son contenido ambiental original**, no pruebas 
 Se realizaron pruebas de sintaxis de los 14 scripts cargados, puertas y rutas de acceso a los 16 locales, renderizado de 16 interiores y de sus puntos de interacción; ejecución completa de una visita con conversación, recompensa no repetible, guardado y retorno a la misma calle.
 
 **Pendiente:** diversidad de interiores ilustrados manualmente, más personajes realmente autónomos, cadenas de investigación secundaria más profundas, economía y favores elaborados, ciudades de mayor escala y pruebas funcionales visuales en navegadores reales.
+
+
+## Versión 0.7 — Combate por turnos y poderes por círculo (octubre de 2026)
+
+**Combate táctico jugable en tres escenarios:** Saint-Denis, Bastilla y Passy. Al examinar el punto principal del lugar se ofrece **«Enfrentar físicamente una amenaza del lugar»**, además de los caminos sociales e investigadores anteriores. Podés iniciar una pelea, intentar una solución pacífica o retirarte. En combate se habilitan: Pelea, arma improvisada, Armas de Fuego (con preparación y acceso a equipamiento), Esquivar, huir y activar una Disciplina.
+
+**Secuencia y daños:** iniciativa = Destreza + Astucia + d10; tirada de ataque → daño → absorción; tipos de daño **contundente, letal y agravado**. El sistema registra heridas y aplica penalizadores al disminuir la Salud. Los mortales no absorben letal con Resistencia; Fortaleza vampírica permite absorber agravado. El contundente recibido por un Vástago se reduce después de la absorción. La victoria concluye el encuentro y otorga PX **una sola vez**, pudiendo resolver un encargo principal y preparar uno secundario. La derrota causa costes de Mascarada y reputación, con un rescate básico para evitar partidas inutilizables.
+
+**Disciplinas:**
+- Los siete clanes presentan 11 Disciplinas en total; el catálogo cubre niveles 1 a 5, con el Abrazo como requisito de uso.
+- **Celeridad** funciona como acciones físicas adicionales financiadas con Sangre durante un turno de combate (no como una bonificación social genérica).
+- **Potencia** añade éxitos de fuerza de forma pasiva al daño físico.
+- **Fortaleza** aporta dados pasivos de absorción, incluido daño agravado.
+- **Auspex, Animalismo, Dementación, Dominación, Ofuscación, Presencia, Protean y Taumaturgia** ofrecen efectos distintos según nivel: información, cobertura, influencia, perturbación de enemigos, garras agravadas y otros recursos. Sus costes y restricciones se verifican antes de activarlos.
+- Cada poder/turno tiene limitaciones para evitar activación ilimitada; la sangre se consume y queda registrada. Algunos poderes elevan la exposición.
+
+**Guardados y pruebas:** se mantienen la misma clave y estructura de partida. Los campos de combate, daño y poderes se inicializan al continuar partidas viejas; no se pierden los datos previos de Habilidades, Trasfondos, facciones, escenas o misiones. Probado con ejecución simulada de la interfaz: continuar una partida, abrir una escena, iniciar combate, elegir ataque, calcular iniciativa, daño y absorción, guardar una ronda; validación sintáctica de JavaScript y pruebas unitarias del motor.
+
+**Fidelidad y limitaciones:** el sistema de iniciativa, clases de daño y absorción se inspira en *Vampiro: La Mascarada, tercera edición*, capítulo «Sistemas y Drama», sección «Sistemas de Combate» (págs. impresas 207–211 del manual proporcionado). La interfaz, simplificación de poderes, enemigos concretos, rescate, duración/coste de efectos y sistema de PX por encuentro son **adaptaciones del videojuego**, no una transcripción completa de las reglas de mesa. Los primeros cinco círculos están representados, pero varios poderes necesitan todavía tiradas resistidas específicas, objetivos detallados, duraciones completas y representación gráfica. El combate todavía no simula armas, munición o salud de cada PNJ con toda la complejidad del juego de mesa.
+
+**Despliegue:** los cambios se implementaron en GitHub \`main\`, pero debe comprobarse por separado el redeploy de Hostinger para afirmar que están visibles en la web pública.
 
 ## Versión 0.6 — Los rasgos determinan cómo jugás
 
