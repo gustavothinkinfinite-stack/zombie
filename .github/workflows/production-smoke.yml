@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
     paths:
+      - index.html
+      - vtm-game.js
+      - vtm-conspiracy.js
+      - vtm-principado.js
+      - vtm-court.js
       - tests/browser-smoke.cjs
       - .github/workflows/production-smoke.yml
   workflow_dispatch:
