@@ -32,7 +32,7 @@ const key="cronicas-paris-ghoul-v1";
  try{
   await page.goto(base,{waitUntil:"load"});
   await check("La portada carga la Fase XX",async()=>{
-   assert.match(await page.locator(".brand-version").innerText(),/FASE XX/);
+   assert.match(await page.locator(".brand-version").innerText(),/FASE XXI/);
    assert.match(await page.title(),/Crónicas de París/);
    assert.equal(errors.length,0,errors.join("\n"));
   });
