@@ -86,6 +86,10 @@ window.VTM_COURT=(()=>{
  function hunting(g,place,result){
   if(!g?.embraced||!result?.success||!HUNT_DOMAINS[place])return null;
   if(init(g).permits[place]>=g.clock.night)return null;
+  if(!init(g).recognized){
+   addCase(g,"hospitalidad","hunting-unrecognized:"+place,1,
+     "La corte debe verificar si el Vástago se presentó antes de alimentarse en un dominio custodiado.");
+  }
   const caseRecord=addCase(g,"dominio","hunting:"+g.clock.night+":"+place,1,
     "Consta una posible caza sin permiso en un dominio custodiado por "+HUNT_DOMAINS[place]+".");
   if(caseRecord)addLog(g,"La caza quedó registrada para una eventual audiencia, no como culpabilidad declarada.");
