@@ -28,7 +28,7 @@ function restore(game){
  const stub={init:()=>{}};
  const context={game,D,T,P,A:{factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0}},
   V:{normalize:x=>x},K:{normalize:()=>{}},CASES:stub,H:stub,M:stub,
-  ST:stub,TACT:stub,EQUIP:stub,ECON:stub,WORLD:stub};
+  ST:stub,TACT:stub,EQUIP:stub,ECON:stub,WORLD:stub,ELI:stub};
  vm.runInNewContext(migration+"\nexpandSave()",context);
  return game;
 }
