@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–II)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.4 · rediseño visual 2.0 fases I–III)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,17 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Rediseño visual 2.0 — Fase III, primera entrega (23 de octubre de 2026)
+
+- **Hoja de sprites reutilizable** en \`assets/personajes-paris-v2.svg\`: 16 personajes/variantes, cuatro direcciones y dos cuadros de marcha por dirección. Los sprites ya son archivos independientes que pueden sustituirse sin modificar la lógica de las misiones. Es un primer pixel art vectorial, **no arte profesional definitivo**.
+- **Motor visual con respaldo:** \`vtm-graphics.js\` muestra el atlas SVG cuando está listo; si la imagen falla o no se descarga, dibuja los sprites anteriores.
+- **Colisiones con mobiliario:** \`vtm-physics.js\` impide atravesar mesas, estanterías, camas y mostradores en residencias e interiores. Permite deslizarse por los bordes.
+- **Movimiento por clic con rutas:** se calculan recorridos para rodear obstáculos en vez de caminar en línea recta. El control mediante WASD/flechas sigue disponible.
+- **Compatibilidad con las partidas anteriores:** si una partida se guardó dentro del área ahora ocupada por un obstáculo, el personaje se coloca en una posición legal cercana sin alterar los datos de la ficha.
+- **Pruebas realizadas:** dieciocho rutas hacia puertas, salidas, PNJ y objetos, ejecutadas fotograma por fotograma, y estructura de hoja de sprites. Se conservan el creador, el sistema de aprecio, las misiones y el Abrazo.
+
+**Todavía pendiente:** nuevos tilesets ilustrados para París, escenarios con obstáculos variados a escala mayor, sprites con más fotogramas y una mayor diferenciación visual entre personajes secundarios.
 
 ## Rediseño visual 2.0 — Fase II (23 de octubre de 2026)
 
