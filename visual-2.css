@@ -424,3 +424,42 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   #play .stage-identity strong{max-width:110px}
   #play .stage-clock{font-size:8px}
 }
+
+
+/* Salida universal de barrio — sobre el Canvas, por encima de edificios,
+   lluvia, árboles y rótulos. No cambia coordenadas ni hitboxes del juego. */
+#play .canvas-wrap .stage-map-exit{
+ position:absolute;left:13px;top:68px;z-index:8;
+ display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;
+ max-width:calc(100% - 26px);min-height:39px;
+ padding:9px 13px 9px 10px;
+ border:1px solid #c9a57d;border-radius:6px;
+ background:linear-gradient(110deg,rgba(43,35,45,.97),rgba(21,23,33,.96));
+ color:#f3ddbc;font:bold 12px/1.25 system-ui,Segoe UI,Arial,sans-serif;
+ letter-spacing:.01em;text-align:left;
+ box-shadow:0 5px 22px #04050a99,inset 0 1px #e9cfa429;
+ backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+ pointer-events:auto;touch-action:manipulation;cursor:pointer;
+}
+#play .canvas-wrap .stage-map-exit:hover{
+ border-color:#f1c997;background:linear-gradient(110deg,#4b3847,#2a2836);
+ color:#fff1da;
+}
+#play .canvas-wrap .stage-map-exit:focus-visible{
+ outline:2px solid #f5d4a2;outline-offset:3px;
+}
+#play .stage-map-exit-icon{
+ display:grid;place-items:center;flex-shrink:0;
+ width:22px;height:22px;border:1px solid #bda17c;border-radius:3px;
+ background:#645042;color:#fff0cf;font-size:18px;line-height:1;
+}
+@media(max-width:720px){
+ #play .canvas-wrap .stage-map-exit{
+  top:56px;left:9px;min-height:32px;gap:6px;padding:5px 8px;
+  font-size:10px;max-width:min(65%,250px);
+ }
+ #play .stage-map-exit-icon{width:20px;height:20px;font-size:15px}
+}
+@media(max-width:380px){
+ #play .canvas-wrap .stage-map-exit{top:54px;font-size:9px;max-width:70%}
+}
