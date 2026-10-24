@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, PRINC=window.VTM_PRINCIPADO||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, PRINC=window.VTM_PRINCIPADO||null, CONSP=window.VTM_CONSPIRACY||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -339,6 +339,7 @@
   M.init(game);
   if(VITAE)VITAE.init(game);
   if(PRINC)PRINC.init(game);
+  if(CONSP){CONSP.init(game);CONSP.tick(game);}
   ST.init(game);
   TACT.init(game);
   EQUIP.init(game);
@@ -403,6 +404,7 @@
   if(REACT)for(const event of REACT.tick(game,complete))log("Bastilla: "+event.text);
   if(REGION)for(const event of REGION.tick(game,complete))log(event.district+": "+event.text);
   if(CIV)for(const event of CIV.tick(game))log(event);
+  if(CONSP)CONSP.tick(game);
  }
  function advanceClock(amount){
    game.clock.minutes+=Math.max(0,Math.round(amount));
@@ -553,6 +555,12 @@
   if(VITAE){
    const line=$("vitaeStatus");
    if(line)line.textContent=VITAE.summary(game);
+  }
+  if(CONSP){
+   const line=$("conspiracyStatus"),state=CONSP.summary(game);
+   if(line)line.textContent=state.ending?"Conspiración: "+state.ending+" · final registrado":
+    state.started?"Conspiración: acto "+state.chapter+"/4 · "+state.verified+"/12 pruebas":
+    "Conspiración: aguardando el dossier del prólogo.";
   }
   if(CIV){const summary=CIV.summary(game),line=$("consequencesStatus");
    if(line)line.textContent="Vigilancia en "+(summary.district||"París")+": "+summary.local+"/100 · testigos: "+summary.witnesses;
@@ -766,6 +774,7 @@
      ...(CIV?[{label:"Mascarada y vigilancia policial · La ciudad recuerda",action:CIV.menu}]:[]),
      ...(VITAE?[{label:"La Sangre y la Bestia · clanes, hambre y Frenesí",action:VITAE.menu}]:[]),
      ...(PRINC?[{label:"Conspiración del Principado · investigar coincidencias",action:PRINC.menu}]:[]),
+     ...(CONSP?[{label:"Campaña principal · La conspiración del Principado de París",action:CONSP.menu}]:[]),
      ...(CHASE&&game.scene==="district"?[{
       label:"Sigilo · "+(CHASE.summary(game).crouched?"desactivar postura discreta":"caminar agachado y en silencio"),
       action:()=>{CHASE.toggle(game);hud();save();traitsMenu();}
@@ -2319,6 +2328,11 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(CONSP){
+   for(const description of CONSP.journal(game)){
+    const row=document.createElement("p");row.textContent=description;root.appendChild(row);
+   }
+  }
   if(PRINC){
    const state=PRINC.summary(game),line=document.createElement("p");
    line.textContent="Conspiración del Principado: "+state.found+"/"+state.total+
@@ -2400,6 +2414,7 @@
   if(CHASE)CHASE.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock});
   if(VITAE)VITAE.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
   if(PRINC)PRINC.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
+  if(CONSP)CONSP.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure,faction:increaseFaction});
   if(CITY){const line=document.createElement("p");line.id="cityLifeStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(REACT){const line=document.createElement("p");line.id="reactiveStatus";line.className="caption";
@@ -2411,6 +2426,8 @@
   if(CHASE){const line=document.createElement("p");line.id="stealthStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   if(VITAE){const line=document.createElement("p");line.id="vitaeStatus";line.className="caption";
+    document.querySelector(".exploration-panel")?.appendChild(line);}
+  if(CONSP){const line=document.createElement("p");line.id="conspiracyStatus";line.className="caption";
     document.querySelector(".exploration-panel")?.appendChild(line);}
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
