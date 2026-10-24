@@ -220,7 +220,7 @@
   for(const key of Object.keys(A.factions))if(!Number.isFinite(game.factions[key]))game.factions[key]=0;
   game.clock=game.clock||{night:1,minutes:20*60+15};
   game.clock.night=Math.max(1,Math.floor(Number(game.clock.night)||1));
-  game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number(game.clock.minutes)||1200)));
+  game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
  }
  function enterGame(){
   expandSave();
@@ -729,32 +729,26 @@
  function enterVenue(location){
    game.venue=location.id;game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;
    if(!game.arc.visited.includes(location.id))game.arc.visited.push(location.id);
-   log("Visitaste "+location.name+".");hud();save();
+   log("Visitaste "+location.name+".");advanceClock(12);hud();save();
  }
  function venueInteract(){
-  const source=C.investigation.sources[game.venue];
-  const npc=N.byLocation[game.venue];
-  const env=N.environments[game.venue];
+  const npc=N.byLocation[game.venue],env=N.environments[game.venue];
   const location=D.locations.find(l=>l.id===game.venue);
   const exit=Math.hypot(game.x-240,game.y-270);
   if(exit<42){
    game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.venue=null;
-   hud();save();return;
+   advanceClock(5);hud();save();return;
   }
   if(Math.hypot(game.x-130,game.y-143)<55){
-   if(game.activeQuest==="archivos"&&!game.readyReport&&source){
-    researchLead(location);
-   }else if(game.activeQuest&&!game.readyReport&&questObj(game.activeQuest).place===game.venue){
-    resolveStandardQuest(questObj(game.activeQuest));
-   }else{
-    const info=source?source.hint:env.description;
-    askMenu("Examinando "+location.name,info+"\n\nAquí no queda un objetivo inmediato de tu encargo.",
-      [{label:"Seguir explorando",action:()=>{}}],"OBSERVACIÓN");
-   }
-   return;
+   inspectLocationActions(location);return;
   }
   if(Math.hypot(game.x-240,game.y-104)<60){
-   meetNPC(npc);return;
+   if(npcIsPresent(npc.id)){meetNPC(npc);}
+   else askMenu("Ahora no está "+npc.name,
+     "Son las "+formatClock()+". "+npc.name+" suele atender a partir de las "+String(A.schedules[npc.id].start).padStart(2,"0")+":00. Podés recorrer otros lugares o esperar.",
+     [{label:"Esperar hasta su llegada",action:()=>waitForNPC(npc)},
+      {label:"Explorar por tu cuenta",action:()=>{}}],"HORARIOS DE PARÍS");
+   return;
   }
   if(Math.hypot(game.x-350,game.y-146)<55){
    const key="inspect_"+game.venue;
