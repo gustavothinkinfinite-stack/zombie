@@ -86,7 +86,9 @@ window.VTM_ECONOMY=(()=>{
   const r=clamp(Number(game.character.backgrounds?.Recursos)||0,0,5);
   const finance=clamp(Number(game.character.skills?.Finanzas)||0,0,5);
   const state=game.localPlaces?.[shop?.id]?.decision;
-  const discount=clamp((r>=3?0.07:0)+(finance>=2?0.05:0)+(state==="help"?0.10:0),0,0.25);
+  const charm=game.worldPowers?.discounts?.[shop?.id];
+  const activeCharm=charm?.night===game.clock?.night?Math.max(0,Math.min(0.15,charm.value||0)):0;
+  const discount=clamp((r>=3?0.07:0)+(finance>=2?0.05:0)+(state==="help"?0.10:0)+activeCharm,0,0.35);
   return Math.max(1,Math.ceil(PRICE[id]*(1-discount)));
  }
  function goods(game,shop){
