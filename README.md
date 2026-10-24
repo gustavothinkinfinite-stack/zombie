@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.5 · rediseño visual 2.0, fase VII)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 0.5 · rediseño visual 2.0, fase VIII)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -26,6 +26,37 @@ Se incorpora **ACCIONES** junto al botón **Ficha**. Esta versión conserva la c
 **Adaptaciones explícitas:** el menú de acciones, fichas de ventajas, límite de uso, costes resumidos de sangre y reglas de caza son mecánicas originales del videojuego inspiradas en la 3.ª edición; no son una transcripción literal del manual. La implementación prioriza consecuencias narrativas y no representa aún un sistema táctico completo de combate o todas las opciones individuales de cada círculo de Disciplina.
 
 **Pruebas de desarrollo:** sintaxis, correspondencia exacta de las 30 Habilidades y los dones de los siete clanes, continuidad de guardados previos y simulación del menú y una acción completa de Talentos. **La publicación efectiva en Hostinger debe comprobarse por separado.**
+
+## Rediseño visual 2.0 — Fase VIII: barrios conectados y exploración a pie (octubre de 2026)
+
+Se incorporó un segundo nivel de exploración que **no reemplaza el mapa esquemático original** ni modifica misiones, PNJ o accesos a los ocho locales.
+
+### Cómo funciona
+
+1. En el mapa general de París, acercate al destino que prefieras y pulsá **E**. Elegí **Explorar las calles** para entrar a ese barrio, **Entrar directamente al lugar** para mantener el flujo original o **Continuar** para permanecer en el mapa.
+2. En el barrio, movete con WASD/flechas o haciendo clic. Hay una **puerta principal** del lugar correspondiente, dos **rincones observables**, accesos cardinales a barrios vecinos y un acceso al mapa general.
+3. Podés entrar al mismo local de siempre para continuar sus misiones y volver a **la posición en el barrio desde la que entraste**. Desde un barrio también podés cruzar a otros barrios conectados a pie.
+4. El HUD y el diario muestran **barrios recorridos (0/8)** y **rincones descubiertos (0/16)**. Las observaciones dan contexto narrativo y se registran una sola vez, sin pistas falsas de misiones ni recompensas automáticas.
+
+### Barrios de la expansión
+
+- Passy, barrio del St. July y distrito del Elíseo.
+- Barrio de la Hemeroteca, Bastilla y Saint-Denis.
+- Barrio del Archivo Policial y accesos a los túneles Nosferatu.
+
+Las ocho zonas forman una red **abstracta de navegación para el videojuego**, no una representación fiel de las distancias y adyacencias geográficas de París. Cada sector utiliza manzanas, calles transitables, aceras y entradas separadas, con iluminación acorde a su ambiente. Hay **20 conexiones dirigidas (10 bidireccionales)** entre los ocho barrios. No se han creado todavía centenares de calles ni un mundo abierto continuo.
+
+### Implementación técnica y compatibilidad
+
+- \`vtm-districts.js\`: topología de ocho barrios, fondos Canvas cacheados, 16 observaciones, portales, objetos de entorno y detección de interacciones.
+- \`vtm-physics.js\`: colisiones con las cuatro manzanas de los barrios, navegación y rutas alrededor de las fachadas. Hay espacio libre hacia la puerta principal y el mapa.
+- \`vtm-game.js\`: nueva escena \`district\`, menú de elección desde el mapa original, retorno a la misma posición tras entrar en un local, reloj y visitas persistentes. El estado de exploración se almacena en \`game.districtVisited\` y \`game.districtNotes\`; las partidas antiguas reciben valores vacíos.
+- \`index.html\` y \`visual-2.css\`: panel lateral de exploración, botón contextual para regresar al mapa y presentación de la fase VIII.
+- En ausencia del módulo de barrios, los accesos directos a los locales siguen disponibles y las partidas guardadas en una escena de barrio vuelven al mapa general sin bloquearse.
+
+**Pruebas:** análisis sintáctico del conjunto JS; grafo de ocho sectores totalmente conectado; 52 rutas físicas de llegada a puertas, salidas, rincones y fronteras realizadas mediante pasos simulados sin atascos; carga de una partida anterior; ciclo mapa → barrio → local → barrio → barrio vecino → mapa con aprecio preservado.
+
+**Limitaciones:** los barrios reutilizan un esquema de calles y edificios con paleta y ambiente diferentes. Este primer sistema no incluye todavía comercios secundarios con inventarios, circulación de PNJ persistente, combate de calle ni zonas de tamaño ilimitado. El despliegue en Hostinger debe verificarse aparte.
 
 ## Rediseño visual 2.0 — Fase VII: una ciudad que se mueve (octubre de 2026)
 
