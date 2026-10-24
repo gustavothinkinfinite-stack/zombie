@@ -475,6 +475,115 @@
     {label:"Aceptar con arrogancia (−3 aprecio)",action:()=>{game.activeQuest=q.id;game.readyReport=null;addAppreciation(-3,"Tu arrogancia incomodó al Domitor.");}},
     {label:"Todavía no estoy listo",action:()=>{}}],"MISIÓN · "+q.kind.toUpperCase());
  }
+
+ // Panel de acciones con consecuencias reales y límites por noche/lugar.
+ function traitsResult(title,result,roll){
+   const text=result.description+(roll?"\n\nTirada: ["+roll.dice.join(", ")+"] · Éxitos netos "+roll.net+
+     " · Modificadores: "+roll.modifiers+".":"")+"\n\n"+M.summary(game);
+   askMenu(title,text,[{label:"Volver a acciones",action:traitsMenu},{label:"Terminar",action:()=>{}}],"FICHA EN ACCIÓN");
+ }
+ function traitsCategory(group){
+   const list=M.actions.filter(a=>D.abilities[group].includes(a.skill));
+   const place=game.scene==="venue"?game.venue:game.scene;
+   const choices=list.map(a=>{
+     const level=game.character.skills[a.skill]||0;
+     const difficulty=a.difficulty+(level===0&&group!=="Talentos"?1:0);
+     const already=M.used(game,"ability:"+place+":"+a.skill),location=M.allowed(game,a);
+     return {label:a.label+" · "+a.attr+" + "+a.skill+" ("+level+"; dificultad "+difficulty+")"+
+       (already?" · realizado":!location?" · no disponible aquí":""),
+       disabled:already||!location,action:()=>traitsPerform(a,difficulty)};
+   });
+   choices.push({label:"Regresar",action:traitsMenu});
+   askMenu(group,"Estas acciones usan Atributo + Habilidad. Una Técnica o Conocimiento sin puntos aumenta la dificultad en 1. Sólo se permite un intento por lugar y noche.\n\n"+M.summary(game),choices,"CAPACIDADES · "+group.toUpperCase());
+ }
+ function traitsPerform(a,difficulty){
+   const place=game.scene==="venue"?game.venue:game.scene;
+   if(!M.allowed(game,a)||M.used(game,"ability:"+place+":"+a.skill))return;
+   const roll=dicePool(a.attr,a.skill,difficulty);
+   const result=M.actionResult(game,a,roll);
+   if(!result)return;
+   if(result.exposure)exposure(result.exposure,"Usaste la Habilidad "+a.skill+".");
+   log(a.skill+": "+(roll.success?"obtuviste un resultado útil":"la acción salió mal")+".");
+   advanceClock(12);hud();save();
+   traitsResult(a.label,result,roll);
+ }
+ function traitsBackgrounds(){
+   const choices=[];
+   for(const [name,meta] of Object.entries(M.backgrounds)){
+     const level=game.character.backgrounds[name]||0;
+     if(!level)continue;
+     const done=M.used(game,"background:"+name);
+     choices.push({label:name+" ("+level+" círculos) · "+meta.message+(done?" · agotado":""),
+      disabled:done,action:()=>traitsBackgroundUse(name,meta,level)});
+   }
+   if(!choices.length)choices.push({label:"Sin Trasfondos activos",disabled:true});
+   choices.push({label:"Regresar",action:traitsMenu});
+   askMenu("Recursos de tu vida mortal","Cada Trasfondo proporciona acciones especiales y bonos pasivos en tiradas afines. Los círculos facilitan obtener favores y amplían su efecto; cada uso activo se permite una vez por noche.\n\n"+M.summary(game),choices,"TRASFONDOS");
+ }
+ function traitsBackgroundUse(name,meta,level){
+   if(M.used(game,"background:"+name))return;
+   const roll=dicePool(meta.attr,meta.skill,Math.max(4,8-Math.floor(level/2)));
+   const result=M.backgroundResult(game,name,roll.success);
+   if(!result)return;
+   if(name==="Contactos"&&level>=3&&roll.success&&game.venue==="tuneles")game.access.tunnelContact=true;
+   if(name==="Influencia"&&level>=3&&roll.success&&game.venue==="policia")game.access.policeReference=true;
+   if(result.exposure)exposure(result.exposure,"Utilizaste "+name+".");
+   log("Trasfondo "+name+": "+(roll.success?"apoyo conseguido":"petición fallida")+".");
+   advanceClock(15);hud();save();
+   traitsResult("Trasfondo: "+name,result,roll);
+ }
+ function traitsPowers(){
+   if(!game.embraced)return;
+   const m=M.init(game),choices=[];
+   for(const name of D.clans[game.character.clan].disciplines){
+     const level=game.character.disciplines[name]||0,cost=M.powers[name]?.cost||1,done=M.used(game,"power:"+name);
+     choices.push({label:name+" ("+level+" círculos) · "+cost+" Sangre"+(done?" · usado":""),
+       disabled:!level||m.blood<cost||done,action:()=>traitsPowerUse(name)});
+   }
+   choices.push({label:"Regresar",action:traitsMenu});
+   askMenu("Dones de la sangre","Las Disciplinas necesitan el Abrazo, círculos adquiridos y Reserva de Sangre. El nivel determina cuánto pueden potenciar las tiradas. Cada poder puede activarse una vez por noche.\n\n"+M.summary(game),choices,"DISCIPLINAS");
+ }
+ function traitsPowerUse(name){
+   const result=M.powerResult(game,name);
+   if(!result)return;
+   if(result.exposure)exposure(result.exposure,"Activaste una Disciplina sobrenatural.");
+   log("Disciplina "+name+": "+result.cost+" punto(s) de Sangre gastados.");
+   hud();save();traitsResult("Disciplina: "+name,result,null);
+ }
+ function traitsHunt(){
+   if(!game.embraced||!["paris","venue"].includes(game.scene)||M.used(game,"hunt:"+(game.venue||game.scene)))return;
+   const roll=dicePool("Percepción","Callejeo",7);
+   const result=M.huntResult(game,roll);
+   if(!result)return;
+   if(result.exposure)exposure(result.exposure,"La caza nocturna puso en riesgo la Mascarada.");
+   log(roll.success?"Te alimentaste sin matar.":"La presa escapó.");
+   advanceClock(25);hud();save();traitsResult("La sed de sangre",result,roll);
+ }
+ function traitsWill(){
+   const m=M.init(game);
+   if(m.will<=0||M.used(game,"will"))return;
+   m.will--;M.mark(game,"will");M.reward(game,"preparacion",2);
+   log("Invertiste un punto de Voluntad en tu próximo desafío.");
+   hud();save();
+   traitsResult("Fuerza de Voluntad",{description:"Concentrás tu determinación: ganaste dos ventajas de preparación aplicables a próximas tiradas."},null);
+ }
+ function traitsMenu(){
+   if(!game)return;
+   const m=M.init(game),choices=[
+     {label:"Talentos · diez acciones",action:()=>traitsCategory("Talentos")},
+     {label:"Técnicas · diez acciones",action:()=>traitsCategory("Técnicas")},
+     {label:"Conocimientos · diez acciones",action:()=>traitsCategory("Conocimientos")},
+     {label:"Trasfondos · favores, influencia y recursos",action:traitsBackgrounds}
+   ];
+   if(game.embraced){
+     choices.push({label:"Disciplinas · poderes del clan",action:traitsPowers});
+     choices.push({label:"Cazar · reponer Reserva de Sangre",disabled:!["paris","venue"].includes(game.scene)||m.blood>=10||M.used(game,"hunt:"+(game.venue||game.scene)),action:traitsHunt});
+   }
+   choices.push({label:"Gastar Voluntad para mejorar futuras pruebas",disabled:m.will<=0||M.used(game,"will"),action:traitsWill});
+   choices.push({label:"Cerrar",action:()=>{}});
+   askMenu("Lo que sabés hacer","Las decisiones se resuelven mediante Atributos + Habilidades. Los Trasfondos influyen de forma directa y las Disciplinas pueden gastar Sangre tras el Abrazo. Las ventajas obtenidas no se acumulan indefinidamente.\n\n"+M.summary(game),choices,"ACCIONES DEL PERSONAJE");
+ }
+
  function dicePool(attribute,skill,difficulty){
   const c=game.character;
   const buffs={"Callejeo":"tunnelContact","Pelea":"brujahContact","Política":"sheriffWarning","Ocultismo":"tremereReference","Empatía":"pressContact","Investigación":"policeReference","Etiqueta":"courtProtocol"};
@@ -1394,6 +1503,10 @@
   $("journalModal").classList.remove("hidden");
  }
  function setup(){
+  const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
+  $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
+  const state=document.createElement("p");state.id="mechanicsSummary";state.className="caption mechanics-summary";
+  document.querySelector(".character-panel")?.appendChild(state);
   $("startNew").addEventListener("click",()=>{creator=freshDraft();step=0;renderCreator();});
   $("continueGame").addEventListener("click",()=>{const persisted=load();if(persisted){game=persisted;enterGame();if(game.embraced&&Object.values(game.character.disciplines||{}).reduce((a,b)=>a+b,0)<3)disciplineCeremony();}else notice("No hay partida guardada.");});
   $("previousStep").addEventListener("click",()=>{if(step>0){step--;renderCreator();}});
