@@ -1773,7 +1773,7 @@
  function drawHouse(){drawResidence(game.scene);}
  function drawResidence(room){
   if(G){
-    G.drawResidence(g,room,game.character.clan,C,game,visualTime);
+    G.drawResidence(g,room,game.character.clan,C,game,visualTime,effectsEnabled);
     if(room==="house")portrait(240,98,"master",D.clans[game.character.clan].accent);
     portrait(game.x,game.y,"player",game.embraced?"#9c505e":"#8a8a74");
     return;
@@ -1864,7 +1864,7 @@
  function drawVenue(){
   if(G){
     const npc=N.byLocation[game.venue];
-    G.drawVenue(g,game.venue,N,game,visualTime);
+    G.drawVenue(g,game.venue,N,game,visualTime,effectsEnabled);
     if(B)B.interior(g,game.venue,visualTime,game,effectsEnabled);
     if(npc&&npcIsPresent(npc.id))portrait(240,104,"master",npc.color);
     else {pixel(216,96,48,25,"#332b36");textPixel("AUSENTE",240,90,"#d0a2a0",9,"center");}
@@ -1929,6 +1929,7 @@
    if(!K)return;
    const shop=K.byId[game.sidevenue];if(!shop)return;
    K.draw(g,game,visualTime,effectsEnabled);
+   window.VTM_ART_POLISH?.shop(g,shop.kind,visualTime,effectsEnabled);
    if(CITY)CITY.shopDraw(g,game,visualTime);
    if(G){
      G.character(g,240,104,{npc:{id:"keeper-"+shop.id,name:shop.keeper,color:"#746176",skin:"#caa691",hair:"#3b313b"},clan:"Toreador",facing:"down",walking:false});
