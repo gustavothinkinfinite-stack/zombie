@@ -113,7 +113,9 @@ window.VTM_MECHANICS=(()=>{
    extra+=m.power.bonus;details.push(m.power.name+" +"+m.power.bonus);
    m.power.charges--;if(m.power.charges<=0)m.power=null;
   }
-  if(m.health<=3){extra--;details.push("heridas -1");}
+  if(m.health===0){extra-=3;details.push("incapacitado -3");}
+  else if(m.health<=3){extra--;details.push("heridas -1");}
+  if(game.embraced&&m.blood===0){extra-=2;details.push("hambre -2");}
   return {bonus:passive+extra,description:details.join("; ")||"sin modificadores"};
  }
  function actionResult(game,action,roll){
@@ -157,7 +159,7 @@ window.VTM_MECHANICS=(()=>{
   mark(game,key);
   if(roll.success){m.blood=clamp(m.blood+Math.max(1,Math.min(3,roll.net)),0,10);return {exposure:2,description:"Te alimentás sin matar a la víctima. Recuperás sangre, pero siempre queda algún riesgo."};}
   m.will=clamp(m.will-1,0,game.character.willpower);
-  return {exposure:12,description:"La presa escapa y los testigos advierten movimientos extraños. Perdész 1 Voluntad."};
+  return {exposure:12,description:"La presa escapa y los testigos advierten movimientos extraños. Perdés 1 Voluntad."};
  }
  function nextNight(game){
   const m=init(game);
