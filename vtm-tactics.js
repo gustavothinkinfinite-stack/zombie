@@ -259,7 +259,16 @@ window.VTM_TACTICS=(()=>{
    used:!!g.mechanics?.powerHistory?.[g.clock.night+"|"+name+"|"+(i+1)]
   }));
  }
- function cast(g,name,index){
+ // Tirada enfrentada contra la voluntad concreta del adversario presente.
+ function resist(g,enemy,effect,rng=Math.random){
+  const table={command:["Manipulación","Intimidación"],terror:["Carisma","Intimidación"],
+   social:["Carisma","Expresión"],read:["Percepción","Empatía"],calm:["Carisma","Trato con Animales"]};
+  const [attribute,ability]=table[effect]||["Manipulación","Subterfugio"];
+  const attacker=dice(rank(g,attribute)+skill(g,ability)+wounds(g),6,rng);
+  const defender=dice(Math.max(1,enemy.willpower||2)+Math.max(1,enemy.wits||2),6,rng);
+  return {success:attacker.net>defender.net,attacker,defender,attribute,ability};
+ }
+ function cast(g,name,index,rng=Math.random){
   init(g);
   if(!known(g,name))return {error:"No adquiriste esa Disciplina."};
   if(name==="Fortaleza"||name==="Potencia")return {error:"Esta Disciplina es pasiva: sus círculos ya funcionan automáticamente."};
@@ -285,6 +294,13 @@ window.VTM_TACTICS=(()=>{
   if(effect==="claws"&&!fight)return {error:"Las garras sólo se activan ante un enfrentamiento."};
   if(effect==="strength"&&!fight)return {error:"La proeza de Potencia requiere un desafío físico."};
   m.powerHistory[day]=true;m.blood-=cost;
+  let opposed=null;
+  if(fight&&["command","terror","social","read","calm"].includes(effect)){
+   opposed=resist(g,fight.enemy,effect,rng);
+   if(!opposed.success)return {name,label,level:index+1,cost,effect,risk:4,
+    description:"El adversario resistió tu poder. Gastaste la Sangre y la acción sobrenatural dejó huellas.",
+    changed:{},resisted:true,opposed};
+  }
   const magnitude=index+1,risk=(name==="Taumaturgia"&&index>=3?8:effect==="terror"?6:0);
   let message=description,changed={};
   const addToken=(kind,n=1)=>{m.tokens=m.tokens||{};m.tokens[kind]=clamp((m.tokens[kind]||0)+n,0,3);};
@@ -299,10 +315,13 @@ window.VTM_TACTICS=(()=>{
   if(effect==="calm"){addToken("influencia",1);changed.calm=true;}
   if(effect==="blood"){m.blood=clamp(m.blood+(index>=3?2:1),0,10);changed.blood=m.blood;}
   if(effect==="command"&&fight){fight.enemy.skipAttack=true;changed.command=true;}
+  if(effect==="social"&&fight){fight.enemy.skipAttack=true;changed.social=true;}
+  if(effect==="calm"&&fight){fight.enemy.skipAttack=true;changed.calm=true;}
+  if(effect==="read"&&fight){addToken("preparacion",1);changed.read=true;}
   if(effect==="terror"&&fight){fight.enemy.skipAttack=true;changed.terror=true;}
   if(effect==="terror"&&!fight)addToken("influencia",1);
   if(name==="Ofuscación"&&index>=1)changed.exposure=-Math.min(10,index*2+2);
-  return {name,label,level:magnitude,cost,effect,risk,description:message,changed};
+  return {name,label,level:magnitude,cost,effect,risk,description:message,changed,opposed};
  }
- return {ENEMIES,POWERS,init,dice,wounds,status,deal,soak,start,action,recover,catalog,cast};
+ return {ENEMIES,POWERS,init,dice,wounds,status,deal,soak,start,action,recover,catalog,cast,resist};
 })();
