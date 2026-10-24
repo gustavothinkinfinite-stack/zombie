@@ -257,7 +257,7 @@ function character(c,x,y,opts={}){
    text(c,"DOMITOR",x,y-24,7,"#edd1b7");
  }
 }
-function effects(c,mode,time,location){
+function effects(c,mode,time,location,room=""){
  if(mode==="paris"){
    // Lluvia en dos capas, sin arrays ni partículas almacenadas en cada fotograma.
    for(let i=0;i<56;i++){
@@ -278,6 +278,33 @@ function effects(c,mode,time,location){
     Malkavian:["183,155,217",.07],Ventrue:["187,185,162",.07],
     Brujah:["210,122,108",.07],Gangrel:["155,182,133",.07]
    };
+   // Luz ambiental de baja intensidad propia de cada estancia.
+   // Se dibuja por encima del fondo, debajo del HUD y sólo con FX activados.
+   if(room==="study"){
+     glow(c,242,204,44,moods[location]?.[0]||"239,193,144",.065+.018*Math.sin(time*2.2));
+     glow(c,133,115,34,"231,191,142",.03+.013*Math.cos(time*1.7));
+     for(let i=0;i<4;i++){
+       const alpha=.055+.034*Math.sin(time*1.9+i*1.5);
+       rect(c,211+i*15,210,2,7,"rgba(246,207,164,"+Math.max(0,alpha).toFixed(3)+")");
+     }
+   }else if(room==="quarters"){
+     glow(c,239,101,64,"141,171,222",.046+.012*Math.sin(time*.85));
+     for(let i=0;i<4;i++){
+       const alpha=.04+.023*Math.sin(time*.9+i*2);
+       rect(c,224+i*10,121,5,15,"rgba(145,185,232,"+Math.max(0,alpha).toFixed(3)+")");
+     }
+   }else if(room==="house"){
+     glow(c,239,87,56,"236,173,132",.045+.013*Math.sin(time*1.6));
+   }else if(location==="stjuly"){
+     glow(c,113,145,62,"221,105,158",.075+.03*Math.sin(time*1.1));
+     glow(c,374,142,49,"190,102,187",.063+.025*Math.sin(time*1.35));
+   }else if(location==="elysee"){
+     glow(c,239,165,85,"231,207,159",.035+.012*Math.sin(time*.7));
+   }else if(location==="tuneles"){
+     glow(c,108,171,54,"102,198,172",.075+.035*Math.sin(time*2));
+   }else if(location==="passy"){
+     glow(c,240,192,48,"174,129,208",.06+.024*Math.sin(time*1.8));
+   }
    const mood=moods[location]||["231,188,140",.05];
    glow(c,240,100,72,mood[0],mood[1]*(1+Math.sin(time*1.6)*.15));
    for(let i=0;i<15;i++){
@@ -288,5 +315,5 @@ function effects(c,mode,time,location){
  }
 }
 function clearCache(){cache.clear();}
-return {drawCity,drawResidence,drawVenue,character,effects,clearCache,backgroundStatus,assetStatus:()=>({atlasReady,atlasFailed,...backgroundStatus()}),version:"2.0-phase-IV"};
+return {drawCity,drawResidence,drawVenue,character,effects,clearCache,backgroundStatus,assetStatus:()=>({atlasReady,atlasFailed,...backgroundStatus()}),version:"2.0-phase-V"};
 })();
