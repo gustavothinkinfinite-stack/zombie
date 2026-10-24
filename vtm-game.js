@@ -6,7 +6,7 @@
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  let creator=null,step=0,game=null,keys=new Set(),lastTime=0,walkTarget=null,toastTimer=0;
- let dialogOpen=false,touchMove=null,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
+ let dialogOpen=false,touchMove=null,visualTime=0,canvas=$("world"),g=canvas.getContext("2d",{alpha:false});
  g.imageSmoothingEnabled=false;
  const ITEMS=[["concepto","Concepto"],["atributos","Atributos"],["habilidades","Habilidades"],["trasfondos","Trasfondos"],["virtudes","Virtudes"],["gratuitos","Puntos gratuitos"]];
  const PRIORITY_BUDGET_ATTR=[7,5,3],PRIORITY_BUDGET_SKILL=[13,9,5];
@@ -793,34 +793,81 @@
  }
  function textPixel(t,x,y,color,size,align){g.font="bold "+(size||9)+"px monospace";g.fillStyle=color;g.textAlign=align||"left";g.fillText(t,x,y);}
  function drawParis(){
-  pixel(0,0,480,300,"#242631");
-  // Tres barrios separados por avenidas y el Sena.
+  pixel(0,0,480,300,"#23232e");
+  // Manzanas de París por la noche: techos inclinados, ventanas y chimeneas.
   for(let y=0;y<300;y+=38)for(let x=0;x<480;x+=53){
-    const k=(x*71+y*13)%7;
-    pixel(x+2,y+4,43,28,["#3d3842","#403741","#46383e","#474043","#39353d","#4b3d44","#434049"][k]);
-    pixel(x+5,y+5,38,4,"#60535b");
-    for(let w=0;w<4;w++)pixel(x+7+w*8,y+12,4,6,(w+k)%2===0?"#b29377":"#1c1c23");
-    pixel(x+7,y+25,32,3,"#2c2530");
+    const k=Math.floor((x*71+y*13)/19)%7;
+    const c=["#353443","#41404c","#44373f","#4a3c48","#39323c","#423a49","#34343d"][(k+7)%7];
+    pixel(x+1,y+3,47,31,"#1a1a26");
+    pixel(x+4,y+5,40,25,c);
+    pixel(x+7,y+7,34,4,"#5d5057");
+    for(let w=0;w<4;w++){
+      pixel(x+8+w*8,y+13,4,8,(w+k)%3===0?"#e9ba80":"#23222c");
+      pixel(x+7+w*8,y+12,6,2,"#776671");
+    }
+    pixel(x+9,y+25,30,3,"#25212a");
+    if((x+y)%4===0){pixel(x+14,y-3,9,9,"#57444b");pixel(x+16,y-5,5,2,"#211b24");}
   }
-  for(let y=70;y<300;y+=72){pixel(0,y,480,13,"#57545a");for(let x=0;x<480;x+=25)pixel(x+5,y+6,12,1,"#c6ae93");}
-  for(let x=110;x<480;x+=118){pixel(x,0,17,300,"#56525c");for(let y=0;y<300;y+=32)pixel(x+7,y+5,2,16,"#a8947a");}
-  // Sena y puentes
-  for(let x=0;x<480;x+=10){const sy=157+Math.sin(x/80)*28;pixel(x,sy,11,23,"#303f52");pixel(x+2,sy+12,6,1,"#617384");}
+  // Avenidas con marcas viales y aceras.
+  for(let y=70;y<300;y+=72){
+    pixel(0,y,480,15,"#4e505a");pixel(0,y+1,480,2,"#8c8181");
+    for(let x=0;x<480;x+=28)pixel(x+6,y+8,14,1,"#c5ad8b");
+    pixel(0,y+13,480,1,"#7b6976");
+  }
+  for(let x=110;x<480;x+=118){
+    pixel(x,0,19,300,"#4d5058");pixel(x,0,2,300,"#807a7f");
+    for(let y=0;y<300;y+=37)pixel(x+9,y+7,2,17,"#c1a27d");
+  }
+  // Sena: reflejos sobre el agua y tres pasos elevados.
+  for(let x=0;x<480;x+=10){
+    const sy=157+Math.sin(x/80)*28;
+    pixel(x,sy,11,25,"#303f53");pixel(x+2,sy+11,7,1,"#748fa5");
+    pixel(x+3,sy+20,5,1,"#a7a18e");
+  }
+  for(const x of [104,228,350]){
+    const sy=157+Math.sin(x/80)*28;
+    pixel(x,sy-6,20,39,"#69636a");pixel(x+2,sy-4,16,35,"#8b8180");
+    pixel(x+5,sy+3,10,2,"#baac93");
+  }
+  // Farolas, bancos y árboles de las avenidas.
+  for(let x=22;x<480;x+=81)for(const y of [59,213]){
+    pixel(x,y-18,2,23,"#b5a59a");pixel(x-3,y-21,8,5,"#e9c18b");
+    pixel(x-7,y-23,17,2,"#725d53");pixel(x-10,y-26,24,15,"#e8c27a19");
+    if((x+y)%3!==0){pixel(x+20,y-8,12,8,"#394b40");pixel(x+24,y-13,6,17,"#46614a");pixel(x+25,y+1,3,7,"#695349");}
+  }
+  // Los destinos forman pequeñas zonas de interés con puertas iluminadas.
   for(const l of D.locations){
    const x=Math.round(l.x/2.1),y=Math.round(l.y/2),w=Math.round(l.w/2.1),h=Math.round(l.h/2);
-   pixel(x,y,w,h,"#2a222e");pixel(x+3,y+3,w-6,h-6,"#65505a");
-   pixel(x+7,y+7,w-14,h-14,"#31252f");
-   pixel(x+5,y+5,w-10,2,game.activeQuest&&questObj(game.activeQuest).place===l.id?"#ead3aa":"#ad8b84");
-   const words=l.name.split(" ");const label=words.length>2?words.slice(0,2).join(" "):l.name;
-   textPixel(label,x+w/2,y+h/2,"#e9d0ae",7,"center");
-   if(game.activeQuest&&questObj(game.activeQuest).place===l.id){pixel(x+w/2-3,y+h/2-20,6,6,"#ead5a0");}
+   const env=N.environments[l.id],quest=game.activeQuest&&questObj(game.activeQuest);
+   const active=quest?.place===l.id || (game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(l.id));
+   pixel(x-3,y-3,w+6,h+6,active?"#bea47a":"#181c27");
+   pixel(x,y,w,h,env?.room||"#47404b");
+   pixel(x+4,y+4,w-8,h-8,env?.accent||"#75616b");
+   pixel(x+8,y+8,w-16,h-16,"#24232f");
+   pixel(x+8,y+8,w-16,2,"#bf9b88");
+   const title=l.name.length>18?l.name.split(" ").slice(0,2).join(" "):l.name;
+   textPixel(title,x+w/2,y+h/2+3,"#f0dab4",7,"center");
+   if(active){pixel(x+w/2-4,y-12,8,8,"#f0cf88");textPixel("!",x+w/2,y-5,"#2a2425",8,"center");}
+   if(l.id==="elysee"&&!game.access.elysee){pixel(x+w-12,y+h-12,8,8,"#ab6276");}
   }
-  pixel(5,243,79,54,"#2a222c");pixel(12,250,66,43,"#57454e");pixel(20,256,50,30,"#342631");textPixel("CASA",43,270,"#f0d4b9",9,"center");
+  // Residencia de origen: única zona segura marcada en el plano.
+  pixel(4,241,83,56,"#191723");pixel(10,247,71,47,"#947c74");pixel(17,253,57,35,"#352b3a");
+  pixel(23,256,46,3,"#be987a");textPixel("RESIDENCIA",45,271,"#f2d9ae",8,"center");
+  pixel(0,0,480,3,"#c3a283");
   portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
+ }
+ function rainOverlay(){
+  // Lluvia pixelada determinista que mantiene la animación sin bibliotecas externas.
+  const phase=visualTime*32;
+  for(let i=0;i<80;i++){
+   const x=(i*73+Math.floor(phase*1.3))%480;
+   const y=(i*47+Math.floor(phase*2.2))%300;
+   pixel(x,y,1,4,i%5===0?"#afbbcd99":"#7a8a9c60");
+  }
  }
  function drawWorld(){
   if(!game)return;
-  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else drawParis();
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();rainOverlay();}
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
@@ -877,7 +924,7 @@
  }
  function frame(time){
   const dt=Math.min(.045,(time-lastTime)/1000||0);lastTime=time;
-  moveStep(dt);drawWorld();
+  visualTime+=dt;moveStep(dt);drawWorld();
   if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$("notice").classList.add("hidden");}
   window.requestAnimationFrame(frame);
  }
