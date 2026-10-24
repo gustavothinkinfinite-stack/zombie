@@ -888,9 +888,9 @@
   }
   if(room==="venue"){
    if(Math.hypot(game.x-240,game.y-270)<42)return "E · Regresar a las calles";
-   if(Math.hypot(game.x-130,game.y-143)<55)return "E · Examinar archivo";
-   if(Math.hypot(game.x-240,game.y-104)<60)return "E · Hablar";
-   if(Math.hypot(game.x-350,game.y-146)<55)return "E · Observar el lugar";
+   if(Math.hypot(game.x-130,game.y-143)<55)return "E · "+(game.activeQuest&&questObj(game.activeQuest).place===game.venue?"Investigar el encargo":"Examinar archivos");
+   if(Math.hypot(game.x-240,game.y-104)<60)return "E · Hablar con "+N.byLocation[game.venue].name;
+   if(Math.hypot(game.x-350,game.y-146)<55)return "E · Observar el entorno";
    return "";
   }
   if(Math.hypot(game.x-46,game.y-269)<42)return "E · Regresar a la residencia";
@@ -950,6 +950,11 @@
    root.appendChild(p);
   }
   const rep=document.createElement("p");rep.textContent="Exposición de la Mascarada: "+game.exposure+"/100 · Relación con Dupont: "+game.relations.dupont+" (−5 a +5) · Objetos examinados en la residencia: "+Object.keys(game.observed).filter(k=>game.observed[k]).length;root.appendChild(rep);
+  const contacts=document.createElement("p");
+  contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
+  root.appendChild(contacts);
+  const favours=Object.entries(game.access).filter(([k,v])=>v).map(([k])=>favorDescription(k));
+  const favors=document.createElement("p");favors.textContent="Referencias y favores: "+(favours.join("; ")||"Ninguno");root.appendChild(favors);
   game.history.forEach(entry=>{const r=document.createElement("p");r.textContent="• "+entry;root.appendChild(r);});
   $("journalModal").classList.remove("hidden");
  }
