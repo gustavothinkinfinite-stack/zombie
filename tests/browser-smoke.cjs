@@ -31,7 +31,7 @@ const key="cronicas-paris-ghoul-v1";
  });
  try{
   await page.goto(base,{waitUntil:"load"});
-  await check("La portada carga la Fase XVII",async()=>{
+  await check("La portada carga la Fase XX",async()=>{
    assert.match(await page.locator(".brand-version").innerText(),/FASE XX/);
    assert.match(await page.title(),/Crónicas de París/);
    assert.equal(errors.length,0,errors.join("\n"));
@@ -76,6 +76,8 @@ const key="cronicas-paris-ghoul-v1";
    const menu=await page.locator("#dialogOptions").innerText();
    assert.match(menu,/investigar el robo de Bastilla/i);
    assert.match(menu,/otros siete barrios/i);
+   assert.match(menu,/La Sangre y la Bestia/i);
+   assert.match(menu,/Conspiración del Principado/i);
    await page.locator("#dialogClose").click();
   });
   // El guardado al salir de la página anterior no debe reemplazar la posición de prueba.
