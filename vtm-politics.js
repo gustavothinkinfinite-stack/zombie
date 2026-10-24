@@ -56,14 +56,17 @@ window.VTM_POLITICS=(()=>{
   p.history=Array.isArray(p.history)?p.history.slice(0,70):[];
   p.serial=clamp(Math.floor(Number(p.serial)||0),0,99999);
   p.lastTick=clamp(Math.floor(Number(p.lastTick)||g.clock?.night||1),1,99999);
-  for(const id of Object.keys(PLAYERS)){
-   p.credits[id]=clamp(Math.floor(Number(p.credits[id])||0),0,3);
-   // Importar un servicio personal ya realizado en guardados previos una sola vez.
-   const quest=g.sideQuests?.[id];
-   if(quest?.status==="done"&&!p.earned["personal:"+id]){
-    p.earned["personal:"+id]=true;
-    if(quest.result?.success)p.credits[id]=clamp(p.credits[id]+1,0,3);
+  for(const id of Object.keys(PLAYERS))p.credits[id]=clamp(Math.floor(Number(p.credits[id])||0),0,3);
+  if(!p.legacyImported){
+   // Importar únicamente los encargos ya terminados ANTES de esta versión.
+   for(const id of Object.keys(PLAYERS)){
+    const quest=g.sideQuests?.[id];
+    if(quest?.status==="done"&&!p.earned["personal:"+id]){
+     p.earned["personal:"+id]=true;
+     if(quest.result?.success&&quest.reportCredible!==false)p.credits[id]=clamp(p.credits[id]+1,0,3);
+    }
    }
+   p.legacyImported=true;
   }
   g.politics=p;return p;
  }
@@ -104,6 +107,7 @@ window.VTM_POLITICS=(()=>{
  }
  function canEarn(g,id){
   const n=PLAYERS[id];if(!n)return "Sin encargo disponible";
+  if(!g.embraced)return "Los encargos políticos de la corte requieren el Abrazo";
   if(g.scene!=="venue"||g.venue!==n.place)return "Hablá con el personaje en su ubicación";
   if(trust(g,id)<n.rank)return "Tu reputación no permite solicitar el encargo";
   if(init(g).errands[id])return "Ya aceptaste este encargo";
@@ -125,7 +129,7 @@ window.VTM_POLITICS=(()=>{
  }
  function investigate(g,id,roll){
   const p=init(g),n=PLAYERS[id],task=p.errands[id];
-  if(!n||!task||task.status!=="active")return {error:"No tenés ese encargo"};
+  if(!n||!g.embraced||!task||task.status!=="active")return {error:"No tenés ese encargo"};
   if(g.scene!=="venue"||g.venue!==n.errand.target)return {error:"Debés investigar el lugar indicado"};
   if(task.attemptNight===g.clock.night)return {error:"Ya investigaste este asunto esta noche"};
   if(!roll||typeof roll.success!=="boolean"||!Array.isArray(roll.dice))return {error:"Tirada inválida"};
@@ -137,7 +141,7 @@ window.VTM_POLITICS=(()=>{
  }
  function report(g,id,choice){
   const p=init(g),n=PLAYERS[id],task=p.errands[id];
-  if(!n||task?.status!=="ready"||g.scene!=="venue"||g.venue!==n.place)return {error:"No hay un encargo listo para informar aquí"};
+  if(!n||!g.embraced||task?.status!=="ready"||g.scene!=="venue"||g.venue!==n.place)return {error:"No hay un encargo listo para informar aquí"};
   const due=activeDebt(g,id);
   if(!["credit","settle"].includes(choice))return {error:"Decisión inválida"};
   if(choice==="settle"&&!due)return {error:"No existe una deuda abierta con este personaje"};
@@ -158,6 +162,7 @@ window.VTM_POLITICS=(()=>{
  function availability(g,id,service,mode){
   const n=PLAYERS[id],s=SERVICES[service],p=init(g);
   if(!n||!s||!n.services.includes(service))return "Ese Vástago no puede prestarte este favor";
+  if(!g.embraced)return "Los favores vampíricos requieren el Abrazo";
   if(g.scene!=="venue"||g.venue!==n.place)return "Necesitás hablar con el personaje";
   if(trust(g,id)<Math.max(n.rank,s.trust))return "No existe confianza suficiente";
   if((g.factions?.[n.faction]||0)<=-30)return "La facción se niega a colaborar";
@@ -206,7 +211,7 @@ window.VTM_POLITICS=(()=>{
  }
  function settle(g,id){
   const p=init(g),due=activeDebt(g,id);
-  if(!due)return {error:"No hay ninguna deuda abierta"};
+  if(!due||!g.embraced)return {error:"No hay ninguna deuda abierta"};
   if(g.scene!=="venue"||g.venue!==PLAYERS[id].place)return {error:"Debés hablar con el acreedor"};
   if(p.credits[id]<1)return {error:"Necesitás un favor ganado para compensar esta deuda"};
   p.credits[id]--;due.status="paid";due.paidNight=g.clock.night;
