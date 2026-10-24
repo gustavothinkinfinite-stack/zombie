@@ -32,7 +32,7 @@ const key="cronicas-paris-ghoul-v1";
  try{
   await page.goto(base,{waitUntil:"load"});
   await check("La portada carga la Fase XVII",async()=>{
-   assert.match(await page.locator(".brand-version").innerText(),/FASE XVII/);
+   assert.match(await page.locator(".brand-version").innerText(),/FASE XVIII/);
    assert.match(await page.title(),/Crónicas de París/);
    assert.equal(errors.length,0,errors.join("\n"));
   });
@@ -134,7 +134,7 @@ const key="cronicas-paris-ghoul-v1";
   assert.equal(httpFailures.length,0,"Recursos no disponibles:\n"+httpFailures.join("\n"));
   fs.writeFileSync("browser-smoke-report.json",JSON.stringify(report("passed"),null,2)+"\n");
   await context.tracing.stop({path:"browser-smoke-trace.zip"});
-  console.log("PASS: Smoke test real Chromium — Crónicas de París Fase XVII");
+  console.log("PASS: Smoke test real Chromium — Crónicas de París Fase XVIII");
  }catch(e){
   checks.push({label:"Fallo observado",status:"failed",message:String(e)});
   try{await page.screenshot({path:"browser-smoke-failure.png",fullPage:true});}catch(_){}
