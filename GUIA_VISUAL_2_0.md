@@ -1,6 +1,6 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I y II más una primera entrega de Fase III incorporadas en \`main\` (23 de octubre de 2026).  
+**Estado:** Fases I–IV incorporadas progresivamente en \`main\` (23 de octubre de 2026).  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
@@ -86,6 +86,14 @@ Se ejecutaron pruebas con contextos Canvas simulados de las 21 combinaciones de 
 **Verificaciones automatizadas:** 18 rutas hacia puntos principales (puertas, Domitor, archivos, objetos, PNJ y salidas), ejecutadas con movimiento simulado a escala de fotogramas y margen de colisión, sin atascarse. La hoja SVG contiene 16 × 4 × 2 = 128 cuadros y 3544 rectángulos de dibujo. La compatibilidad de las escenas y el guardado se verificó anteriormente.
 
 **Pendiente:** arte de entorno ilustrado manualmente, más fotogramas por animación, personalización estética real del protagonista y profundidad de escenarios mediante colisiones con rutas físicas coherentes. El sistema actual sigue siendo un **prototipo**; el atlas es nuevo y editable, pero no constituye arte comercial definitivo.
+
+## Fase IV — Escenarios originales ilustrados
+
+Los ocho destinos de París disponen de nuevos fondos SVG independientes en `assets/escenarios/`: St. July, Elíseo, Passy, túneles, Bastilla, Saint-Denis, hemeroteca y comisaría. Los siete salones principales de los Domitores disponen de fondos específicos en `assets/residencias/`. Se diseñaron manteniendo el espacio de navegación central y los puntos de interacción existentes.
+
+El motor carga las imágenes en segundo plano y preserva el fondo Canvas procedimental como respaldo hasta que el SVG esté listo, o si la carga falla. Las luces animadas se adaptan al lugar cuando los FX están activos.
+
+Las imágenes son vectoriales originales y sustituibles; el mayor detalle artístico sigue siendo trabajo pendiente. Los despachos y habitaciones privadas no cuentan aún con fondos SVG propios.
 
 ## Próximos entregables de arte
 
