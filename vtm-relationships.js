@@ -8,7 +8,7 @@ window.VTM_RELATIONSHIPS=(()=>{
  const valid=n=>Number.isFinite(Number(n))?Number(n):0;
  const numericNight=game=>Math.max(1,Math.floor(valid(game?.clock?.night)||1));
  const places=()=>window.VTM_SHOPS?.byId||{};
- function defaultMemory(){return{trust:0,firstNight:0,lastNight:0,visits:0,decision:null,result:null,favor:0,aftermath:null,aftermathNight:0,seenNewsNight:0};}
+ function defaultMemory(){return{trust:0,firstNight:0,lastNight:0,visits:0,decision:null,decisionNight:0,result:null,favor:0,aftermath:null,aftermathNight:0,seenNewsNight:0};}
  function normalize(game){
   if(!game||typeof game!=="object")return null;
   const existing=game.shopMemory&&typeof game.shopMemory==="object"&&!Array.isArray(game.shopMemory)?game.shopMemory:{};
@@ -22,6 +22,7 @@ window.VTM_RELATIONSHIPS=(()=>{
      lastNight:Math.max(0,Math.floor(valid(row.lastNight))),
      visits:minmax(Math.floor(valid(row.visits)),0,1000),
      decision:["help","inquire","pressure"].includes(row.decision)?row.decision:null,
+     decisionNight:Math.max(0,Math.floor(valid(row.decisionNight))),
      result:["success","failure"].includes(row.result)?row.result:null,
      favor:row.favor===1?1:0,
      aftermath:["reference","followup","repair"].includes(row.aftermath)?row.aftermath:null,
@@ -36,6 +37,7 @@ window.VTM_RELATIONSHIPS=(()=>{
    // su memoria, pero no se vuelven a abonar reputación ni favores previos.
    const row=out[id]||defaultMemory();
    row.decision=shopState.decision;
+   row.decisionNight=numericNight(game);
    row.trust=shopState.decision==="help"?1:shopState.decision==="pressure"?-3:0;
    row.result=shopState.decision==="inquire"
        ?(game.localClues?.includes(id)?"success":"failure"):"success";
@@ -84,7 +86,7 @@ window.VTM_RELATIONSHIPS=(()=>{
  function decision(game,shop,choice,success=true){
   const row=memory(game,shop);
   if(!row||row.decision||!["help","inquire","pressure"].includes(choice))return null;
-  row.decision=choice;row.result=success?"success":"failure";
+  row.decision=choice;row.decisionNight=numericNight(game);row.result=success?"success":"failure";
   row.trust=minmax(row.trust+(choice==="help"?2:choice==="pressure"?-3:success?1:-1),-3,3);
   row.favor=choice==="help"?1:0;
   if(row.firstNight===0)row.firstNight=numericNight(game);
@@ -95,7 +97,7 @@ window.VTM_RELATIONSHIPS=(()=>{
  function options(game,shop){
   const m=memory(game,shop);if(!m||!m.decision||m.aftermath)return[];
   const n=numericNight(game);
-  if(n<=m.lastNight)return [];
+  if(n<=m.decisionNight)return [];
   if(m.decision==="help"&&m.favor===1)return[{id:"reference",label:"Cobrar el favor ofrecido en la noche anterior"}];
   if(m.decision==="inquire")return[{id:"followup",label:"Retomar la conversación de otra noche"}];
   if(m.decision==="pressure")return[{id:"repair",label:"Intentar reparar el daño causado"}];
@@ -123,7 +125,7 @@ window.VTM_RELATIONSHIPS=(()=>{
     :m.decision==="pressure"?"No ha olvidado tus amenazas."
     :m.decision==="inquire"?"Recuerda las preguntas de tu última visita."
     :"Todavía no sabe qué esperar de vos.";
-  const newNight=m.decision&&numericNight(game)>m.lastNight;
+  const newNight=m.decision&&numericNight(game)>m.decisionNight;
   return {label,trust,previous,context:pressure+help,
     differentNight:newNight,news:nightlyLine(game,shop),
     couldFollowup:options(game,shop).length>0,
