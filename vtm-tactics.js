@@ -142,7 +142,7 @@ window.VTM_TACTICS=(()=>{
   if(g.combat.active)return {error:"Ya participás en un combate."};
   if(g.combat.records[place]==="won")return {error:"Ya neutralizaste la amenaza de este lugar."};
   if(g.mechanics.health<=0)return {error:"Estás incapacitado; necesitás recuperarte."};
-  g.combat.active={place,round:1,enemy:{name:e.name,health:e.health,max:e.health,dex:e.dex,wits:e.wits,str:e.str,stamina:e.stamina,skill:e.skill,damage:e.damage,willpower:e.willpower,armor:e.armor,ammo:e.ammo,style:e.style},history:[],ended:false};
+  g.combat.active={place,round:1,enemy:{name:e.name,health:e.health,max:e.health,dex:e.dex,wits:e.wits,str:e.str,stamina:e.stamina,skill:e.skill,damage:e.damage,willpower:e.willpower,armor:e.armor,ammo:e.ammo,style:e.style},history:[],ended:false,tactical:ADV?{distance:1}:undefined};
   ADV?.init(g);
   return {started:true,enemy:e.name};
  }
