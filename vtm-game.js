@@ -2102,6 +2102,12 @@
  }
  function drawWorld(){
   if(!game)return;
+  // Reparar la escala del Canvas en CADA fotograma. Otros módulos o
+  // modificaciones del tamaño pueden reiniciar el transform del contexto.
+  // Mantener todas las coordenadas lógicas en 480x300 sin tocar las partidas.
+  if(typeof g.setTransform==="function"){
+   g.setTransform(canvas.width/480,0,0,canvas.height/300,0,0);
+  }
   canvas.classList.toggle("map-illustrated",game.scene==="paris");
   g.imageSmoothingEnabled=game.scene==="paris";
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="sidevenue")drawShop();else if(game.scene==="district")drawDistrict();else if(CI?.byId(game.scene))drawCaseInterior();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
