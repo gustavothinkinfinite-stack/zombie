@@ -6,6 +6,7 @@ window.VTM_TACTICS=(()=>{
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const EQ=window.VTM_EQUIPMENT;
  const ENEMIES=Object.freeze({
+  bapthiste:{name:"Bapthiste, Brujah rebelde",health:9,dex:4,wits:4,str:4,stamina:4,skill:3,willpower:7,armor:0,ammo:0,style:"agresivo",damage:"contundente",reward:3},
   saintdenis:{name:"Matón de Saint-Denis",health:6,dex:3,wits:2,str:3,stamina:2,skill:2,willpower:2,armor:0,ammo:0,style:"agresivo",damage:"contundente",reward:2},
   bastilla:{name:"Provocador de Bastilla",health:6,dex:3,wits:3,str:2,stamina:2,skill:2,willpower:3,armor:0,ammo:0,style:"evasivo",damage:"contundente",reward:2},
   passy:{name:"Custodio armado de Passy",health:7,dex:3,wits:2,str:2,stamina:3,skill:3,willpower:4,armor:1,ammo:4,style:"armado",damage:"letal",reward:3}
