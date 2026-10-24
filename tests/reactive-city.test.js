@@ -108,7 +108,7 @@ test("Integración con el motor anterior y pruebas del proyecto",()=>{
  assert.ok(html.indexOf("vtm-reactive-city.js?")>0);
  assert.ok(html.indexOf("vtm-reactive-city.js?")<html.indexOf("vtm-game.js?"));
  assert.ok(html.includes("FASE XVI"));
- for(const needle of ["REACT.init(game)","REACT.tick(game","REACT.interact(game)","REACT.shopChoices(game,shop)","REACT.draw(g,game","REACT.menu","REACT.summary(game)"]){
+ for(const needle of ["REACT.init(game)","REACT.tick(game","REACT?.interact(game)","REACT.shopChoices(game,shop)","REACT.draw(g,game","REACT.menu","REACT.summary(game)"]){
   assert.ok(main.includes(needle),needle);
  }
  assert.ok(main.includes('SAVE_KEY="cronicas-paris-ghoul-v1"'));
