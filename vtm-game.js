@@ -248,8 +248,9 @@
   delete clone.free;return clone;
  }
  function save(){
-  if(!game)return;
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));}catch(e){notice("No se pudo guardar en este navegador.");}
+  if(!game)return false;
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));return true;}
+  catch(e){notice("No se pudo guardar en este navegador.");return false;}
  }
  function load(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&s.version===1&&s.character&&D.clans[s.character.clan])return s;}catch(e){}return null;}
  function log(message){
@@ -1977,12 +1978,12 @@
   $("appearanceApply").addEventListener("click",()=>{
     if(!game||!pendingLook)return;
     game.character.appearance=V.normalize(pendingLook.appearance);
-    save();closeAppearance();notice("Apariencia guardada.");
+    const saved=save();closeAppearance();if(saved)notice("Apariencia guardada.");
   });
   $("sheetClose").addEventListener("click",()=>$("sheetModal").classList.add("hidden"));
   $("journalBtn").addEventListener("click",journalModal);
   $("journalClose").addEventListener("click",()=>$("journalModal").classList.add("hidden"));
-  $("manualSaveBtn").addEventListener("click",()=>{save();notice("Partida guardada.");});
+  $("manualSaveBtn").addEventListener("click",()=>{if(save())notice("Partida guardada.");});
   $("visualEffectsBtn").addEventListener("click",()=>{
     effectsEnabled=!effectsEnabled;
     try{localStorage.setItem("cronicas-paris-visual-fx",effectsEnabled?"1":"0");}catch(e){}
