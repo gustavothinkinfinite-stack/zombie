@@ -306,19 +306,34 @@ window.VTM_REACTIVE_DISTRICTS=(()=>{
  }
  function interact(g){const point=near(g);if(!point)return false;scene(g,point.id);return true;}
  function shopChoices(g,shop){
-  if(!shop||!byId[shop.district])return[];
-  const s=init(g),def=byId[shop.district],c=s.cases[def.id];
+  if(!shop)return[];
+  const s=init(g),def=byId[shop.district]||null,c=def?s.cases[def.id]:null;
   const notices=s.rumors.filter(r=>r.district===shop.district);
   if(!notices.length)return[];
-  const last=notices[notices.length-1];
-  const opts=[{label:"Consultar rumores: "+def.title,action:()=>{
-   if(!c.flags["rumor-"+shop.id]){c.flags["rumor-"+shop.id]=true;api?.save?.();}
-   result("Rumores de "+shop.name,last.text+"\n\nSon versiones difundidas por los vecinos; contrastarlas requiere testigos o pruebas.");
-  }}];
-  if(def.shops.includes(shop.id)&&!c.outcome&&!c.flags.shop&&c.attempts.shop!==g.clock.night)
-   opts.push({label:"Contrastar registros del comercio · Carisma + Etiqueta (dif. 7)",action:()=>test(g,def,"shop","Carisma","Etiqueta",7,
+  const local=notices.filter(r=>r.origin===shop.district);
+  const foreign=notices.filter(r=>r.origin!==shop.district);
+  const opts=[];
+  if(def&&local.length){
+   const last=local[local.length-1];
+   opts.push({label:"Consultar rumores: "+def.title,action:()=>{
+    if(!c.flags["rumor-"+shop.id]){c.flags["rumor-"+shop.id]=true;api?.save?.();}
+    result("Rumores de "+shop.name,last.text+"\n\nSon versiones difundidas por los vecinos; contrastarlas requiere testigos o pruebas.");
+   }});
+   if(def.shops.includes(shop.id)&&!c.outcome&&!c.flags.shop&&c.attempts.shop!==g.clock.night){
+    opts.push({label:"Contrastar registros del comercio · Carisma + Etiqueta (dif. 7)",action:()=>test(g,def,"shop","Carisma","Etiqueta",7,
      "El encargado aporta una referencia comprobable que ayuda a reconstruir el incidente.",
      "El comerciante no comparte documentación sin mayores garantías.",{neighbors:1,authority:1})});
+   }
+  }
+  if(foreign.length){
+   const last=foreign[foreign.length-1],source=byId[last.origin];
+   opts.push({label:"Rumores procedentes de "+(source?.name||"otro barrio"),action:()=>{
+    const key="external:"+last.id;
+    if(!s.heard)s.heard={};
+    if(!s.heard[key]){s.heard[key]=true;api?.save?.();}
+    result("Comentarios que llegan a "+shop.name,last.text+"\n\nOrigen del rumor: "+(source?.name||"otro barrio")+". No constituye una prueba por sí mismo.");
+   }});
+  }
   return opts;
  }
  function draw(c,g,time=0){
