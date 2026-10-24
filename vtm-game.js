@@ -513,6 +513,9 @@
  }
  function hud(){
   if(!game)return;
+  // La salida flotante sólo existe visualmente en barrios; se esconde en
+  // interiores y en el mapa general. Nunca mueve ni guarda al personaje.
+  $("stageMapExit").classList.toggle("hidden",game.scene!=="district");
   // Detectar sospechas nuevas incluso cuando otro subsistema modifica directamente la exposición.
   const inquiry=COURT.exposureReview(game);
   if(inquiry)log("La corte abre una comprobación preliminar por rumores sobre la Mascarada.");
@@ -2402,6 +2405,10 @@
   $("dialogClose").addEventListener("click",closeDialog);
   $("characterBtn").addEventListener("click",sheetModal);
   $("districtMapBtn").addEventListener("click",()=>{if(game?.scene==="district")leaveDistrict();});
+  $("stageMapExit").addEventListener("click",()=>{
+   if(game?.scene!=="district"||overlayOpen()||game.combat?.active)return;
+   leaveDistrict(); // La misma salida ya existente: tiempo, guardado y escena.
+  });
   $("restNightBtn").addEventListener("click",restUntilTomorrow);
   $("appearanceBtn").addEventListener("click",openAppearance);
   $("appearanceCancel").addEventListener("click",closeAppearance);
