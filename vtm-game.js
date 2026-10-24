@@ -346,6 +346,19 @@
    }
    hud();save();
  }
+ function restUntilTomorrow(){
+   if(!game||!["house","study","quarters"].includes(game.scene)){notice("Regresá a tu refugio para descansar.");return;}
+   askMenu("Descansar hasta la próxima noche",
+     "Podés retirarte al refugio y dejar pasar las horas de luz. Los personajes de París continuarán sus actividades. Algunas relaciones podrán cambiar durante tu ausencia.",
+     [{label:"Descansar y avanzar una noche",action:()=>{
+       game.clock.night++;game.clock.minutes=1215;
+       M.nextNight(game);processContactNight();
+       log("Descansaste hasta el inicio de la noche "+game.clock.night+".");
+       hud();save();
+       notice("Comienza una nueva noche en París.");
+     }},
+      {label:"Todavía no",action:()=>{}}],"PASO DEL TIEMPO");
+ }
  function npcIsPresent(npcId){
    const schedule=A.schedules[npcId];if(!schedule)return true;
    const hour=game.clock.minutes/60;
@@ -414,6 +427,7 @@
   $("questTitle").textContent=game.activeQuest?questObj(game.activeQuest).title:"Sin encargo activo";
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
+  if(H)$("contactReadyCount").textContent=H.summary(game).ready+"";
   if(K){
     $("shopProgress").textContent=Object.keys(game.localPlaces||{}).filter(id=>K.byId[id]).length+" / "+K.definitions.length;
     $("shopClueCount").textContent=(game.localClues||[]).length+" / "+K.definitions.length;
@@ -422,6 +436,7 @@
     $("districtProgress").textContent=game.districtVisited.length+" / "+T.defs.length;
     $("districtNotesCount").textContent=Object.keys(game.districtNotes).filter(k=>game.districtNotes[k]).length+" / "+T.defs.reduce((n,d)=>n+d.details.length,0);
     $("districtMapBtn").disabled=game.scene!=="district";
+    $("restNightBtn").disabled=!["house","study","quarters"].includes(game.scene);
     $("districtHint").textContent=game.scene==="district"
      ?"Estás en "+T.byId[game.district].name+". Hay dos locales secundarios además del lugar principal, rincones y accesos a otros barrios."
      :"En el mapa general, elegí explorar las calles para descubrir tiendas y contactos.";
@@ -693,7 +708,8 @@
       [{label:"Continuar",action:()=>{}}],"CONSECUENCIAS DEL BARRIO");
    }else if(choice==="inquire"){
      const introduction=!!game.contactIntroductions?.[shop.id];
-     const roll=dicePool("Percepción","Investigación",introduction?6:7);
+     const lead=(game.contactLeads||[]).some(item=>item.endsWith("->"+shop.id));
+     const roll=dicePool("Percepción","Investigación",introduction||lead?6:7);
      const success=!!roll.success;
      H?.remember(game,shop,choice,success);
      if(success){
@@ -751,7 +767,7 @@
           (game.contactIntroductions?.[shop.id]?"\n\nLlegaste con una presentación de otro contacto del distrito. Eso puede facilitar investigaciones aquí.":""),
         [{label:"Despedirte",action:()=>{}}],"CONTACTO · "+mood.toUpperCase());return;
      }
-     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+(game.contactIntroductions?.[shop.id]?"\n\nTraés una presentación personal: tu próxima investigación será ligeramente más sencilla.":""),
+     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+(game.contactIntroductions?.[shop.id]?"\n\nTraés una presentación personal: tu próxima investigación será ligeramente más sencilla.":(game.contactLeads||[]).some(item=>item.endsWith("->"+shop.id))?"\n\nConocés una referencia comercial que puede facilitar tus preguntas.":""),
        [{label:"Ofrecer ayuda y ganar confianza",action:()=>localAction(shop,"help")},
         {label:"Preguntar con discreción (Percepción + Investigación)",action:()=>localAction(shop,"inquire")},
         {label:"Presionar al encargado (riesgo para la Mascarada)",action:()=>localAction(shop,"pressure")},
@@ -1782,6 +1798,19 @@
     paragraph.textContent="Establecimientos secundarios: "+places.length+"/"+K.definitions.length+" visitados · "+places.filter(p=>p.decision).length+" decisiones tomadas · "+(game.localClues||[]).length+" informaciones obtenidas.";
     root.appendChild(paragraph);
   }
+  if(H){
+    const summary=H.summary(game);
+    const p=document.createElement("p");
+    p.textContent="Red secundaria: "+summary.known+" contactos conocidos · "+summary.ready+" novedades de noches anteriores · "+summary.introductions+" presentaciones · "+summary.leads+" referencias comerciales.";
+    root.appendChild(p);
+    const outstanding=Object.entries(game.contactMemory||{}).filter(([id,e])=>e.followup==="ready"&&K?.byId[id])
+      .map(([id])=>K.byId[id].keeper+" ("+K.byId[id].name+")").slice(0,5);
+    if(outstanding.length){
+      const row=document.createElement("p");
+      row.textContent="Contactos que esperan una conversación: "+outstanding.join("; ")+".";
+      root.appendChild(row);
+    }
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
@@ -1808,6 +1837,7 @@
   $("dialogClose").addEventListener("click",closeDialog);
   $("characterBtn").addEventListener("click",sheetModal);
   $("districtMapBtn").addEventListener("click",()=>{if(game?.scene==="district")leaveDistrict();});
+  $("restNightBtn").addEventListener("click",restUntilTomorrow);
   $("appearanceBtn").addEventListener("click",openAppearance);
   $("appearanceCancel").addEventListener("click",closeAppearance);
   $("appearanceApply").addEventListener("click",()=>{
