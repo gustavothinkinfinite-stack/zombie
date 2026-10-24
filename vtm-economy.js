@@ -70,6 +70,7 @@ window.VTM_ECONOMY=(()=>{
   if(!stockFor(shop).includes(id))return "El establecimiento no ofrece esto";
   if(!PRICE[id])return "Artículo desconocido";
   if(EQ.ITEMS[id]&&EQ.ITEMS[id].type!=="supply"&&gear.owned.includes(id))return "Ya poseés este objeto";
+  if(id==="rumor"&&game.localClues?.includes(shop.id))return "Ya conocés esta información";
   if(id==="botiquin"&&gear.kits>=5)return "Máximo de botiquines";
   if(id==="municion"&&gear.ammo>=90)return "Máximo de munición";
   if(id==="municion"&&!(gear.owned.includes("pistola")||game.character.backgrounds?.Aliados>=2))
