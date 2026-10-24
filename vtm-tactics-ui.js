@@ -79,7 +79,7 @@ window.VTM_TACTICS_UI=(()=>{
     for(const q of Object.values(game.sideQuests||{})){
      if(q.status==="active"&&window.VTM_ARCS.personal[q.id]?.target===result.place)q.prepared=true;
     }
-    if(move!=="golpe"||game.mechanics.claws) {
+    if(move==="arma"||move==="disparo"||game.character.humanity<=3) {
       const moral=S.moralTest(game,1);
       extra+="\nConciencia ["+moral.roll.dice.join(", ")+"]: "+(moral.degeneration?
         "la violencia deterioró tu Humanidad.":"evitaste perder Humanidad.");
@@ -88,7 +88,7 @@ window.VTM_TACTICS_UI=(()=>{
    }
    if(result.defeat){
     // Rescate contextual: evita un guardado injugable, pero deja coste.
-    game.mechanics.health=Math.max(2,game.mechanics.health);
+    E.recover(game,2,"contundente");
     bridge.exposure(12,"El altercado provocó intervención de testigos.");
     bridge.faction("camarilla",-4,"El desorden llegó a oídos de la corte.");
     extra+="\nTe auxiliaron tras quedar incapacitado; recuperás dos niveles de Salud, pero aumenta la exposición.";
@@ -123,7 +123,7 @@ window.VTM_TACTICS_UI=(()=>{
  function powersOf(name){
   const game=g(),available=E.catalog(game,name);
   const options=available.map((p,i)=>({
-    label:"Nivel "+p.level+" · "+p.label+" · "+p.cost+" Sangre"+(p.used?" · usado":"")+
+    label:"Nivel "+p.level+" · "+p.label+(p.passive?" · pasivo siempre activo":" · "+p.cost+" Sangre")+(p.used&&!p.passive?" · usado":"")+
       (!p.available?" · sin Sangre":""),
     disabled:p.used||!p.available,action:()=>cast(name,i)
   }));
