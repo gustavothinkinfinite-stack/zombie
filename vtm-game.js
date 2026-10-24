@@ -1509,7 +1509,11 @@
   if(spot.id==="exit"){leaveCaseInterior();return;}
   if(game.scene==="case-apartment"&&spot.id==="desk"&&!ELI.canAttempt(game,"apartment")){ELI.investigate("apartment");return;}
   if(game.scene==="case-garage"&&spot.id==="ledger"&&!ELI.canAttempt(game,"garage")){ELI.investigate("garage");return;}
-  if(game.scene==="case-hideout"&&spot.id==="bapthiste"){caseBapthisteEncounter();return;}
+  if(game.scene==="case-hideout"&&spot.id==="bapthiste"){
+   if(game.combat?.records?.bapthiste==="won")caseBapthisteEncounter();
+   else notice("Bapthiste se está moviendo. Acercate a él para hablar.");
+   return;
+  }
   const clues={
     desk:"En la agenda aparecen anotaciones sobre contactos insistentes y un recibo de transporte. Ya contrastaste este lugar.",
     phone:"Los mensajes indican que Elizabeth quería que una persona dejara de buscarla. Su identidad exige corroboración.",
