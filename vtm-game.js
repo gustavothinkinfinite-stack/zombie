@@ -400,6 +400,14 @@
   $("questTitle").textContent=game.activeQuest?questObj(game.activeQuest).title:"Sin encargo activo";
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
+  if(T){
+    $("districtProgress").textContent=game.districtVisited.length+" / "+T.defs.length;
+    $("districtNotesCount").textContent=Object.keys(game.districtNotes).filter(k=>game.districtNotes[k]).length+" / "+T.defs.reduce((n,d)=>n+d.details.length,0);
+    $("districtMapBtn").disabled=game.scene!=="district";
+    $("districtHint").textContent=game.scene==="district"
+     ?"Estás en "+T.byId[game.district].name+". Explorá las puertas, las calles y los accesos a otros barrios."
+     :"En el mapa general, elegí explorar las calles al llegar a un destino.";
+  }
   const houseScene=["house","study","quarters"].includes(game.scene);
   $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="district"?"BARRIO · "+(T?.byId[game.district]?.name||"PARÍS").toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
   $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":game.scene==="district"?"Explorando "+(T?.byId[game.district]?.name||"París"):"Las calles después del anochecer";
@@ -1602,6 +1610,16 @@
     const row=document.createElement("p");row.textContent="Encargo personal · "+arc.title+": "+(quest.status==="done"?"Finalizado":quest.status==="ready"?"Volvé con "+N.byLocation[arc.origin].name:arc.objective)+".";
     root.appendChild(row);
   }
+  if(T){
+    const progress=document.createElement("p");
+    progress.textContent="Barrios explorados: "+game.districtVisited.length+"/"+T.defs.length+" · Rincones descubiertos: "+Object.keys(game.districtNotes).filter(k=>game.districtNotes[k]).length+"/"+T.defs.reduce((a,b)=>a+b.details.length,0)+".";
+    root.appendChild(progress);
+    if(game.districtVisited.length){
+      const visited=document.createElement("p");
+      visited.textContent="Recorriste: "+game.districtVisited.map(id=>T.byId[id]?.name||id).join("; ")+".";
+      root.appendChild(visited);
+    }
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
@@ -1626,6 +1644,7 @@
   $("nextStep").addEventListener("click",()=>{if(validation(step))return;if(step===5)startStory();else{step++;renderCreator();}});
   $("dialogClose").addEventListener("click",closeDialog);
   $("characterBtn").addEventListener("click",sheetModal);
+  $("districtMapBtn").addEventListener("click",()=>{if(game?.scene==="district")leaveDistrict();});
   $("appearanceBtn").addEventListener("click",openAppearance);
   $("appearanceCancel").addEventListener("click",closeAppearance);
   $("appearanceApply").addEventListener("click",()=>{
