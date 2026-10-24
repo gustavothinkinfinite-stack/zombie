@@ -903,8 +903,10 @@
  function shopInteract(){
    const shop=K?.byId[game.sidevenue];if(!shop)return;
    const target=K.nearest(game);
-   if(!target){notice("Acercate al mostrador, al encargado, a la estantería o a la salida.");return;}
-   if(target.type==="exit"){exitShop();return;}
+   if(!target&&!CITY?.nearShopVisitor(game,visualTime)){notice("Acercate al mostrador, a los clientes o a la salida.");return;}
+   if(target?.type==="exit"&&target.d<27){exitShop();return;}
+   if(CITY?.interactShop(game,visualTime))return;
+   if(target?.type==="exit"){exitShop();return;}
    const state=shopStatus(shop);
    const newsChoice=()=>({
       label:"Escuchar qué se comenta esta noche",action:()=>{
@@ -959,7 +961,7 @@
      }
      const localContext=H?.districtContext(game,shop).label||"";
      const difficulty=H?.inquiryDifficulty(game,shop)||7;
-     askMenu(shop.keeper,shop.description+"\n\n"+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+
+     askMenu(shop.keeper,shop.description+"\n\n"+(CITY?CITY.shopReport(game,shop)+"\n\n":"")+shop.keeper+" atiende tras el mostrador. Podés ofrecer ayuda, investigar discretamente o intentar obtener respuestas bajo presión."+
        (localContext?"\n\n"+localContext:"")+
        (game.contactIntroductions?.[shop.id]?"\n\nTraés una presentación personal.":(game.contactLeads||[]).some(item=>item.endsWith("->"+shop.id))?"\n\nConocés una referencia comercial.":""),
        [{label:"Ofrecer ayuda y ganar confianza",action:()=>localAction(shop,"help")},
@@ -2003,6 +2005,9 @@
   }
   if(room==="sidevenue"){
     const spot=K?.nearest(game);
+    if(spot?.type==="exit"&&spot.d<27)return "E · "+spot.name;
+    const visitor=CITY?.nearShopVisitor(game,visualTime);
+    if(visitor)return "E · Hablar con cliente nocturno";
     return spot?"E · "+spot.name:"";
   }
   if(room==="district"){
