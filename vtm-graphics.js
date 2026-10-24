@@ -96,21 +96,167 @@ function lamp(c,x,y){rect(c,x-1,y-17,3,21,"#786e74");rect(c,x-6,y-21,13,6,"#ebbc
 function windowPane(c,x,y,w,h){rect(c,x-3,y-4,w+6,h+8,"#211c29");rect(c,x,y,w,h,"#444357");rect(c,x+3,y+3,w-6,h-6,"#293447");rect(c,x+w/2-1,y,3,h,"#a38a82");rect(c,x,y+h/2,w,3,"#a38a82");rect(c,x-6,y+h,w+12,4,"#79616a");}
 function door(c,x,y,label){rect(c,x-18,y-29,36,29,"#17131e");rect(c,x-14,y-26,28,26,"#795761");rect(c,x-9,y-22,18,20,"#362533");rect(c,x+7,y-12,2,3,"#ebc89c");text(c,label,x,y-34,8);}
 function shelves(c,x,y,w,h,color){rect(c,x,y,w,h,color);rect(c,x+5,y+6,w-10,h-12,"#25202a");for(let k=0;k<3;k++){const yy=y+9+k*21;for(let xx=x+9;xx<x+w-10;xx+=9)rect(c,xx,yy,6,15,["#986f6a","#78788d","#b29379","#707d70"][Math.floor(noise(xx,yy)*4)]);rect(c,x+4,yy+16,w-8,3,color);}}
-function cityBackground(c){
- cobbles(c,"#343643",5);
- for(let y=0;y<300;y+=38)for(let x=0;x<480;x+=53){
-   const v=noise(x,y,12),roof=["#413b49","#51434a","#4a404d","#343747"][Math.floor(v*4)];
-   rect(c,x+1,y+1,48,35,"#151923");rect(c,x+3,y+4,44,28,roof);rect(c,x+4,y+5,43,4,"#74616b");
-   rect(c,x+7,y+11,36,17,"#363440");
-   for(let j=0;j<4;j++){rect(c,x+9+j*8,y+14,5,10,noise(x+j,y,9)>.46?"#dab18a":"#2a303d");rect(c,x+10+j*8,y+16,3,3,"#374052");}
-   if(v>.7){rect(c,x+18,y-2,9,8,"#695b60");rect(c,x+20,y-4,5,3,"#27262e");}
+/* París nocturno v3: atlas urbano procedural en escala 480x300.
+   Fondo puramente cosmético. Los centros de los 8 destinos y los controles
+   no se recalculan: los jugadores conservan las mismas coordenadas. */
+function buildingBlock(c,x,y,i,j){
+ const n=noise(i,j,43),east=x>315,industrial=y>204,west=x<173;
+ const palette=industrial?["#393843","#45404b","#4d4047","#363b44"]:
+  east?["#57505d","#514553","#4b485b","#62515a"]:
+  west?["#51444e","#464251","#5a4850","#494752"]:
+  ["#463c4a","#51424d","#493f52","#5a434d"];
+ const roof=palette[Math.min(3,Math.floor(n*4))];
+ const w=47+Math.floor(noise(i,j,17)*9),h=31+Math.floor(noise(i,j,19)*8);
+ rect(c,x+2,y+5,w+2,h+2,"#131721");
+ rect(c,x+4,y+1,w-2,h+1,"#7f70752b");
+ rect(c,x+5,y+3,w-4,h-2,roof);
+ rect(c,x+8,y+7,w-10,h-9,"#302e3d");
+ // Perspectiva de tejados mansarda, ligeramente inclinados en ambas laderas.
+ rect(c,x+7,y+4,w-8,3,"#867176");
+ rect(c,x+10,y+10,w-16,h-17,roof);
+ rect(c,x+9,y+h-6,w-13,2,"#201f2e");
+ if(n>.36){
+  for(let k=0;k<3;k++){
+   const wx=x+13+k*12,lit=noise(wx,j,54)>.57;
+   rect(c,wx-1,y+12,9,12,"#171e2c");
+   rect(c,wx,y+13,7,9,lit?"#c6a181":"#3b4354");
+   rect(c,wx+3,y+13,1,9,"#292d3d");
+   rect(c,wx,y+17,7,1,"#62555c");
+   if(lit)rect(c,wx+1,y+14,2,2,"#f0d3a1");
+  }
+ }else{
+  // Taller, almacén o pequeño patio interior.
+  rect(c,x+15,y+12,w-28,h-20,"#2a333c");
+  rect(c,x+17,y+14,w-32,h-24,industrial?"#526169":"#566259");
+  rect(c,x+20,y+17,5,5,"#2b343d");
+  if(noise(i,j,62)>.5)rect(c,x+23,y+18,8,3,"#a49c91");
  }
- for(let y=71;y<300;y+=72){rect(c,0,y,480,18,"#2d313e");rect(c,0,y,480,2,"#8d8590");rect(c,0,y+16,480,2,"#76717d");for(let x=0;x<480;x+=28)rect(c,x+6,y+9,13,2,"#c2b19e");}
- for(let x=108;x<480;x+=118){rect(c,x,0,21,300,"#2c303d");rect(c,x,0,2,300,"#837b80");rect(c,x+19,0,2,300,"#837b80");for(let y=0;y<300;y+=36)rect(c,x+10,y+7,2,17,"#b5a494");}
- for(let x=0;x<480;x+=5){const y=158+Math.sin(x/80)*25;rect(c,x,y,6,26,"#2b3f54");rect(c,x+1,y+10,4,2,"#69879a");rect(c,x+2,y+20,3,1,"#b8a18b");}
- for(const x of [105,224,345]){const y=158+Math.sin(x/80)*25;rect(c,x,y-7,24,40,"#777179");rect(c,x+3,y-4,18,34,"#a09790");rect(c,x+6,y+4,12,2,"#d0b499");}
- for(let x=25;x<480;x+=82)for(const y of [60,226]){lamp(c,x,y);if(noise(x,y)>.4){rect(c,x+16,y-7,20,10,"#426452");rect(c,x+20,y-13,12,18,"#486e59");rect(c,x+24,y+3,3,9,"#695751");}}
- for(const [x,y,col] of [[139,76,"#59697a"],[243,220,"#704e60"],[362,146,"#63726e"]]){rect(c,x,y,29,14,"#171c27");rect(c,x+2,y+2,24,10,col);rect(c,x+8,y+3,12,6,"#293848");rect(c,x+4,y+12,5,2,"#e6a088");}
+ if(n>.73){
+  rect(c,x+w-17,y+1,9,10,"#76666a");
+  rect(c,x+w-15,y-2,5,4,"#21212a");
+  rect(c,x+w-12,y+3,1,4,"#c2a294");
+ }
+ if(n<.23){rect(c,x+8,y+6,2,h-12,"#9d8280");rect(c,x+w-3,y+7,2,h-13,"#302b35");}
+ if(industrial)for(let k=0;k<3;k++)rect(c,x+13+k*12,y+h-11,6,3,"#70818d");
+}
+function streetTree(c,x,y,r=7){
+ rect(c,x+1,y+4,2,6,"#625753");
+ rect(c,x-r,y-r,r*2+2,r*2,"#15282a");
+ rect(c,x-r+2,y-r+2,r*2-2,r*2-3,"#305047");
+ rect(c,x-2,y-r+2,r,4,"#527663");
+ rect(c,x+r-4,y+1,3,2,"#71917b");
+}
+function streetLamp(c,x,y){
+ rect(c,x-1,y-8,2,10,"#827c7d");
+ rect(c,x-4,y-10,8,3,"#e8c28f");
+ rect(c,x-2,y-12,4,2,"#ffe4b1");
+ glow(c,x,y-7,15,"229,179,119",.13);
+ rect(c,x-5,y+3,10,1,"#c09b7750");
+}
+function boulevard(c,y,seed){
+ rect(c,0,y-4,480,4,"#8b8383");
+ rect(c,0,y,480,18,"#2d323f");
+ rect(c,0,y+18,480,3,"#847b7e");
+ rect(c,0,y+21,480,3,"#53525d");
+ for(let x=0;x<480;x+=29){
+  rect(c,x+7,y+9,14,1,"#afa999");
+  if(noise(x,y,seed)>.55)rect(c,x+6,y+15,13,1,"#889aa349");
+ }
+ for(let x=12;x<480;x+=73){
+  rect(c,x,y-3,12,1,"#b3a097");
+  if(noise(x,y,91)>.38)streetLamp(c,x,y-2);
+ }
+ for(const x of [106,220,334,439]){
+  for(let n=0;n<3;n++)rect(c,x-6+n*6,y+1,3,16,"#c4baaa80");
+ }
+}
+function stoneBridge(c,x,y){
+ rect(c,x-11,y-6,28,48,"#201e2a");
+ rect(c,x-9,y-7,24,47,"#b0a097");
+ rect(c,x-7,y-7,20,45,"#77717d");
+ rect(c,x-7,y-5,20,2,"#ded1b1");
+ rect(c,x-7,y+37,20,2,"#d0c0ac");
+ for(let yy=y+2;yy<y+37;yy+=11){rect(c,x+1,yy,3,6,"#c4b6a8");}
+ for(const xx of [x-9,x+14]){
+  rect(c,xx,y-5,2,44,"#ded0c2");
+  for(let yy=y;yy<y+35;yy+=8)rect(c,xx,yy,2,3,"#4b4149");
+ }
+}
+function riverside(c){
+ // Sena sinuoso con orillas, piedras húmedas, reflejos y tres puentes.
+ for(let x=0;x<480;x+=3){
+  const wave=Math.round(185+Math.sin(x/70)*7);
+  rect(c,x,wave-5,3,4,"#aaa09a");
+  rect(c,x,wave-1,3,32,"#172c40");
+  rect(c,x,wave+4,3,21,"#254459");
+  rect(c,x,wave+31,3,3,"#a59b95");
+  if(noise(x,Math.floor(wave),81)>.45){
+   rect(c,x,wave+8,2,1,"#7792a4");
+   rect(c,x+1,wave+20,2,1,"#b2a390");
+  }
+  if(noise(x,31,4)>.86)rect(c,x+2,wave+13,1,6,"#92a8ad");
+ }
+ for(const x of [104,226,347]){
+  const y=Math.round(185+Math.sin(x/70)*7);
+  stoneBridge(c,x,y);
+ }
+}
+function cityBackground(c){
+ // Barrios: norte histórico, tejido bohemio occidental, residencias de
+ // Passy al este y edificios industriales al sur.
+ rect(c,0,0,W,H,"#242833");
+ for(let j=0,y=0;y<300;j++,y+=45){
+  for(let i=0,x=0;x<480;i++,x+=60){
+   const garden=noise(i,j,63)>.86&&j!==0;
+   if(garden){
+    rect(c,x+3,y+4,54,36,"#18282c");
+    rect(c,x+5,y+6,50,33,"#29423d");
+    rect(c,x+5,y+6,50,2,"#758477");
+    for(let n=0;n<4;n++){
+     const tx=x+13+(n%2)*25,ty=y+14+Math.floor(n/2)*16;
+     streetTree(c,tx,ty,5);
+    }
+    rect(c,x+27,y+9,2,26,"#a6a092");
+   }else buildingBlock(c,x,y,i,j);
+  }
+ }
+ // Pasajes verticales y calzadas con veredas dibujadas por encima de los
+ // tejados: una misma gramática urbana en toda la vista.
+ for(const x of [105,218,334,442]){
+  rect(c,x-5,0,23,300,"#706b71");
+  rect(c,x-3,0,19,300,"#2d323f");
+  rect(c,x-3,0,2,300,"#948987");
+  rect(c,x+14,0,2,300,"#aaa095");
+  for(let y=0;y<300;y+=25){
+   rect(c,x+5,y+6,2,10,"#bfb4a37a");
+   if(noise(x,y,53)>.7)rect(c,x+10,y+19,3,1,"#9baab646");
+  }
+ }
+ for(const y of [69,140,222,277])boulevard(c,y,17);
+ riverside(c);
+ // Plazas y arbolado urbano en torno a los bulevares.
+ for(const [x,y] of [[30,62],[67,126],[165,124],[303,65],[371,134],[459,262]]){
+  rect(c,x-12,y-4,25,18,"#767673");
+  rect(c,x-10,y-2,21,14,"#536456");
+  streetTree(c,x-2,y+5,7);
+  rect(c,x+9,y+8,3,3,"#bdaf99");
+ }
+ // Marquesinas, jardines, bancos y coches aparcados complementan el tráfico
+ // animado que ya existe en VTM_AMBIENCE.
+ for(const [x,y,color] of [[19,96,"#646576"],[76,260,"#776267"],[291,116,"#52616c"],[455,109,"#5b6b70"]]){
+  rect(c,x+2,y+5,23,4,"#111820");
+  rect(c,x,y,27,10,color);
+  rect(c,x+5,y+2,14,5,"#293b4b");
+  rect(c,x+8,y+3,7,2,"#7897a5");
+  rect(c,x+2,y+9,4,2,"#1b202c");
+  rect(c,x+21,y+9,4,2,"#1b202c");
+ }
+ for(const [x,y] of [[54,118],[325,119],[36,252]]){
+  rect(c,x,y,15,3,"#a89078");rect(c,x+2,y+3,2,4,"#4c4245");rect(c,x+12,y+3,2,4,"#4c4245");
+ }
+ // Ligera viñeta ambiental: no oscurece la zona central ni tapa etiquetas.
+ rect(c,0,0,480,3,"#0b111a66");
+ rect(c,0,296,480,4,"#0a111a66");
 }
 /* Los edificios y sus etiquetas son marcadores a escala de barrio, no paneles
    gigantes que tapen varias manzanas. El centro del marcador se conserva
