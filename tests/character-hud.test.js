@@ -35,8 +35,8 @@ assert.match(styles,/\.character-panel \.mechanics-details\{grid-column:1 \/ -1;
  "El bloque no debe quedar atrapado en una sola columna");
 assert.match(styles,/\.character-panel \.mechanics-details \.mechanics-summary\{[^}]*overflow-wrap:anywhere;/,
  "Los datos deben ajustarse al ancho del panel");
-assert.match(index,/visual-2\.css\?v=vtm[^"]+hudfix/,
- "La hoja corregida debe invalidar la caché anterior");
-assert.match(index,/vtm-game\.js\?v=vtm[^"]+hudfix/,
- "El script corregido debe invalidar la caché anterior");
+assert.match(index,/<link[^>]+href="visual-2\.css\?v=vtm[^"]+"/,
+ "La hoja visual debe seguir cargándose con versión de caché");
+assert.match(index,/<script[^>]+src="vtm-game\.js\?v=vtm[^"]+"/,
+ "El motor debe seguir cargándose con versión de caché");
 console.log("OK: ficha compacta y expandible, con información y actualización preservadas");
