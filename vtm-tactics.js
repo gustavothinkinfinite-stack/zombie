@@ -91,7 +91,9 @@ window.VTM_TACTICS=(()=>{
   g.combat=g.combat||{};
   g.combat.records=g.combat.records||{};
   const m=g.mechanics||{};
+  const oldHealthOnly=!m.damage;
   m.damage=m.damage||{contundente:0,letal:0,agravado:0};
+  if(oldHealthOnly&&Number.isFinite(m.health)&&m.health<7)m.damage.contundente=Math.max(0,7-m.health);
   for(const k of ["contundente","letal","agravado"])m.damage[k]=clamp(Number(m.damage[k])||0,0,7);
   // Existing saves contain only numerical health; retain that value.
   m.health=clamp(Number.isFinite(m.health)?m.health:7,0,7);
@@ -159,6 +161,7 @@ window.VTM_TACTICS=(()=>{
    if(dodging){log.push("Adoptás una postura defensiva.");return;}
    const st=choice==="golpe"?"Pelea":choice==="arma"?"Armas Cuerpo a Cuerpo":"Armas de Fuego";
    if(choice==="disparo"&&skill(g,st)===0){log.push("No tenés preparación para manejar un arma de fuego.");return;}
+   if(choice==="disparo"&&!(g.character.backgrounds?.Recursos>=2||g.character.backgrounds?.Aliados>=2)){log.push("No disponés de un arma de fuego ni contactos que puedan proporcionarla.");return;}
    const p=dice(rank(g,"Destreza")+skill(g,st)+wounds(g)+
     (g.embraced&&g.mechanics.battleSpeed>0?1:0),choice==="disparo"?7:6,rng);
    outcome.playerRoll=p;
