@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, B=window.VTM_AMBIENCE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -270,6 +270,12 @@
   game.relations=game.relations||{dupont:0};
   game.exposure=Number.isFinite(game.exposure)?clamp(game.exposure,0,100):0;
   game.cityPos=game.cityPos||{x:46,y:267};
+  game.districtVisited=Array.isArray(game.districtVisited)?[...new Set(game.districtVisited.filter(id=>T?.byId[id]))]:[];
+  game.districtNotes=(game.districtNotes&&typeof game.districtNotes==="object"&&!Array.isArray(game.districtNotes))?game.districtNotes:{};
+  if(game.scene==="district"&&(!T||!T.byId[game.district])){
+    game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;
+  }
+  game.venueReturn=game.venueReturn||null;
   game.venue=game.venue||null;
   game.flags=game.flags||{};
   game.npcRelations=game.npcRelations||{};
@@ -306,7 +312,7 @@
  function startStory(){
   game={version:1,character:buildCharacter(),scene:"house",x:240,y:220,appreciation:0,
    activeQuest:null,readyReport:null,questIndex:0,history:[],embraced:false,hasSpoken:false,disciplineSpent:0,
-   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
+   observed:{},arc:{clues:[],outcome:null,visited:[]},relations:{dupont:0},exposure:0,cityPos:{x:46,y:267},venue:null,district:null,districtVisited:[],districtNotes:{},venueReturn:null,flags:{},npcRelations:{},npcFlags:{},knownNpcs:[],access:{},sideQuests:{},factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0},clock:{night:1,minutes:1215}};
   log("Tu primera noche como sirviente de "+D.clans[game.character.clan].master+".");
   enterGame();notice("Acercate a tu Domitor y presioná E para hablar.");
  }
@@ -393,8 +399,8 @@
   $("questDetail").textContent=game.readyReport?"Regresá a la casa para informar al Domitor.":game.activeQuest?questObj(game.activeQuest).summary:"Hablá con tu maestro para recibir una misión.";
   $("questPhase").textContent=game.readyReport?"LISTO PARA INFORMAR":game.activeQuest?"MISIÓN EN CURSO":"A LA ESPERA";
   const houseScene=["house","study","quarters"].includes(game.scene);
-  $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
-  $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":"Las calles después del anochecer";
+  $("sceneLabel").textContent=houseScene?"RESIDENCIA · "+m.area.toUpperCase():game.scene==="district"?"BARRIO · "+(T?.byId[game.district]?.name||"PARÍS").toUpperCase():game.scene==="venue"?"INVESTIGACIÓN · "+(D.locations.find(l=>l.id===game.venue)?.name||"PARÍS").toUpperCase():"PARÍS · EL PRINCIPADO";
+  $("sceneTitle").textContent=houseScene?game.scene==="study"?"El despacho":game.scene==="quarters"?"Habitaciones privadas":"La presencia del Domitor":game.scene==="venue"?"Dentro del lugar":game.scene==="district"?"Explorando "+(T?.byId[game.district]?.name||"París"):"Las calles después del anochecer";
   $("floatingHint").textContent=houseScene?"E: examinar objetos, hablar o salir":"E: interactuar con objetos y personajes";
   $("exposureText").textContent=game.exposure+" / 100";
   $("exposureBar").style.width=game.exposure+"%";
@@ -615,9 +621,61 @@
   askMenu(rolled.success?"Objetivo cumplido":"La misión se complicó",desc,[{label:"Volver a informar",action:()=>{}}],rolled.success?"ÉXITO":"FRACASO");
   hud();save();
  }
+ function enterDistrict(id,position=null,fromMap=false){
+   if(!T||!T.byId[id]){notice("El barrio todavía no está disponible.");return;}
+   if(game.scene==="paris")game.cityPos={x:game.x,y:game.y};
+   game.scene="district";game.district=id;game.venue=null;game.venueReturn=null;
+   game.x=position?.x??240;game.y=position?.y??195;
+   if(P){
+     const safe=P.nearestFree("district",game.x,game.y);
+     game.x=safe.x;game.y=safe.y;
+   }
+   walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
+   const first=!game.districtVisited.includes(id);
+   if(first){game.districtVisited.push(id);log("Descubriste el barrio: "+T.byId[id].name+".");}
+   advanceClock(fromMap?5:3);
+   hud();save();
+   notice(first?"Explorás "+T.byId[id].name+". Acercate a las puertas y observá la ciudad.":"Recorrés "+T.byId[id].name+".");
+ }
+ function leaveDistrict(){
+   game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;
+   walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
+   advanceClock(3);hud();save();notice("Regresaste al mapa general de París.");
+ }
+ function districtInteract(){
+   if(!T)return;
+   const found=T.nearby(game);
+   if(!found){notice("Acercate a una puerta, un rincón señalado o una salida del barrio.");return;}
+   if(found.type==="map"){leaveDistrict();return;}
+   if(found.type==="neighbour"){
+     const opposite={north:"south",south:"north",west:"east",east:"west"}[found.dir];
+     enterDistrict(found.target,T.arrival(opposite),false);return;
+   }
+   if(found.type==="venue"){
+     const loc=D.locations.find(l=>l.id===game.district);
+     if(loc){if(loc.id==="elysee"&&!game.access.elysee)elyseeGate();else enterVenue(loc);}
+     return;
+   }
+   if(found.type==="note"){
+     const id=game.district+":"+found.detail.id;
+     const seen=!!game.districtNotes[id];
+     if(!seen){
+       game.districtNotes[id]=true;
+       log("Exploraste "+T.byId[game.district].name+": "+found.detail.title+".");
+       save();
+     }
+     askMenu(found.detail.title,found.detail.text+(seen?"\n\nYa observaste este rincón del barrio.":""),
+      [{label:"Continuar el recorrido",action:()=>{}}],"EXPLORACIÓN · "+T.byId[game.district].name.toUpperCase());
+   }
+ }
  function locationAction(location){
-  if(location.id==="elysee"&&!game.access.elysee){elyseeGate();return;}
-  enterVenue(location);
+   if(!T){if(location.id==="elysee"&&!game.access.elysee)elyseeGate();else enterVenue(location);return;}
+   askMenu(location.name,location.detail+"\n\nPodés recorrer las calles del barrio, entrar al edificio o continuar por el mapa general.",
+   [{label:"Explorar las calles de "+(T.byId[location.id]?.name||location.name),action:()=>enterDistrict(location.id,null,true)},
+    {label:"Entrar directamente al lugar",action:()=>{
+      if(location.id==="elysee"&&!game.access.elysee)elyseeGate();else enterVenue(location);
+    }},
+    {label:"Continuar en el mapa general",action:()=>{}}],"PARÍS · NAVEGACIÓN");
  }
 
 
@@ -1012,7 +1070,8 @@
    " fuentes contrastadas. ¿Qué precio estás dispuesto a pagar para proteger la Mascarada?",options,"DECISIÓN IMPORTANTE");
  }
  function enterVenue(location){
-   game.venue=location.id;game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;walkTarget=null;walkRoute=[];
+   game.venueReturn=game.scene==="district"?{scene:"district",district:game.district,x:game.x,y:game.y}:null;
+   game.venue=location.id;if(game.scene==="paris")game.cityPos={x:game.x,y:game.y};game.scene="venue";game.x=240;game.y=237;walkTarget=null;walkRoute=[];
    if(!game.arc.visited.includes(location.id))game.arc.visited.push(location.id);
    log("Visitaste "+location.name+".");advanceClock(12);hud();save();
  }
@@ -1021,7 +1080,15 @@
   const location=D.locations.find(l=>l.id===game.venue);
   const exit=Math.hypot(game.x-240,game.y-270);
   if(exit<42){
-   game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;game.venue=null;
+   const ret=game.venueReturn;
+   if(ret?.scene==="district"&&T?.byId[ret.district]){
+     game.scene="district";game.district=ret.district;
+     game.x=ret.x;game.y=ret.y;
+     if(P){const safe=P.nearestFree("district",game.x,game.y);game.x=safe.x;game.y=safe.y;}
+   }else{
+     game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;
+   }
+   game.venue=null;game.venueReturn=null;walkTarget=null;walkRoute=[];keys.clear();
    advanceClock(5);hud();save();return;
   }
   if(Math.hypot(game.x-130,game.y-143)<55){
@@ -1088,6 +1155,7 @@
   if(!game||dialogOpen)return;
   const room=game.scene;
   if(room==="venue"){venueInteract();return;}
+  if(room==="district"){districtInteract();return;}
   if(["house","study","quarters"].includes(room)){
    if(room==="house"){
     if(Math.hypot(game.x-240,game.y-98)<62){speak();return;}
@@ -1326,6 +1394,11 @@
   textPixel(env.label.toUpperCase(),240,24,"#f1d7bd",12,"center");
  }
  function textPixel(t,x,y,color,size,align){g.font="bold "+(size||9)+"px monospace";g.fillStyle=color;g.textAlign=align||"left";g.fillText(t,x,y);}
+ function drawDistrict(){
+   if(!T){drawParis();return;}
+   T.draw(g,game,visualTime,effectsEnabled);
+   portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
+ }
  function drawParis(){
   if(G){
     G.drawCity(g,game,D,N,visualTime);
@@ -1407,10 +1480,10 @@
  }
  function drawWorld(){
   if(!game)return;
-  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
-  if(G&&effectsEnabled)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
+  if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else if(game.scene==="district")drawDistrict();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
+  if(G&&effectsEnabled)G.effects(g,(game.scene==="paris"||game.scene==="district")?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
-  if(B&&G)B.foreground(g,game.scene,game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled);
+  if(B&&G)B.foreground(g,game.scene==="district"?"paris":game.scene,game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled);
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
@@ -1419,6 +1492,10 @@
  function nearInteractive(){
   if(!game)return "";
   const room=game.scene;
+  if(room==="district"){
+    const spot=T?.nearby(game);
+    return spot?"E · "+(spot.type==="neighbour"?"Ir a "+spot.name:spot.type==="venue"?"Entrar a "+spot.name:spot.name):"";
+  }
   if(["house","study","quarters"].includes(room)){
    if(room==="house"){
     if(Math.hypot(game.x-240,game.y-98)<62)return "E · Hablar con "+D.clans[game.character.clan].master;
