@@ -60,20 +60,69 @@ window.VTM_DISTRICTS=(()=>{
  }
  const background=new Map();
  function paintBlock(c,x,y,w,h,d,seed){
-  const roof=seed%2===0?d.brick:d.tone;
-  rect(c,x+4,y+4,w,h,"#101620");
-  rect(c,x,y,w,h,roof);
-  rect(c,x,y,w,7,"#98827f69");
-  rect(c,x+7,y+12,w-14,h-22,"#222c3b");
-  for(let xx=x+10;xx<x+w-10;xx+=18){
-   for(let yy=y+17;yy<y+h-15;yy+=16){
-    const lit=hash(xx,yy,seed)>.42;
-    rect(c,xx,yy,9,9,lit?"#bc9980":"#36404f");
-    rect(c,xx+2,yy+2,5,4,lit?"#dfc29e":"#242936");
+  // Fachadas coherentes con el barrio y con variaciones por bloque.
+  const rnd=hash(seed,d.x+4,d.y+8),office=d.id==="policia",
+   noble=["passy","elysee"].includes(d.id),work=["saintdenis","tuneles"].includes(d.id),
+   lively=["bastilla","stjuly"].includes(d.id);
+  const roofs=noble?["#625c67","#514956","#67616a","#514c5a"]:
+   office?["#586675","#4b5969","#485562","#5d6976"]:
+   work?["#39434b","#444852","#4b454f","#354650"]:
+   lively?["#664550","#56414c","#684951","#534153"]:
+   ["#615459","#514953","#6c5556","#4b4a59"];
+  const roof=roofs[Math.floor(rnd*roofs.length)],brick=noble?"#a09596":office?"#6b7a88":work?"#625a61":d.brick;
+  rect(c,x+3,y+6,w+1,h,"#131821");
+  rect(c,x,y+2,w,h-1,brick);
+  rect(c,x,y,w,6,roof);
+  rect(c,x+2,y+5,w-4,3,noble?"#c1aca6":"#80717c");
+  rect(c,x+4,y+8,w-8,h-15,roof);
+  // Volúmenes y juntas horizontales: distintos edificios en una misma manzana.
+  for(let fy=y+15;fy<y+h-11;fy+=16)rect(c,x+5,fy,w-10,1,"#c4b5aa25");
+  const bay=Math.max(3,Math.floor((w-20)/18));
+  const pitch=(w-16)/bay;
+  for(let col=0;col<bay;col++){
+   const xx=Math.round(x+8+col*pitch),ww=Math.min(9,Math.floor(pitch)-4);
+   for(let yy=y+13;yy<y+h-15;yy+=16){
+    const lit=hash(xx,yy,seed)>(office?.54:lively?.48:.67);
+    rect(c,xx-2,yy-2,ww+4,12,"#242b37");
+    rect(c,xx,yy,ww,8,lit?"#bd9b86":"#354152");
+    rect(c,xx+1,yy+1,Math.max(2,ww-2),6,lit?"#d9c0a6":"#1d2937");
+    rect(c,xx+Math.floor(ww/2),yy,1,8,"#4e4a54");
+    if(noble){
+     rect(c,xx-3,yy+8,ww+6,2,"#b8a8a6");
+     rect(c,xx-2,yy+10,1,3,"#8d7f87");
+     rect(c,xx+ww+1,yy+10,1,3,"#8d7f87");
+    }else if(work){
+     rect(c,xx-2,yy+9,ww+4,3,"#343a44");
+    }else if(lively&&yy===y+13){
+     rect(c,xx-2,yy+9,ww+4,1,"#b47d88");
+    }
    }
   }
-  rect(c,x+9,y+h-10,w-18,5,"#45434c");
-  if(seed%3===0){rect(c,x+17,y+10,13,7,"#988579");rect(c,x+19,y+7,9,3,"#2b2930");}
+  // Elementos estructurales que rompen la repetición.
+  if(seed%3===0){
+   rect(c,x+14,y-3,14,12,"#756e76");
+   rect(c,x+17,y-7,8,5,"#292c36");
+   rect(c,x+18,y+1,5,3,"#3d4550");
+  }
+  if(seed%4===1){
+   rect(c,x+w-26,y+5,18,10,"#363b4a");
+   rect(c,x+w-24,y+7,14,5,office?"#8795a3":"#977e85");
+   rect(c,x+w-22,y+8,5,3,"#293442");
+  }
+  if(noble){
+   rect(c,x+5,y+h-9,w-10,4,"#a49a99");
+   for(const xx of [x+11,x+w-14])rect(c,xx,y+h-14,3,10,"#c6b8ac");
+  }else if(work){
+   rect(c,x+8,y+h-12,Math.min(44,w-20),7,"#202733");
+   for(let j=0;j<4;j++)rect(c,x+11+j*10,y+h-10,7,3,"#687681");
+  }else if(lively){
+   rect(c,x+10,y+h-12,w-20,7,"#40303e");
+   for(let j=0;j<Math.floor((w-20)/14);j++){
+    const xx=x+12+j*14;
+    rect(c,xx,y+h-11,10,5,j%2?"#966b7a":"#7d606c");
+   }
+  }
+  rect(c,x+5,y+h-5,w-10,2,"#262b37");
  }
  function painterDoor(c,x,y,d,side){
   rect(c,x-16,y-12,32,12,"#1b202c");
