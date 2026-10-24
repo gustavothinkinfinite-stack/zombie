@@ -275,3 +275,49 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 @media(prefers-reduced-motion:reduce){
  *,*:before,*:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+
+/* Fase VI — Vista previa de la apariencia del ghoul/Vástago */
+.appearance-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) 215px;gap:22px;align-items:start;
+ margin:14px 0 20px;
+}
+.appearance-fields{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;
+}
+.appearance-fields .field{min-width:0;margin:0}
+.appearance-fields .field label{display:block;color:#d7beae;font-size:11px;font-weight:700;letter-spacing:.025em;margin-bottom:7px}
+.appearance-fields .field select{
+ display:block;width:100%;min-height:43px;padding:8px 10px;border:1px solid #72606b;
+ border-radius:5px;background:#1c1d29;color:#ede2d4;font:inherit;font-size:12px;
+}
+.appearance-fields .field select:focus-visible{outline:2px solid #d7b88b}
+.appearance-preview{
+ display:flex;flex-direction:column;align-items:center;gap:8px;padding:13px;
+ background:linear-gradient(148deg,#2b2533,#171922);
+ border:1px solid #665464;border-radius:8px;box-shadow:0 8px 21px #0003;
+}
+.appearance-preview canvas{
+ display:block;width:180px;height:210px;max-width:100%;image-rendering:pixelated;
+ background:#161824;border:1px solid #8f7580;border-radius:4px;
+}
+.appearance-preview p{font-size:10px;font-weight:800;color:#d9b994;letter-spacing:.12em;margin:3px 0 0;text-align:center}
+.appearance-preview small{font-size:10px;text-align:center;line-height:1.4;color:#9ba0af}
+.appearance-modal-card{width:min(830px,100%);max-height:92vh;overflow-y:auto}
+.appearance-modal-card h2{color:#f2d9bd;font:normal clamp(25px,3vw,33px) Georgia,serif;margin:9px 0}
+.appearance-modal-card .eyebrow{letter-spacing:.16em;color:#dfb991}
+.appearance-modal-card .appearance-lead{color:#c6b6bd;font-size:13px;line-height:1.6;max-width:65ch}
+.appearance-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:13px}
+.appearance-actions button{min-height:42px;min-width:126px}
+.creator .appearance-preview{position:sticky;top:12px}
+@media(max-width:680px){
+ .appearance-layout{grid-template-columns:1fr;gap:14px}
+ .appearance-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .appearance-preview{max-width:250px;justify-self:center;width:100%;position:static}
+ .appearance-modal-card{padding:17px}
+ .appearance-actions{justify-content:stretch}
+ .appearance-actions button{flex:1;min-width:0}
+}
+@media(max-width:390px){
+ .appearance-fields{grid-template-columns:1fr}
+ .appearance-preview canvas{width:150px;height:175px}
+}
