@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -289,6 +289,7 @@
   game.clock.night=Math.max(1,Math.floor(Number(game.clock.night)||1));
   game.clock.minutes=Math.max(0,Math.min(1439,Math.floor(Number.isFinite(Number(game.clock.minutes))?Number(game.clock.minutes):1215)));
   M.init(game);
+  ST.init(game);
   if(P){
    const pos=P.nearestFree(game.scene,game.x,game.y);
    if(!P.canStand(game.scene,game.x,game.y)){game.x=pos.x;game.y=pos.y;}
@@ -387,7 +388,8 @@
  function hud(){
   if(!game)return;
   const m=D.clans[game.character.clan];$("appreciationText").textContent=game.appreciation+" / 100";
-  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game);
+  const mechanical=$("mechanicsSummary");if(mechanical)mechanical.textContent=M.summary(game)+" · "+SU.summary();
+  $("playHumanity").textContent=game.character.humanity;
   $("appreciationBar").style.width=game.appreciation+"%";
   $("embraceHint").textContent=game.embraced?"El Abrazo ha sido consumado.":game.appreciation>=100?"Podés solicitar el Abrazo a tu Domitor.":"Ganá su confianza mediante actos y decisiones.";
   $("playState").textContent=game.embraced?"Vástago":"Ghoul";
@@ -560,6 +562,7 @@
  }
  function traitsHunt(){
    if(!game.embraced||!["paris","venue"].includes(game.scene)||M.used(game,"hunt:"+(game.venue||game.scene)))return;
+   const hunger=SU.checkHunger();
    const roll=dicePool("Percepción","Callejeo",7);
    const result=M.huntResult(game,roll);
    if(!result)return;
@@ -864,6 +867,7 @@
    const mainHere=!!q&&q.place===location.id&&!game.readyReport;
    const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
    const actions=[];
+   if(ST.scenes[location.id])actions.push({label:"Resolver una situación del lugar según mi ficha",action:()=>SU.openScene(location)});
    if(dupontHere)actions.push({label:"Investigar el caso Pierre Dupont",action:()=>researchLead(location)});
    else if(mainHere)actions.push({label:"Investigar el encargo de tu Domitor",action:()=>resolveStandardQuest(q)});
    for(const quest of tasks){
@@ -1570,7 +1574,8 @@
   const root=$("sheetDetail");root.innerHTML="";
   const header=document.createElement("p");header.textContent=c.name+" · "+c.concept+" · "+c.nature+" / "+c.demeanor+" · "+(game.embraced?"Vástago":"Ghoul")+" del clan "+c.clan;root.appendChild(header);
   const grid=document.createElement("div");grid.className="sheet-detail-grid";root.appendChild(grid);
-  const note=document.createElement("p");note.textContent="RASGOS JUGABLES · "+M.summary(game)+" · Usá ACCIONES para aplicar Atributos, Habilidades, Trasfondos y Disciplinas.";root.insertBefore(note,grid);
+  const note=document.createElement("p");note.textContent="RASGOS JUGABLES · "+M.summary(game)+" · "+SU.summary();root.insertBefore(note,grid);
+  const training=document.createElement("button");training.textContent="Mejorar rasgos con experiencia";training.addEventListener("click",()=>{$("sheetModal").classList.add("hidden");SU.training();});root.appendChild(training);
   for(const [title,entries] of sections){
    const section=document.createElement("section");const h=document.createElement("h4");h.textContent=title;section.appendChild(h);
    const raw=Object.entries(entries);if(!raw.length){const p=document.createElement("p");p.textContent="Todavía no adquiridas.";section.appendChild(p);}
@@ -1597,13 +1602,17 @@
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
-  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game);root.appendChild(resources);
+  const resources=document.createElement("p");resources.textContent="Recursos mecánicos: "+M.summary(game)+" · "+SU.summary();root.appendChild(resources);
+  for(const [place,state] of Object.entries(ST.init(game).locations)){
+   const entry=document.createElement("p");entry.textContent="Escena "+(D.locations.find(l=>l.id===place)?.name||place)+": "+(state.success?"resuelta":"pendiente")+" · "+state.method+" · noche "+state.night;root.appendChild(entry);
+  }
   const favours=Object.entries(game.access).filter(([k,v])=>v).map(([k])=>favorDescription(k));
   const favors=document.createElement("p");favors.textContent="Referencias y favores: "+(favours.join("; ")||"Ninguno");root.appendChild(favors);
   game.history.forEach(entry=>{const r=document.createElement("p");r.textContent="• "+entry;root.appendChild(r);});
   $("journalModal").classList.remove("hidden");
  }
  function setup(){
+  SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
   const state=document.createElement("p");state.id="mechanicsSummary";state.className="caption mechanics-summary";
