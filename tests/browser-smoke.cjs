@@ -86,6 +86,36 @@ const key="cronicas-paris-ghoul-v1";
     const image=await mapPage.request.get(new URL("assets/paris-nocturno.svg",base).href);
     assert.equal(image.status(),200,"El arte SVG debe estar disponible en el servidor");
     assert.equal(await mapPage.locator("#world").getAttribute("width"),"960");
+    // Una imagen cargada puede pasar las pruebas aun cuando el motor pinte
+    // solamente el cuarto superior izquierdo. Verificar la escala efectiva
+    // y que las cuatro regiones del lienzo contengan píxeles reales.
+    await mapPage.waitForTimeout(180);
+    const coverage=await mapPage.locator("#world").evaluate(canvas=>{
+      const ctx=canvas.getContext("2d");
+      const matrix=ctx.getTransform();
+      const {width,height}=canvas;
+      const quadrants=[];
+      for(const y0 of [0,height/2])for(const x0 of [0,width/2]){
+        let total=0,solid=0,brightness=0;
+        for(let y=y0+28;y<y0+height/2-22;y+=27){
+          for(let x=x0+26;x<x0+width/2-20;x+=27){
+            const rgb=ctx.getImageData(x,y,1,1).data;
+            const light=(rgb[0]+rgb[1]+rgb[2])/3;
+            total++;brightness+=light;
+            if(light>12)solid++;
+          }
+        }
+        quadrants.push({coverage:solid/total,mean:brightness/total});
+      }
+      return {scale:matrix.a,scaleY:matrix.d,quadrants};
+    });
+    assert.ok(Math.abs(coverage.scale-2)<.01&&Math.abs(coverage.scaleY-2)<.01,
+      "La escala del mapa debe ser 2x en ambos ejes: "+JSON.stringify(coverage));
+    for(let index=0;index<coverage.quadrants.length;index++){
+      const quad=coverage.quadrants[index];
+      assert.ok(quad.coverage>.68&&quad.mean>18,
+        "El mapa tiene un cuadrante negro o incompleto "+index+": "+JSON.stringify(coverage));
+    }
     await mapPage.locator("#world").screenshot({path:"paris-map-preview.png"});
    }finally{await isolated.close();}
   });
