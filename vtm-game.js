@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, B=window.VTM_AMBIENCE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -1112,6 +1112,21 @@
     if(d<best){best=d;nearest=location;}
    }
    if(nearest&&best<43){locationAction(nearest);return;}
+   if(B){
+     const spot=B.nearestStreetPoint(game.x,game.y,25);
+     if(spot){
+       game.flags=game.flags||{};
+       const key="street:"+spot.id,already=!!game.flags[key];
+       if(!already){
+         game.flags[key]=true;
+         log("Exploraste las calles: "+spot.title+".");
+         save();
+       }
+       askMenu(spot.title,spot.description+(already?"\n\nYa examinaste este rincón de París.":""),
+         [{label:"Continuar mi recorrido",action:()=>{}}],"ECOS DE LA CIUDAD");
+       return;
+     }
+   }
    notice("Acercate a alguno de los lugares del mapa.");
   }
  }
@@ -1249,6 +1264,7 @@
   if(G){
     const npc=N.byLocation[game.venue];
     G.drawVenue(g,game.venue,N,game,visualTime);
+    if(B)B.interior(g,game.venue,visualTime,game,effectsEnabled);
     if(npc&&npcIsPresent(npc.id))portrait(240,104,"master",npc.color);
     else {pixel(216,96,48,25,"#332b36");textPixel("AUSENTE",240,90,"#d0a2a0",9,"center");}
     portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
@@ -1311,6 +1327,7 @@
  function drawParis(){
   if(G){
     G.drawCity(g,game,D,N,visualTime);
+    if(B){B.street(g,visualTime,game,effectsEnabled);B.landmarkMarkers(g,game,visualTime,effectsEnabled);}
     portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
     return;
   }
@@ -1391,6 +1408,7 @@
   if(["house","study","quarters"].includes(game.scene))drawHouse();else if(game.scene==="venue")drawVenue();else{drawParis();if(!G&&effectsEnabled)rainOverlay();}
   if(G&&effectsEnabled)G.effects(g,game.scene==="paris"?"paris":"interior",visualTime,game.scene==="venue"?game.venue:game.character.clan,game.scene);
   if(G&&effectsEnabled&&visualTime<embraceFxUntil)G.transformation(g,game.x,game.y,visualTime,embraceFxUntil-visualTime,game.character.clan);
+  if(B&&G)B.foreground(g,game.scene,game.scene==="venue"?game.venue:game.character.clan,visualTime,effectsEnabled);
   // decorative top/bottom pixel bars
   pixel(0,0,480,3,"#b69581");pixel(0,297,480,3,"#b69581");
   if(dialogOpen){pixel(0,0,480,300,"#15101b66");}
@@ -1420,6 +1438,10 @@
   for(const l of D.locations){
    const x=(l.x+l.w/2)/2.1,y=(l.y+l.h/2)/2;
    if(Math.hypot(game.x-x,game.y-y)<44)return "E · "+l.name;
+  }
+  if(B){
+   const streetSpot=B.nearestStreetPoint(game.x,game.y,25);
+   if(streetSpot)return "E · "+streetSpot.title;
   }
   return "";
  }
