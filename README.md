@@ -9,6 +9,16 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
+### Protección de partidas y respaldo recuperable (24 de octubre de 2026)
+
+- El formato del personaje sigue siendo **versión 1**, compatible con las partidas anteriores. El guardado principal mantiene la clave `cronicas-paris-ghoul-v1`.
+- El módulo `vtm-save.js` conserva una copia de respaldo local bajo `cronicas-paris-ghoul-v1-backup`; no copia un guardado corrupto sobre un respaldo válido. Antes de reemplazar la partida principal se guarda o verifica la copia anterior.
+- Si el guardado principal está ausente o ilegible, **Continuar partida** ofrece recuperar el respaldo válido después de pedir confirmación; al entrar intenta consolidarlo en el almacenamiento principal.
+- Los errores de almacenamiento no generan un mensaje falso de éxito. Empezar un personaje nuevo exige confirmación si existe un guardado principal o una copia de respaldo, incluso cuando sus datos sean ilegibles.
+- Pruebas de recuperación y rechazo del almacenamiento: `node tests/save-backup.test.js`, `node tests/save-feedback.test.js`, `node tests/new-game-protection.test.js` y `node tests/menu-save-guard.test.js`; se incluyen en GitHub Actions.
+- **Limitación:** ambos guardados permanecen en el mismo navegador/dispositivo mediante `localStorage`. Borrar los datos del sitio o perder el dispositivo elimina ambas copias; no constituye una copia externa ni sincronización en la nube.
+
+
 
 
 ## Fase XII — La sangre de los inocentes (octubre de 2026)
