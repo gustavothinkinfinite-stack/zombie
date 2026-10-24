@@ -705,7 +705,7 @@
    if(!K||!shop||!K.byId[shop.id])return;
    game.sideReturn={scene:"district",district:game.district,x:game.x,y:game.y};
    game.sidevenue=shop.id;game.scene="sidevenue";
-   game.x=240;game.y=236;walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
+   game.x=240;game.y=250;walkTarget=null;walkRoute=[];keys.clear();game.walking=false;
    if(!game.localPlaces[shop.id])game.localPlaces[shop.id]={entered:true,decision:null,inspected:false,met:false};
    advanceClock(7);hud();save();
    notice("Entraste a "+shop.name+".");
