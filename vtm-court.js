@@ -108,21 +108,22 @@ window.VTM_COURT=(()=>{
   if(id==="tuneles"&&g.sideQuests?.ingrid?.status==="done")items.push("Informe entregado a Ingrid");
   return {score:items.length,items};
  }
- function canAudience(g){
+ function canAudience(g,allowRestricted=false){
   if(!g?.embraced)return "Sólo los Vástagos pueden comparecer ante la corte";
   if(g.scene!=="venue"||g.venue!=="elysee")return "La audiencia se solicita dentro del Elíseo";
   if(!g.access?.elysee)return "Necesitás autorización de entrada al Elíseo";
   const c=init(g);
   if(c.audiences.petitionNight===g.clock.night)return "Ya compareciste ante el príncipe esta noche";
-  if(c.sanctions.restrictedUntil>=g.clock.night&&c.recognized)return "Debés resolver primero las restricciones de la corte";
+  if(!allowRestricted&&c.sanctions.restrictedUntil>=g.clock.night&&c.recognized)return "Debés resolver primero las restricciones de la corte";
   return null;
  }
  function audience(g,type,roll,meta={}){
-  const c=init(g),rule=PETITIONS[type],access=canAudience(g);
+  const c=init(g),rule=PETITIONS[type],access=canAudience(g,type==="apology");
   if(!rule||access)return {error:access||"Petición desconocida"};
   if(!roll||!Array.isArray(roll.dice)||typeof roll.success!=="boolean")return {error:"Tirada inválida"};
   if(type==="apology"&&!c.cases.some(x=>x.status==="warning"||x.status==="sanctioned"))return {error:"No hay sanción que reconsiderar"};
   if(type==="territory"&&!HUNT_DOMAINS[meta.place])return {error:"El destino no requiere esta autorización"};
+  if(type!=="present"&&!c.recognized)return {error:"Primero debés ser reconocido por el príncipe"};
   c.audiences.petitionNight=g.clock.night;
   const sponsorship=!!(g.access?.courtReferral||g.access?.courtProtocol);
   const evidenceScore=type==="inquiry"?c.research.fragments.length:0;
@@ -136,7 +137,6 @@ window.VTM_COURT=(()=>{
     outcome.description="Pierre Duvalier recibe tu presentación formal. La Guardiana inscribe tu nombre entre los Vástagos reconocidos del Principado. No se concede un cargo ni un dominio propio.";
    }else outcome.description="La Guardiana aconseja mejorar la presentación y volver otra noche. No se te acusa de infringir ninguna Tradición.";
   }else if(type==="territory"){
-   if(!c.recognized)return {error:"Primero debés ser reconocido por el príncipe"}; // prevent pre-mark below
    if(success){
     c.permits[meta.place]=g.clock.night+3;c.prestige=clamp(c.prestige+1,-30,50);
     outcome.description="El príncipe autoriza una licencia excepcional para cazar en "+HUNT_DOMAINS[meta.place]+" hasta la noche "+c.permits[meta.place]+". Debés respetar la Mascarada.";
@@ -176,9 +176,10 @@ window.VTM_COURT=(()=>{
   record.hearingNight=g.clock.night;
   let verdict="dismissed",text="";
   if(method==="restitution"){
-   finance.ledger?.(g,"Reparación de la Mascarada", -35); // ledger export may be unavailable; handled by explicit cost below
    const wallet=finance.init(g);
-   if(!finance.ledger)wallet.cash-=35;
+   wallet.cash-=35;
+   wallet.ledger.unshift({night:g.clock.night,reason:"Reparación verificada ante la corte",amount:-35,balance:wallet.cash});
+   wallet.ledger=wallet.ledger.slice(0,60);
    g.exposure=clamp((g.exposure||0)-10,0,100);
    verdict=record.evidence>=2?"warning":"dismissed";
    text="Pagaste una reparación verificable y colaboraste con la corte. El príncipe distingue este acto de una confesión forzosa.";
