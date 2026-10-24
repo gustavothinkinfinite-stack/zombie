@@ -98,6 +98,14 @@ const key="cronicas-paris-ghoul-v1";
    assert.equal(current.principado.accepted,true);
    assert.ok(current.elizabeth||current.arc,"El caso y progreso existentes siguen guardados");
   });
+  await check("La campaña principal no revela secretos antes del prólogo",async()=>{
+   await page.locator("#actionsBtn").click();
+   await page.locator("#dialogOptions button").filter({hasText:"Campaña principal"}).click();
+   const text=await page.locator("#dialogText").innerText();
+   assert.match(text,/prólogo documental/i);
+   assert.doesNotMatch(text,/antigua anarquista|usurpación|sexta generación/i);
+   await page.locator("#dialogClose").click();
+  });
   // El guardado al salir de la página anterior no debe reemplazar la posición de prueba.
   // Aplicamos el escenario antes de que arranque el motor en la nueva navegación.
   await page.addInitScript(saveKey=>{
@@ -121,11 +129,29 @@ const key="cronicas-paris-ghoul-v1";
    await page.evaluate(([saveKey,id])=>{
     const game=JSON.parse(localStorage.getItem(saveKey));
     game.scene="district";game.district=id;game.x=236;game.y=216;game.clock.night=1;game.clock.minutes=23*60+50;
+    // La ficción del dossier existe sólo en este perfil aislado de Chromium.
+    if(id==="passy"){
+     game.principado=game.principado||{};game.principado.dossier=true;
+     game.access=game.access||{};game.access.elysee=true;
+    }
     sessionStorage.setItem("__cronicas_smoke_pending",JSON.stringify(game));
    },[key,district]);
    await page.reload({waitUntil:"load"});
    await page.locator("#continueGame").click();
    if(district==="passy"){
+    await check("La campaña abre acto I sin revelar secretos anticipados",async()=>{
+     await page.locator("#actionsBtn").click();
+     await page.locator("#dialogOptions button").filter({hasText:"Campaña principal"}).click();
+     await page.locator("#dialogOptions button").filter({hasText:"Abrir investigación reservada"}).click();
+     const body=await page.locator("#dialogText").innerText();
+     assert.match(body,/Una ausencia en los archivos/);
+     assert.doesNotMatch(body,/antigua anarquista|usurpación|sexta generación/i);
+     await page.locator("#dialogClose").click();
+     const stored=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
+     assert.equal(stored.conspiracy.started,true);
+     assert.equal(stored.conspiracy.revealed,false);
+     assert.equal(stored.conspiracy.chapter,1);
+    });
     await check("Sigilo y carrera — controles de la Fase XIX",async()=>{
      await page.evaluate(()=>document.activeElement?.blur());
      await page.keyboard.press("c");
