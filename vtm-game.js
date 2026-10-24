@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -290,6 +290,7 @@
   if(K)K.normalize(game);
   else if(game.scene==="sidevenue"){game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;}
   if(CASES)CASES.init(game);
+  if(ELI)ELI.init(game);
   game.localPlaces=game.localPlaces||{};
   game.localClues=game.localClues||[];
   if(H)H.init(game);
@@ -448,6 +449,15 @@
    const target=$("sideQuestList");target.innerHTML="";
    const active=Object.values(game.sideQuests).filter(q=>q.status==="active"||q.status==="ready");
    if(!active.length)target.textContent="Visitá a Ingrid, Lucien o Isabelle para conseguir encargos personales.";
+   if(ELI){
+     const ep=ELI.summary(game);
+     if(ep.status!=="dormant"){
+       const item=document.createElement("div");item.className="side-entry";
+       const heading=document.createElement("strong");heading.textContent="La sangre de los inocentes";
+       const progress=document.createElement("span");progress.textContent=ep.count+"/"+ep.total+" pistas · "+(ep.status==="reported"?"Informe entregado":"Investigar en los barrios de París");
+       item.append(heading,progress);target.appendChild(item);
+     }
+   }
    for(const sq of active){
      const data=A.personal[sq.id],line=document.createElement("div");line.className="side-entry";
      const title=document.createElement("strong");title.textContent=data.title;
@@ -661,6 +671,7 @@
    if(!game)return;
    if(game.combat?.active){TACTUI.battleMenu();return;}
    const m=M.init(game),choices=[
+     ...(ELI?[{label:"Expediente Elizabeth Parker · investigación principal",action:ELI.menu}]:[]),
      {label:"Inventario · equipo, municiones y suministros",action:TACTUI.equipmentMenu},
      {label:"Fondos · economía y movimientos",action:ECONUI.wallet},
      {label:"Talentos · diez acciones",action:()=>traitsCategory("Talentos")},
@@ -1158,6 +1169,7 @@
    const mainHere=!!q&&q.place===location.id&&!game.readyReport;
    const dupontHere=game.activeQuest==="archivos"&&!game.readyReport&&["policia","stjuly","hemeroteca"].includes(location.id);
    const actions=[];
+   if(ELI&&ELI.atPlace(game,location.id))actions.push({label:"Investigar el asesinato de Elizabeth Parker",action:ELI.menu});
    if(game.embraced)actions.push({label:"Usar una Disciplina durante la investigación",action:WORLDUI.menu});
    if(EQUIP.OFFERS[location.id])actions.push({label:"Conseguir suministros o preparar equipamiento",action:TACTUI.equipmentMenu});
    if(TACT.ENEMIES[location.id])actions.push({label:"Enfrentar físicamente una amenaza del lugar",action:()=>TACTUI.battleEntry(location.id)});
@@ -1980,6 +1992,14 @@
       root.appendChild(line);
     }
   }
+  if(ELI){
+    const ep=ELI.summary(game);const line=document.createElement("p");
+    line.textContent="Elizabeth Parker: "+(ep.status==="dormant"?"Encargo pendiente en Passy":ep.status==="reported"?"Informe entregado":"Investigación abierta")+" · "+ep.count+"/"+ep.total+" pistas · alerta "+ep.alert+"/6.";
+    root.appendChild(line);
+    for(const clue of ep.clues){const entry=document.createElement("p");entry.textContent="• Prueba Elizabeth: "+clue;root.appendChild(entry);}
+    if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
+    if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
@@ -1997,6 +2017,7 @@
   WORLDUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,actions:traitsMenu});
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>SU.openScene(D.locations.find(l=>l.id===id)),actions:traitsMenu});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
+  if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   const actionButton=document.createElement("button");actionButton.id="actionsBtn";actionButton.textContent="✦ Acciones";actionButton.title="Usar las capacidades de la ficha";
   $("characterBtn").after(actionButton);actionButton.addEventListener("click",traitsMenu);
   const state=document.createElement("p");state.id="mechanicsSummary";state.className="caption mechanics-summary";
