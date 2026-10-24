@@ -1044,7 +1044,7 @@
   for(const l of D.locations){
    const x=Math.round(l.x/2.1),y=Math.round(l.y/2),w=Math.round(l.w/2.1),h=Math.round(l.h/2);
    const env=N.environments[l.id],quest=game.activeQuest&&questObj(game.activeQuest);
-   const active=quest?.place===l.id || (game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(l.id));
+   const active=quest?.place===l.id || (game.activeQuest==="archivos"&&["policia","stjuly","hemeroteca"].includes(l.id)) || personalAtLocation(l.id).length>0;
    pixel(x-3,y-3,w+6,h+6,active?"#bea47a":"#181c27");
    pixel(x,y,w,h,env?.room||"#47404b");
    pixel(x+4,y+4,w-8,h-8,env?.accent||"#75616b");
@@ -1155,6 +1155,12 @@
    root.appendChild(p);
   }
   const rep=document.createElement("p");rep.textContent="Exposición de la Mascarada: "+game.exposure+"/100 · Relación con Dupont: "+game.relations.dupont+" (−5 a +5) · Objetos examinados en la residencia: "+Object.keys(game.observed).filter(k=>game.observed[k]).length;root.appendChild(rep);
+  const f=document.createElement("p");f.textContent="Reputación política: "+Object.keys(A.factions).map(id=>A.factions[id].name+" "+(game.factions[id]>0?"+":"")+(game.factions[id]||0)).join(" · ")+". Noche "+game.clock.night+", "+formatClock()+".";root.appendChild(f);
+  for(const quest of Object.values(game.sideQuests)){
+    const arc=A.personal[quest.id];if(!arc)continue;
+    const row=document.createElement("p");row.textContent="Encargo personal · "+arc.title+": "+(quest.status==="done"?"Finalizado":quest.status==="ready"?"Volvé con "+N.byLocation[arc.origin].name:arc.objective)+".";
+    root.appendChild(row);
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
