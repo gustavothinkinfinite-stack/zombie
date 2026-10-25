@@ -1,4 +1,4 @@
-# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XXI)
+# Crónicas de París — Juego web de Vampiro: La Mascarada (prototipo 1.1 · rediseño visual 2.0, fase XXVI)
 
 RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** creado previamente para la campaña del usuario. El personaje comienza como **humano ghoul** al servicio de un Domitor vampiro. **No hay zombis ni oleadas** en esta versión.
 
@@ -8,6 +8,16 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Rama:** \`main\`
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
+
+## Estado actual del proyecto — fase XXVI (25 de octubre de 2026)
+
+La cabecera de `index.html` identifica la **fase XXVI**. Las secciones históricas de este README siguen documentando los sistemas de las fases anteriores, incluida la campaña del Principado de fase XXI; no deben interpretarse como el límite funcional del juego.
+
+- **Elizabeth Parker:** se conserva el expediente de fase XII, sus interiores y el desenlace investigativo original. La mesa documental **EP/47** (`vtm-parker-dossier.js`, fase XXIV) permite cotejar documentos, contradicciones y testimonios sin convertir una sospecha en condena automática.
+- **Consecuencias de fase XXVI:** `vtm-parker-politics.js` incorpora custodia de testigos, audiencia y líneas de seguimiento político. `parkerDossier` y `parkerPolitics` se almacenan dentro de la **partida activa**; no se mezclan con otro personaje ni deben borrar `elizabeth`, `localCases`, `principado` o `conspiracy`.
+- **Continuidad:** siguen operativos los barrios, locales secundarios, cuatro investigaciones locales, relaciones, corte, tácticas, sigilo, Vitae y progresión ghoul–Abrazo. El secreto de la Senescal permanece reservado a los desbloqueos narrativos correspondientes.
+- **Calidad:** `.github/workflows/quality.yml` verifica sintaxis JavaScript/CommonJS y ejecuta recursivamente todas las pruebas `tests/**/*.test.js` y `tests/**/*.test.cjs`; exige `elizabeth-case.test.js` y `save-backup.test.js`. La regresión `parker-dossier-persistence.test.js` comprueba migración, aislamiento y recuperación del expediente.
+- **Publicación:** un commit o una ejecución local de Chromium no acreditan que Hostinger sirva ese SHA. La prueba de producción valida el sitio público, pero todavía no identifica de manera inequívoca la revisión desplegada.
 
 ### Protección de partidas y respaldo recuperable (24 de octubre de 2026)
 

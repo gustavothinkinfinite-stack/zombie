@@ -1,12 +1,12 @@
 # Crónicas de París — Guía visual 2.0
 
-**Estado:** Fases I–XXI integradas en `main` (24 de octubre de 2026). Esta guía es un registro evolutivo: los pendientes descritos en fases anteriores son históricos cuando una fase posterior los resuelve.  
+**Estado:** Fases I–XXVI integradas en `main` (25 de octubre de 2026). Esta guía es un registro evolutivo: los pendientes descritos en fases anteriores son históricos cuando una fase posterior los resuelve.  
 **Alcance:** Interfaz, HUD, diálogos, retratos, ciudad e interiores procedurales, atlas SVG de personajes, colisiones y navegación.  
 **Archivos:** \`visual-2.css\` (sistema de presentación), \`index.html\` (composición), \`vtm-game.js\` (integración, estados y movimiento), \`vtm-graphics.js\` (renderizado de mapas y personajes en Canvas).  
 **Restricción:** No modificar las reglas de Vampiro, las misiones, el estado de las partidas guardadas ni la ambientación establecida para modernizar la apariencia.
 
  
-## Continuidad visual y narrativa — Fases XIV–XXI
+## Continuidad visual y narrativa — Fases XIV–XXVI
 
 Esta sección actualiza el alcance del proyecto sin reemplazar los registros históricos de las fases I–XIII. La descripción funcional vigente está en [README.md](README.md); las indicaciones antiguas sobre sistemas «pendientes» deben contrastarse con las fases posteriores antes de implementar cambios.
 
@@ -14,9 +14,10 @@ Esta sección actualiza el alcance del proyecto sin reemplazar los registros his
 - **XVIII–XIX · Consecuencias y acción:** sospecha policial, testigos, Mascarada, combate táctico ampliado, sigilo y persecuciones. Preservar el registro de consecuencias, las rutas y la autonomía de los módulos `vtm-city-consequences.js`, `vtm-advanced-tactics.js` y `vtm-stealth-chase.js`.
 - **XX · Sangre y Bestia:** conservar la progresión ghoul–Abrazo, el sistema de Sangre y sus efectos sin sustituir las reglas ni estados anteriores. Referencia: `vtm-vitae.js`.
 - **XXI · Campaña del Principado:** `vtm-principado.js` y `vtm-conspiracy.js` integran el prólogo y los actos investigativos. La interfaz debe impedir revelaciones anticipadas del secreto de la Senescal y respetar las decisiones persistentes de testigos, pruebas y alianzas.
+- **XXIV–XXVI · EP/47 y consecuencias de Elizabeth Parker:** `vtm-parker-dossier.js` agrega una mesa documental de pruebas y contradicciones; `vtm-parker-politics.js` gestiona protección de testigos, audiencia y seguimientos políticos. Su estado pertenece al personaje activo (`parkerDossier`, `parkerPolitics`) y debe restaurarse sin mezclar personajes ni adelantar revelaciones de la Senescal. La UI de `vtm-parker-dossier.css` debe conservar la lectura de documentos y las decisiones no repetibles.
 - **Investigaciones coexistentes:** mantener el expediente Elizabeth Parker de fase XII, sus interiores de fase XIII y las cuatro investigaciones locales con sus pruebas y desenlaces. La campaña principal no debe reiniciar `game.elizabeth`, `localCases` ni otros estados preexistentes.
 - **Partidas antiguas:** preservar la versión 1, `cronicas-paris-ghoul-v1`, `cronicas-paris-ghoul-v1-backup`, la recuperación con confirmación y las migraciones no destructivas de `vtm-save.js`. Nunca cambiar la estructura de guardado por motivos exclusivamente visuales.
-- **Validación:** `.github/workflows/quality.yml` revisa sintaxis y todos los `tests/*.test.js`, incluidos `elizabeth-case.test.js`, `local-cases.test.js`, `save-backup.test.js` y `conspiracy-phase21.test.js`. `browser-smoke.yml` prueba Chromium local; `production-smoke.yml` prueba la URL pública en Chromium. La validación de producción comprueba funcionalidades servidas, pero no demuestra por sí sola que Hostinger publique el SHA exacto del último commit.
+- **Validación:** `.github/workflows/quality.yml` revisa sintaxis de JavaScript/CommonJS y ejecuta recursivamente todos los `tests/**/*.test.js` y `tests/**/*.test.cjs`, incluidos `elizabeth-case.test.js`, `local-cases.test.js`, `save-backup.test.js`, `conspiracy-phase21.test.js` y `parker-dossier-persistence.test.js`. `browser-smoke.yml` prueba Chromium local; `production-smoke.yml` prueba la URL pública en Chromium. La validación de producción comprueba funcionalidades servidas, pero no demuestra por sí sola que Hostinger publique el SHA exacto del último commit.
 
 
 
