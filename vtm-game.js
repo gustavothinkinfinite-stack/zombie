@@ -2426,6 +2426,7 @@
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu,vitaeFrenzy:(reason)=>VITAE?.frenzy(game,reason),vitaeRitual:(name)=>VITAE?.ritual(game,name)});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
+  window.VTM_PARKER_DOSSIER?.bind({getGame:()=>game,save,refresh:hud});
   if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
   if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
   if(REACT)REACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
