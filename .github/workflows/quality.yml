@@ -23,7 +23,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in ./*.js ./tests/*.js; do
+          shopt -s nullglob
+          files=(./*.js ./*.cjs ./tests/*.js ./tests/*.cjs)
+          for file in "${files[@]}"; do
             node --check "$file"
           done
       - name: Probar todas las regresiones
