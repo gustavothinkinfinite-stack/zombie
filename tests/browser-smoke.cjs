@@ -233,6 +233,8 @@ const key="cronicas-paris-ghoul-v1";
    const isolated=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:"reduce"});
    try{
     const ep=await isolated.newPage();
+    const epErrors=[];
+    ep.on("pageerror",error=>epErrors.push(String(error)));
     const source=await page.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey)),key);
     assert.ok(source&&source.version===1,"Se necesita una partida compatible para EP/47");
     source.scene="house";source.venue=null;source.district=null;source.x=240;source.y=220;
@@ -248,6 +250,15 @@ const key="cronicas-paris-ghoul-v1";
     await ep.goto(base,{waitUntil:"load"});
     await ep.locator("#continueGame").click();
     await ep.locator("#ep-open").click();
+    const epSnapshot=await ep.evaluate(()=>({
+     playHidden:document.getElementById("play")?.classList.contains("hidden"),
+     modalHidden:document.getElementById("ep-modal")?.classList.contains("hidden"),
+     docs:document.querySelectorAll("#ep-body [data-doc]").length,
+     body:document.getElementById("ep-body")?.innerText?.slice(0,250),
+     politicsLoaded:!!window.VTM_PARKER_POLITICS
+    }));
+    assert.ok(epSnapshot.docs===8,
+     "EP/47 debe mostrar ocho documentos: "+JSON.stringify({epSnapshot,epErrors}));
     for(const id of ["EP-03","EP-04","EP-05","EP-06"])
      await ep.locator('[data-doc="'+id+'"]').click();
     for(const id of ["porter","route"])
