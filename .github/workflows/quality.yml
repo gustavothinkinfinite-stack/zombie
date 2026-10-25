@@ -84,34 +84,7 @@ jobs:
                       continue
                   url = urlsplit(match.group(1))
                   if url.scheme or url.netloc or not re.search(
-                      r'\.(?:js|css)        shell: bash
-        run: |
-          set -uo pipefail
-          mapfile -d '' -t tests < <(find ./tests -type f \( -name '*.test.js' -o -name '*.test.cjs' \) -print0 | sort -z)
-          if (( ${#tests[@]} == 0 )); then
-            echo "::error::No se encontraron pruebas en tests/"
-            exit 1
-          fi
-          for required in ./tests/elizabeth-case.test.js ./tests/save-backup.test.js; do
-            if [[ ! -f "$required" ]]; then
-              echo "::error file=${required}::Falta una prueba obligatoria"
-              exit 1
-            fi
-          done
-          failed=0
-          for test in "${tests[@]}"; do
-            echo "::group::${test}"
-            if node "${test}"; then
-              echo "PASS: ${test}"
-            else
-              echo "::error file=${test}::Falló la prueba"
-              failed=$((failed + 1))
-            fi
-            echo "::endgroup::"
-          done
-          echo "Total: ${#tests[@]} pruebas; fallidas: ${failed}"
-          (( failed == 0 ))
-, url.path, flags=re.I
+                      r'\.(?:js|css)$', url.path, flags=re.I
                   ):
                       continue
                   assets[url.path.removeprefix("./")] = url.query
@@ -128,8 +101,8 @@ jobs:
                     f"su parámetro de caché en index.html")
           if stale:
               sys.exit(1)
-          print(f"Caché protegida: {len(changed)} JS/CSS modificados, "
-                f"{len(changed) - len(stale)} sin versiones obsoletas.")
+          print(f"Caché protegida: {len(changed)} JS/CSS modificados; "
+                "todas las versiones vigentes.")
           PY
       - name: Probar todas las regresiones
         shell: bash
