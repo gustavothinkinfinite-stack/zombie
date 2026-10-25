@@ -33,6 +33,14 @@ jobs:
           for file in "${files[@]}"; do
             node --check "$file"
           done
+      - name: Diagnosticar versiones de caché basadas en contenido
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Informar diferencias sin modificar index.html ni bloquear la publicación
+          # durante la migración de identificadores manuales a SHA-256.
+          node tools/refresh-cache.cjs --dry-run
+
       - name: Detectar recursos modificados sin renovar caché
         shell: bash
         env:
