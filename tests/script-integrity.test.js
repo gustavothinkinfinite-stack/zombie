@@ -21,9 +21,15 @@ const modules = scripts.map(src => {
 assert.equal(new Set(modules).size, modules.length, "No cargar dos veces un mismo módulo");
 const engineIndex = modules.indexOf("vtm-game.js");
 assert.ok(engineIndex >= 0, "Falta el motor principal");
-// EP/47 se monta sobre el DOM existente después del motor, sin sustituirlo.
-assert.deepEqual(modules.slice(engineIndex + 1), ["vtm-parker-dossier.js"],
-  "Sólo el complemento documental EP/47 puede cargarse después del motor");
+// EP/47 debe estar disponible cuando el motor enlaza su puente de guardado.
+const dossierIndex = modules.indexOf("vtm-parker-dossier.js");
+assert.ok(dossierIndex >= 0 && dossierIndex < engineIndex,
+  "El expediente EP/47 debe cargarse antes del motor para recibir su puente de partida");
+assert.deepEqual(modules.slice(engineIndex + 1), [],
+  "El motor debe inicializarse después de todos los módulos");
+assert.match(fs.readFileSync(path.join(root, "vtm-game.js"), "utf8"),
+  /window\.VTM_PARKER_DOSSIER\?\.bind\(/,
+  "El motor debe enlazar EP/47 con el estado de la partida activa");
 
 const required = [
   "vtm-data.js", "vtm-content.js", "vtm-npcs.js", "vtm-arcs.js",
