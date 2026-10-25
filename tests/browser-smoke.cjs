@@ -227,6 +227,74 @@ const key="cronicas-paris-ghoul-v1";
     assert.equal(errors.length,0,errors.join("\n"));
    });
   }
+
+  await check("EP/47 conserva audiencia y custodia tras recuperar un respaldo",async()=>{
+   // Navegador aislado: no modifica el guardado de las demás pruebas.
+   const isolated=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:"reduce"});
+   try{
+    const ep=await isolated.newPage();
+    const source=await page.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey)),key);
+    assert.ok(source&&source.version===1,"Se necesita una partida compatible para EP/47");
+    source.scene="house";source.venue=null;source.district=null;source.x=240;source.y=220;
+    source.elizabeth={status:"reported",evidence:["apartment","police"],history:[]};
+    source.parkerDossier={};
+    delete source.parkerPolitics;
+    await ep.addInitScript(({saveKey,game})=>{
+     if(!sessionStorage.getItem("__ep_initialised")){
+      localStorage.setItem(saveKey,JSON.stringify(game));
+      sessionStorage.setItem("__ep_initialised","1");
+     }
+    },{saveKey:key,game:source});
+    await ep.goto(base,{waitUntil:"load"});
+    await ep.locator("#continueGame").click();
+    await ep.locator("#ep-open").click();
+    for(const id of ["EP-03","EP-04","EP-05","EP-06"])
+     await ep.locator('[data-doc="'+id+'"]').click();
+    for(const id of ["porter","route"])
+     await ep.locator('[data-issue="'+id+'"]').click();
+    await ep.locator('[data-protect="shelter"]').click();
+    await ep.locator("#ep-hearing").click();
+    const completed=await ep.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey)),key);
+    assert.equal(completed.parkerDossier.collected.length,4);
+    assert.equal(completed.parkerDossier.linked.length,2);
+    assert.equal(completed.parkerPolitics.protection,"shelter");
+    assert.equal(completed.parkerPolitics.verdict,"inquiry");
+    assert.equal(completed.elizabeth.status,"reported");
+    await ep.locator("#ep-close").click();
+    await ep.locator("#manualSaveBtn").click();
+    const backup=await ep.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey+"-backup")),key);
+    assert.equal(backup.parkerPolitics.verdict,"inquiry","El respaldo debe conservar la audiencia");
+    assert.equal(backup.parkerDossier.linked.length,2);
+    // Corromper el principal al iniciar la nueva página evita que un guardado
+    // al descargar la anterior falsee la prueba de recuperación.
+    await ep.addInitScript(saveKey=>{
+     if(sessionStorage.getItem("__ep_corrupt_once")==="1"){
+      localStorage.setItem(saveKey,"{guardado principal ilegible");
+      sessionStorage.removeItem("__ep_corrupt_once");
+     }
+    },key);
+    await ep.evaluate(()=>sessionStorage.setItem("__ep_corrupt_once","1"));
+    const confirmations=[];
+    ep.on("dialog",dialog=>{confirmations.push(dialog.message());return dialog.accept();});
+    await ep.reload({waitUntil:"load"});
+    assert.equal(await ep.locator("#continueGame").isDisabled(),false);
+    await ep.locator("#continueGame").click();
+    assert.equal(confirmations.length,1,"Recuperar exige confirmación del jugador");
+    assert.match(confirmations[0],/copia de respaldo válida/i);
+    await ep.locator("#ep-open").click();
+    const body=await ep.locator("#ep-body").innerText();
+    assert.match(body,/4\/8 documentos · 2\/5 contradicciones/);
+    assert.match(body,/Protección elegida:/);
+    assert.match(body,/Presentación registrada/);
+    assert.doesNotMatch(body,/antigua anarquista|usurpación|sexta generación/i);
+    assert.equal(await ep.locator("#ep-hearing").isDisabled(),true,"La audiencia no se repite");
+    const restored=await ep.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey)),key);
+    assert.equal(restored.parkerPolitics.verdict,"inquiry");
+    assert.equal(restored.parkerPolitics.protection,"shelter");
+    assert.equal(restored.elizabeth.status,"reported");
+    assert.equal(restored.parkerDossier.linked.length,2);
+   }finally{await isolated.close();}
+  });
   await check("Guardar, reiniciar y cargar no elimina la partida",async()=>{
    await page.locator("#manualSaveBtn").click();
    const raw=await page.evaluate(k=>localStorage.getItem(k),key);
