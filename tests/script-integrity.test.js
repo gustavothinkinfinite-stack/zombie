@@ -10,11 +10,22 @@ const root = path.resolve(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const scripts = [...html.matchAll(/<script\s+src="([^"]+)"\s*><\/script>/g)]
   .map(match => match[1]);
+
+// Cada recurso local debe renovar su URL cuando cambia: evita módulos viejos en caché.
+const versionedFile = url => {
+  const [file, query, ...extra] = url.split("?");
+  assert.equal(extra.length, 0, `URL con múltiples signos de interrogación: ${url}`);
+  const versions = new URLSearchParams(query || "").getAll("v");
+  assert.equal(versions.length, 1, `Falta una versión de caché única en ${url}`);
+  assert.match(versions[0], /^[A-Za-z0-9._-]+$/,
+    `Versión de caché vacía o no válida en ${url}`);
+  return file;
+};
 assert.ok(scripts.length > 0, "La página debe cargar los módulos del juego");
 
 const modules = scripts.map(src => {
   assert.match(src, /^[\w-]+\.js(?:\?[^"#]*)?$/, `Script no local o ruta inesperada: ${src}`);
-  const file = src.split("?")[0];
+  const file = versionedFile(src);
   assert.ok(fs.existsSync(path.join(root, file)), `Falta el archivo ${file}`);
   return file;
 });
@@ -67,7 +78,8 @@ before("vtm-principado.js", "vtm-conspiracy.js");
 before("vtm-conspiracy.js", "vtm-game.js");
 
 const styles = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g)]
-  .map(match => match[1].split("?")[0]);
+  .map(match => versionedFile(match[1]));
+assert.equal(new Set(styles).size, styles.length, "No cargar dos veces una misma hoja CSS");
 assert.ok(styles.indexOf("style.css") >= 0, "Falta el estilo base");
 assert.ok(styles.indexOf("visual-2.css") > styles.indexOf("style.css"),
   "El rediseño visual debe cargarse después del estilo base");
