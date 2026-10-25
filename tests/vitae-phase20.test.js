@@ -115,7 +115,7 @@ run("Los módulos están integrados y el formato de partida existente se conserv
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const main=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
  const ui=fs.readFileSync(path.join(root,"vtm-story-ui.js"),"utf8");
- assert.ok(html.includes("FASE XXI"));
+ assert.match(html, /<span class="brand-version">INVESTIGACIÓN · FASE [IVXLCDM]+<\/span>/);
  assert.ok(html.indexOf("vtm-vitae.js?")<html.indexOf("vtm-game.js?"));
  for(const term of ["VITAE.init(game)","VITAE?.feedingRestriction(game)","VITAE?.weakness(game","VITAE.menu",
  "VITAE?.observeBeauty(game)","VITAE?.afterHunt(game","VITAE?.frenzy(game","SAVE_KEY=\"cronicas-paris-ghoul-v1\""])

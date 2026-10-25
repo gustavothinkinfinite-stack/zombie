@@ -152,7 +152,7 @@ run("Expediente y desenlaces sobreviven serialización sin recompensas duplicada
 run("El orden de carga y los menús integran la fase sin cambiar la clave del guardado",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const game=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
- assert.ok(html.includes("FASE XXI"));
+ assert.match(html, /<span class="brand-version">INVESTIGACIÓN · FASE [IVXLCDM]+<\/span>/);
  assert.ok(html.indexOf("vtm-principado.js?")<html.indexOf("vtm-conspiracy.js?"));
  assert.ok(html.indexOf("vtm-conspiracy.js?")<html.indexOf("vtm-game.js?"));
  for(const needle of ["CONSP.init(game)","CONSP.tick(game)","CONSP.menu","CONSP.journal(game)","CONSP.summary(game)"])

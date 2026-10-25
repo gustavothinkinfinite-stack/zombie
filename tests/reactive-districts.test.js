@@ -109,12 +109,13 @@ test("Carga de módulos, integración de menús y prueba automática CI",()=>{
  const game=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
  assert.ok(html.indexOf("vtm-reactive-districts.js?")>0);
  assert.ok(html.indexOf("vtm-reactive-districts.js?")<html.indexOf("vtm-game.js?"));
- assert.ok(html.includes("FASE XXI"));
+ assert.match(html, /<span class="brand-version">INVESTIGACIÓN · FASE [IVXLCDM]+<\/span>/);
  for(const phrase of ["REGION.init(game)","REGION.tick(game","REGION?.interact(game)","REGION.shopChoices(game,shop)","REGION.draw(g,game,visualTime)","REGION.overview(game)"])
   assert.ok(game.includes(phrase),phrase);
  assert.ok(game.includes('SAVE_KEY="cronicas-paris-ghoul-v1"'));
  const yml=fs.readFileSync(path.join(root,".github/workflows/quality.yml"),"utf8");
- assert.ok(yml.includes("./tests/*.test.js"));
+ assert.ok(yml.includes("find ./tests -type f"));
+ assert.ok(yml.includes("elizabeth-case.test.js")&&yml.includes("save-backup.test.js"));
  new Function(game);
 });
 console.log("OK: Fase XVII — siete barrios reactivos");

@@ -26,7 +26,7 @@ const fixture=()=>({
 });
 function restore(game){
  const stub={init:()=>{},tick:()=>[]};
- const context={game,D,T,P,A:{factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0}},
+ const context={window,game,D,T,P,A:{factions:{camarilla:0,brujah:0,nosferatu:0,tremere:0}},
   V:{normalize:x=>x},K:{normalize:()=>{}},CASES:stub,H:stub,M:stub,
   ST:stub,TACT:stub,EQUIP:stub,ECON:stub,WORLD:stub,ELI:stub,POL:stub,
   ACT:stub,CITY:stub,REACT:stub,REGION:stub,CIV:stub,CHASE:stub,VITAE:stub,PRINC:stub,CONSP:stub,
