@@ -48,6 +48,9 @@ jobs:
               "index.html", "vtm-game.js", "vtm-save.js",
               "vtm-elizabeth.js", "vtm-local-cases.js",
               "vtm-parker-dossier.js", "vtm-parker-politics.js",
+              "vtm-principado.js", "vtm-conspiracy.js", "vtm-vitae.js",
+              "vtm-city-consequences.js", "vtm-stealth-chase.js",
+              "vtm-graphics.js", "visual-2.css",
           )
           expected = {
               name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
@@ -86,7 +89,7 @@ jobs:
               "checked_at": datetime.now(timezone.utc).isoformat(),
               "commit": revision, "site": base, "attempts": attempt,
               "result": "match" if passed else "mismatch", "files": results,
-              "scope": "Archivos críticos; no demuestra identidad del commit completo.",
+              "scope": "14 archivos críticos del juego; no demuestra identidad del commit completo.",
           }
           Path("hostinger-integrity-report.json").write_text(
               json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
