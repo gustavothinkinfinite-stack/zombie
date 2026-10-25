@@ -34,50 +34,79 @@ jobs:
         run: |
           python3 - <<'PY'
           import hashlib
+          from concurrent.futures import ThreadPoolExecutor
+          from html.parser import HTMLParser
           import json
           import os
           import time
           import urllib.request
           from datetime import datetime, timezone
           from pathlib import Path
-          from urllib.parse import quote
+          from urllib.parse import quote, unquote, urlsplit
 
           base = os.environ["GAME_URL"].rstrip("/") + "/"
           revision = os.environ["GITHUB_SHA"]
-          files = (
-              "index.html", "vtm-game.js", "vtm-save.js",
-              "vtm-elizabeth.js", "vtm-local-cases.js",
-              "vtm-parker-dossier.js", "vtm-parker-politics.js",
-              "vtm-principado.js", "vtm-conspiracy.js", "vtm-vitae.js",
-              "vtm-city-consequences.js", "vtm-stealth-chase.js",
-              "vtm-graphics.js", "visual-2.css",
-          )
+          class EntrypointAssets(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.paths = set()
+
+              def handle_starttag(self, tag, attrs):
+                  attributes = dict(attrs)
+                  if tag == "script":
+                      resource = attributes.get("src")
+                  elif tag == "link" and "stylesheet" in attributes.get("rel", "").split():
+                      resource = attributes.get("href")
+                  else:
+                      return
+                  if not resource:
+                      return
+                  parsed = urlsplit(resource)
+                  if parsed.scheme or parsed.netloc:
+                      return
+                  name = unquote(parsed.path)
+                  relative = Path(name)
+                  if relative.is_absolute() or ".." in relative.parts:
+                      raise ValueError(f"Ruta de recurso no segura: {resource}")
+                  if relative.suffix not in (".js", ".css"):
+                      return
+                  if not relative.is_file():
+                      raise FileNotFoundError(f"Recurso del HTML inexistente: {name}")
+                  self.paths.add(name)
+
+          assets = EntrypointAssets()
+          assets.feed(Path("index.html").read_text(encoding="utf-8"))
+          files = ("index.html", *sorted(assets.paths))
+          if len(files) < 15:
+              raise SystemExit("Se esperaban al menos 14 recursos JS/CSS en index.html.")
           expected = {
               name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
               for name in files
           }
           results = []
           passed = False
+          def check_file(name, attempt):
+              item = {"file": name, "expected_sha256": expected[name]}
+              url = base + quote(name) + "?cp_verify=" + revision[:12] + "-" + str(attempt)
+              try:
+                  request = urllib.request.Request(
+                      url, headers={"Cache-Control": "no-cache",
+                                    "Pragma": "no-cache",
+                                    "User-Agent": "CronicasParis-CI/1.0"}
+                  )
+                  with urllib.request.urlopen(request, timeout=12) as response:
+                      body = response.read()
+                      item["status"] = response.status
+                  item["served_sha256"] = hashlib.sha256(body).hexdigest()
+                  item["match"] = item["status"] == 200 and item["served_sha256"] == expected[name]
+              except Exception as exc:
+                  item["match"] = False
+                  item["error"] = str(exc)
+              return item
+
           for attempt in range(1, 5):
-              results = []
-              for name in files:
-                  item = {"file": name, "expected_sha256": expected[name]}
-                  url = base + quote(name) + "?cp_verify=" + revision[:12] + "-" + str(attempt)
-                  try:
-                      request = urllib.request.Request(
-                          url, headers={"Cache-Control": "no-cache",
-                                        "Pragma": "no-cache",
-                                        "User-Agent": "CronicasParis-CI/1.0"}
-                      )
-                      with urllib.request.urlopen(request, timeout=12) as response:
-                          body = response.read()
-                          item["status"] = response.status
-                      item["served_sha256"] = hashlib.sha256(body).hexdigest()
-                      item["match"] = item["status"] == 200 and item["served_sha256"] == expected[name]
-                  except Exception as exc:
-                      item["match"] = False
-                      item["error"] = str(exc)
-                  results.append(item)
+              with ThreadPoolExecutor(max_workers=6) as executor:
+                  results = list(executor.map(lambda name: check_file(name, attempt), files))
               passed = all(item["match"] for item in results)
               print("Intento", attempt, "—", sum(item["match"] for item in results),
                     "/", len(files), "archivos coincidentes", flush=True)
@@ -89,7 +118,7 @@ jobs:
               "checked_at": datetime.now(timezone.utc).isoformat(),
               "commit": revision, "site": base, "attempts": attempt,
               "result": "match" if passed else "mismatch", "files": results,
-              "scope": "14 archivos críticos del juego; no demuestra identidad del commit completo.",
+              "scope": f"{len(files)} recursos de entrada (index.html y todos los JS/CSS locales referenciados); no cubre recursos SVG ni demuestra identidad del commit completo.",
           }
           Path("hostinger-integrity-report.json").write_text(
               json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
