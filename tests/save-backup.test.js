@@ -69,6 +69,33 @@ invalid.db.set(bk,JSON.stringify({...first,character:{clan:"Desconocido"}}));
 assert.equal(S.load(invalid,key,clans),null);
 console.log("OK: los respaldos inválidos no se cargan");
 
+// Algunos navegadores/extensiones pueden ignorar una escritura sin lanzar error.
+// El guardado debe verificar la lectura posterior antes de informar éxito.
+const silentBackup=storage();
+assert.equal(S.save(silentBackup,key,first,clans),true);
+silentBackup.db.set(key,JSON.stringify(second));
+const previousPrimary=silentBackup.getItem(key);
+const previousBackup=silentBackup.getItem(bk);
+silentBackup.setItem=(k,v)=>{if(k!==bk)silentBackup.db.set(k,String(v));};
+assert.equal(S.save(silentBackup,key,third,clans),false);
+assert.equal(silentBackup.getItem(key),previousPrimary,
+  "Si falla el respaldo en silencio, no se reemplaza la partida principal");
+assert.equal(silentBackup.getItem(bk),previousBackup,
+  "Un respaldo rechazado en silencio no debe considerarse actualizado");
+
+const silentPrimary=storage();
+assert.equal(S.save(silentPrimary,key,first,clans),true);
+silentPrimary.db.set(key,JSON.stringify(second));
+silentPrimary.setItem=(k,v)=>{if(k!==key)silentPrimary.db.set(k,String(v));};
+assert.equal(S.save(silentPrimary,key,third,clans),false);
+assert.equal(silentPrimary.getItem(key),JSON.stringify(second),
+  "Una escritura principal ignorada no debe simular una partida nueva");
+assert.equal(silentPrimary.getItem(bk),JSON.stringify(second),
+  "La versión anterior válida debe quedar recuperable");
+silentPrimary.db.set(key,"{dañado");
+assert.equal(S.load(silentPrimary,key,clans).game.character.name,"PJ 2");
+console.log("OK: escrituras ignoradas no causan falsos éxitos ni pérdida del respaldo");
+
 const blocked={getItem:()=>{throw new Error("Acceso bloqueado");},setItem:()=>{throw new Error("Acceso bloqueado");}};
 assert.equal(S.save(blocked,key,first,clans),false);
 assert.equal(S.load(blocked,key,clans),null);
