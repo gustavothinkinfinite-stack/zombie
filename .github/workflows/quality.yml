@@ -24,7 +24,10 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          files=(./*.js ./*.cjs ./tests/*.js ./tests/*.cjs)
+          files=(./*.js ./*.cjs)
+          while IFS= read -r -d '' file; do
+            files+=("$file")
+          done < <(find ./tests -type f \( -name '*.js' -o -name '*.cjs' \) -print0 | sort -z)
           for file in "${files[@]}"; do
             node --check "$file"
           done
@@ -32,12 +35,17 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          shopt -s nullglob
-          tests=(./tests/*.test.js)
+          mapfile -d '' -t tests < <(find ./tests -type f \( -name '*.test.js' -o -name '*.test.cjs' \) -print0 | sort -z)
           if (( ${#tests[@]} == 0 )); then
-            echo "::error::No se encontraron archivos tests/*.test.js"
+            echo "::error::No se encontraron pruebas en tests/"
             exit 1
           fi
+          for required in ./tests/elizabeth-case.test.js ./tests/save-backup.test.js; do
+            if [[ ! -f "$required" ]]; then
+              echo "::error file=${required}::Falta una prueba obligatoria"
+              exit 1
+            fi
+          done
           failed=0
           for test in "${tests[@]}"; do
             echo "::group::${test}"
