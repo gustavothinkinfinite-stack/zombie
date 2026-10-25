@@ -346,6 +346,53 @@ if(verifyBrowserAssets){
     assert.equal(restored.parkerDossier.linked.length,2);
    }finally{await isolated.close();}
   });
+  await check("Cancelar recuperación mantiene intactos el principal dañado y su respaldo",async()=>{
+   // Perfil aislado: comprueba consentimiento sin tocar partidas de jugadores.
+   const isolated=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:"reduce"});
+   try{
+    const recovery=await isolated.newPage();
+    const saved=await page.evaluate(saveKey=>JSON.parse(localStorage.getItem(saveKey)),key);
+    assert.equal(saved.version,1);
+    const backup=JSON.stringify(saved);
+    const damaged="{guardado principal ilegible";
+    await recovery.addInitScript(({saveKey,backup,damaged})=>{
+     if(sessionStorage.getItem("__recovery_consent_setup")!=="1"){
+      localStorage.setItem(saveKey,damaged);
+      localStorage.setItem(saveKey+"-backup",backup);
+      sessionStorage.setItem("__recovery_consent_setup","1");
+     }
+    },{saveKey:key,backup,damaged});
+    await recovery.goto(base,{waitUntil:"load"});
+    assert.equal(await recovery.locator("#continueGame").isDisabled(),false);
+    const prompts=[];
+    recovery.on("dialog",async dialog=>{
+     prompts.push(dialog.message());
+     if(prompts.length===1)await dialog.dismiss();
+     else await dialog.accept();
+    });
+    await recovery.locator("#continueGame").click();
+    assert.equal(prompts.length,1,"La recuperación debe solicitar consentimiento");
+    assert.match(prompts[0],/copia de respaldo válida/i);
+    assert.equal(await recovery.locator("#welcome").isVisible(),true);
+    assert.equal(await recovery.locator("#play").isVisible(),false);
+    const rejected=await recovery.evaluate(saveKey=>({
+     primary:localStorage.getItem(saveKey),
+     backup:localStorage.getItem(saveKey+"-backup")
+    }),key);
+    assert.equal(rejected.primary,damaged,"Rechazar no debe sobrescribir el principal");
+    assert.equal(rejected.backup,backup,"Rechazar no debe tocar la copia recuperable");
+    await recovery.locator("#continueGame").click();
+    assert.equal(prompts.length,2,"Aceptar después debe solicitar confirmación nuevamente");
+    assert.equal(await recovery.locator("#play").isVisible(),true);
+    const accepted=await recovery.evaluate(saveKey=>({
+     primary:localStorage.getItem(saveKey),
+     backup:localStorage.getItem(saveKey+"-backup")
+    }),key);
+    assert.equal(JSON.parse(accepted.primary).version,1);
+    assert.equal(JSON.parse(accepted.primary).character.name,saved.character.name);
+    assert.equal(accepted.backup,backup,"Aceptar conserva el respaldo válido");
+   }finally{await isolated.close();}
+  });
   await check("Guardar, reiniciar y cargar no elimina la partida",async()=>{
    await page.locator("#manualSaveBtn").click();
    const raw=await page.evaluate(k=>localStorage.getItem(k),key);
