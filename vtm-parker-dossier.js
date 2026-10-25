@@ -4,7 +4,7 @@
  * Guarda hallazgos y decisiones independientemente para respetar partidas anteriores.
  */
 (()=> {
- const SAVE="cronicas-paris-ep47-v1", GAME="cronicas-paris-ghoul-v1";
+ let bridge=null;
  const docs=[
   {id:"EP-03",title:"Inventario del apartamento",place:"policia",requires:"apartment",auth:"mixta",text:"ACTA EP/47 — Inventario de objetos. EP-03-B: pañuelo claro bordado J. W., recuperado próximo al cuerpo. Fotografiado 23:58; embolsado 00:14 por la unidad actuante; depósito 01:12. No existe determinación pericial de cuándo fue depositado.",custody:"Escena → fotografía policial → bolsa EP47-B-014 → depósito de evidencias.",challenge:"Que las iniciales correspondan a John no demuestra quién trasladó el objeto."},
   {id:"EP-04",title:"Declaración oficial de la portera",place:"policia",requires:"police",auth:"alterada",text:"DECLARACIÓN — Madeleine Fournier: «Vi a un hombre elegante ingresar aproximadamente a las 22:00». Nota del funcionario: características compatibles con John Winthrop.",custody:"Entrevista → transcripción policial → copia oficial. Falta una autorización escrita para la rectificación.",challenge:"El nombre de John aparece en la interpretación del agente, no en una identificación espontánea."},
@@ -22,18 +22,18 @@
   {id:"order",label:"Hubo una orden para modificar la versión oficial",ids:["EP-04","EP-05","EP-13"],effect:"La nota anterior explica el cambio documental, pendiente de autenticación definitiva."},
   {id:"network",label:"La logística vincula a Bapthiste y su entorno",ids:["EP-09","EP-11","EP-13"],effect:"Los testimonios y movimientos crean una línea de investigación sobre la fabricación del caso."}
  ];
- const readSave=()=>{try{return JSON.parse(localStorage.getItem(SAVE)||"{}")}catch{return {}}};
- const store=s=>{try{localStorage.setItem(SAVE,JSON.stringify(s))}catch{}};
- const game=()=>{try{return JSON.parse(localStorage.getItem(GAME)||"null")}catch{return null}};
+ const game=()=>bridge?.getGame?.()||null;
+ const readSave=()=>{const g=game();if(!g)return {};if(!g.parkerDossier||typeof g.parkerDossier!=="object")g.parkerDossier={};return g.parkerDossier};
+ const store=s=>{const g=game();if(!g)return;g.parkerDossier=s;bridge?.save?.();bridge?.refresh?.()};
  const h=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  let active=null;
  function render(){
   const g=game(),e=g?.elizabeth||{},s=readSave();
-  const opened=e.status&&e.status!=="dormant";
+  const opened=!!(e.status&&e.status!=="dormant");
   const evidence=Array.isArray(e.evidence)?e.evidence:[];
   const unlocked=d=>opened&&(evidence.includes(d.requires)||d.requires==="apartment"&&evidence.includes("apartment")||d.requires==="garage"&&evidence.includes("garage"));
   const collected=s.collected||[],linked=s.linked||[];
-  const available=docs.filter(d=>unlocked(d));
+  
   const detail=docs.find(d=>d.id===active&&collected.includes(d.id));
   const list=docs.map(d=>'<button class="ep-doc '+(collected.includes(d.id)?"owned":"")+'" data-doc="'+d.id+'" '+(!unlocked(d)?"disabled":"")+'><b>'+d.id+'</b> '+h(d.title)+'<small>'+(collected.includes(d.id)?"Archivado":unlocked(d)?"Disponible para contrastar":"Buscá la pista en el mapa")+'</small></button>').join("");
   const comparisons=issues.map(x=>{const ready=x.ids.every(id=>collected.includes(id));return '<button class="ep-issue" data-issue="'+x.id+'" '+(!ready||linked.includes(x.id)?"disabled":"")+'>'+h(x.label)+'<small>'+x.ids.join(" + ")+' · '+(linked.includes(x.id)?"Contradicción demostrada":ready?"Contrastar ahora":"Faltan documentos")+'</small></button>'}).join("");
@@ -45,7 +45,7 @@
    '<div class="ep-grid"><section><h3>Documentos</h3>'+list+'</section><section><h3>Mesa de contraste</h3>'+comparisons+'</section></div>'+
    (detail?'<section class="ep-paper"><b>'+h(detail.id+" — "+detail.title)+'</b><p>'+h(detail.text)+'</p><small>CADENA DE CUSTODIA: '+h(detail.custody)+'</small><p><em>Pregunta para la audiencia: '+h(detail.challenge)+'</em></p></section>':'')+
    (s.note?'<p class="ep-finding">'+h(s.note)+'</p>':'')+
-   '<section class="ep-verdict"><h3>Audiencia ante Duvalier</h3><p>'+result+'</p><button id="ep-hearing" '+(count<2||s.verdict?"disabled":"")+'>'+(s.verdict?"Presentación registrada":"Presentar argumentos ante la corte")+'</button>'+(s.verdict?'<p class="ep-finding">'+h(s.verdict)+'</p>':'')+'</section>';
+   '<section class="ep-verdict"><h3>Audiencia ante Duvalier</h3><p>'+result+'</p><button id="ep-hearing" '+(count<2||s.verdict||e.status!=="reported"?"disabled":"")+'>'+(s.verdict?"Presentación registrada":"Presentar argumentos ante la corte")+'</button>'+(s.verdict?'<p class="ep-finding">'+h(s.verdict)+'</p>':'')+'</section>';
   document.querySelectorAll("[data-doc]").forEach(b=>b.addEventListener("click",()=>{
    const id=b.dataset.doc,d=docs.find(x=>x.id===id);
    if(!unlocked(d))return;
@@ -58,7 +58,14 @@
   }));
   document.getElementById("ep-hearing").addEventListener("click",()=>{
    const state=readSave();if((state.linked||[]).length<2||state.verdict)return;
-   state.verdict=(state.linked.length>=4?"Duvalier ordena revisar la acusación contra John y abrir una investigación reservada sobre las alteraciones del expediente.":"Duvalier autoriza nuevas diligencias y suspende cualquier conclusión definitiva contra John.")+" La prohibición de acceso al Elíseo continúa como asunto separado.";
+   const g=game(),e=g?.elizabeth;
+   if(!e||e.status!=="reported"){state.note="Antes de una audiencia formal, presentá el informe de Elizabeth a la autoridad correspondiente desde Passy.";store(state);render();return;}
+   const formal=state.linked.length>=4;
+   state.verdict=(formal?"Duvalier ordena revisar la acusación contra John y abrir una investigación reservada sobre las alteraciones del expediente.":"Duvalier autoriza nuevas diligencias y suspende cualquier conclusión definitiva contra John.")+" La prohibición de acceso al Elíseo continúa como asunto separado.";
+   if(!e.court){e.court="inquiry";e.history=Array.isArray(e.history)?e.history:[];e.history.push("Dossier EP/47 presentado en audiencia: "+(formal?"impugnación documentada":"solicitud de nuevas diligencias")); }
+   g.npcRelations=g.npcRelations||{};
+   g.npcRelations.john=Math.min(3,(g.npcRelations.john||0)+1);
+   if(g.history&&Array.isArray(g.history))g.history.push("Audiencia Parker: "+(formal?"expediente impugnado":"nuevas diligencias abiertas")+".");
    store(state);render();
   });
  }
@@ -75,5 +82,6 @@
   modal.addEventListener("click",e=>{if(e.target===modal)close()});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.classList.contains("hidden"))close()});
  }
+ window.VTM_PARKER_DOSSIER=Object.freeze({bind(api){bridge=api},getState:readSave});
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
 })();
