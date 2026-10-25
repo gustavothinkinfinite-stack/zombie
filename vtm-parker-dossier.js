@@ -33,6 +33,7 @@
   const evidence=Array.isArray(e.evidence)?e.evidence:[];
   const unlocked=d=>opened&&(evidence.includes(d.requires)||d.requires==="apartment"&&evidence.includes("apartment")||d.requires==="garage"&&evidence.includes("garage"));
   const collected=s.collected||[],linked=s.linked||[];
+  const politics=window.VTM_PARKER_POLITICS,political=politics?.summary(g)||{protection:null,paths:[]};
   
   const detail=docs.find(d=>d.id===active&&collected.includes(d.id));
   const list=docs.map(d=>'<button class="ep-doc '+(collected.includes(d.id)?"owned":"")+'" data-doc="'+d.id+'" '+(!unlocked(d)?"disabled":"")+'><b>'+d.id+'</b> '+h(d.title)+'<small>'+(collected.includes(d.id)?"Archivado":unlocked(d)?"Disponible para contrastar":"Buscá la pista en el mapa")+'</small></button>').join("");
@@ -45,7 +46,7 @@
    '<div class="ep-grid"><section><h3>Documentos</h3>'+list+'</section><section><h3>Mesa de contraste</h3>'+comparisons+'</section></div>'+
    (detail?'<section class="ep-paper"><b>'+h(detail.id+" — "+detail.title)+'</b><p>'+h(detail.text)+'</p><small>CADENA DE CUSTODIA: '+h(detail.custody)+'</small><p><em>Pregunta para la audiencia: '+h(detail.challenge)+'</em></p></section>':'')+
    (s.note?'<p class="ep-finding">'+h(s.note)+'</p>':'')+
-   '<section class="ep-verdict"><h3>Audiencia ante Duvalier</h3><p>'+result+'</p><button id="ep-hearing" '+(count<2||s.verdict||e.status!=="reported"?"disabled":"")+'>'+(s.verdict?"Presentación registrada":"Presentar argumentos ante la corte")+'</button>'+(s.verdict?'<p class="ep-finding">'+h(s.verdict)+'</p>':'')+'</section>';
+   '<section class="ep-verdict"><h3>Protección de testigos y alianzas</h3><p>'+(political.protection?"Protección elegida: "+h(politics.choices[political.protection].label):"Elegí una custodia de testigos. La decisión tiene consecuencias políticas y no puede deshacerse.")+'</p>'+(political.protection?"":Object.entries(politics?.choices||{}).map(([k,v])=>'<button class="ep-doc" data-protect="'+k+'">'+h(v.label)+'<small>'+h(v.description)+'</small></button>').join(""))+'</section><section class="ep-verdict"><h3>Investigaciones conectadas</h3>'+(political.paths.length?political.paths.map(p=>'<p><b>'+h(p.title)+'</b> — '+h(p.description)+'</p>').join(""):"<p>Las decisiones de la audiencia y los testigos habilitarán nuevas vías políticas.</p>")+'</section><section class="ep-verdict"><h3>Audiencia ante Duvalier</h3><p>'+result+'</p><button id="ep-hearing" '+(count<2||s.verdict||e.status!=="reported"?"disabled":"")+'>'+(s.verdict?"Presentación registrada":"Presentar argumentos ante la corte")+'</button>'+(s.verdict?'<p class="ep-finding">'+h(s.verdict)+'</p>':'')+'</section>';
   document.querySelectorAll("[data-doc]").forEach(b=>b.addEventListener("click",()=>{
    const id=b.dataset.doc,d=docs.find(x=>x.id===id);
    if(!unlocked(d))return;
@@ -56,11 +57,13 @@
    if(!x.ids.every(id=>(state.collected||[]).includes(id)))return;
    state.linked=Array.from(new Set([...(state.linked||[]),x.id]));state.note=x.effect;store(state);render();
   }));
+  document.querySelectorAll("[data-protect]").forEach(b=>b.addEventListener("click",()=>{const g=game();if(!g)return;if(window.VTM_PARKER_POLITICS?.protect(g,b.dataset.protect)){store(readSave());render()}}));
   document.getElementById("ep-hearing").addEventListener("click",()=>{
    const state=readSave();if((state.linked||[]).length<2||state.verdict)return;
    const g=game(),e=g?.elizabeth;
    if(!e||e.status!=="reported"){state.note="Antes de una audiencia formal, presentá el informe de Elizabeth a la autoridad correspondiente desde Passy.";store(state);render();return;}
    const formal=state.linked.length>=4;
+   window.VTM_PARKER_POLITICS?.verdict(g,state.linked.length);
    state.verdict=(formal?"Duvalier ordena revisar la acusación contra John y abrir una investigación reservada sobre las alteraciones del expediente.":"Duvalier autoriza nuevas diligencias y suspende cualquier conclusión definitiva contra John.")+" La prohibición de acceso al Elíseo continúa como asunto separado.";
    if(!e.court){e.court="inquiry";e.history=Array.isArray(e.history)?e.history:[];e.history.push("Dossier EP/47 presentado en audiencia: "+(formal?"impugnación documentada":"solicitud de nuevas diligencias")); }
    g.npcRelations=g.npcRelations||{};
