@@ -6,16 +6,40 @@
 const assert=require("node:assert/strict");
 const {chromium}=require("playwright");
 const fs=require("node:fs");
+const {createHash}=require("node:crypto");
 const base=process.env.GAME_URL||"http://127.0.0.1:4173/";
 const key="cronicas-paris-ghoul-v1";
+// La comparación pública habitual usa URLs sin caché; esta comprobación observa
+// los bytes que Chromium recibió realmente con las URLs normales de index.html.
+const verifyBrowserAssets=Boolean(process.env.GAME_URL);
+const expectedBrowserAssets=new Map();
+if(verifyBrowserAssets){
+ const html=fs.readFileSync("index.html","utf8");
+ const origin=new URL(base).origin;
+ for(const tag of html.match(/<(?:script|link)\b[^>]*>/gi)||[]){
+  const script=/^<script\b/i.test(tag);
+  if(!script&&!/\brel\s*=\s*["']stylesheet["']/i.test(tag))continue;
+  const attribute=tag.match(script?/\bsrc\s*=\s*["']([^"']+)["']/i:/\bhref\s*=\s*["']([^"']+)["']/i);
+  if(!attribute)continue;
+  const url=new URL(attribute[1],base);
+  if(url.origin!==origin||!/\.(?:js|css)$/i.test(url.pathname))continue;
+  const path=decodeURIComponent(url.pathname).replace(/^\/+/,"");
+  assert.ok(!path.split("/").includes(".."),"Ruta de recurso no segura: "+path);
+  assert.ok(fs.existsSync(path),"Falta recurso de entrada: "+path);
+  expectedBrowserAssets.set(url.href,createHash("sha256").update(fs.readFileSync(path)).digest("hex"));
+ }
+ assert.ok(expectedBrowserAssets.size>=14,"No se detectaron suficientes recursos JS/CSS");
+}
 (async()=>{
  const browser=await chromium.launch({headless:true});
  const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:"reduce"});
  const page=await context.newPage();
  const errors=[],httpFailures=[],checks=[];
+ const browserAssetResponses=new Map();
  const startedAt=new Date().toISOString();
  page.on("pageerror",e=>errors.push(String(e)));
  page.on("response",response=>{
+   if(expectedBrowserAssets.has(response.url()))browserAssetResponses.set(response.url(),response);
    if(response.status()>=400&&/\.(?:js|css)(?:\?|$)/.test(response.url()))
      httpFailures.push(response.status()+" "+response.url());
  });
@@ -36,6 +60,22 @@ const key="cronicas-paris-ghoul-v1";
    assert.match(await page.title(),/Crónicas de París/);
    assert.equal(errors.length,0,errors.join("\n"));
   });
+  if(verifyBrowserAssets){
+   await check("Chromium carga los JS/CSS publicados, sin saltarse la caché",async()=>{
+    const differences=[];
+    for(const [url,expected] of expectedBrowserAssets){
+     const response=browserAssetResponses.get(url);
+     if(!response){differences.push("No cargado: "+url);continue;}
+     if(response.status()!==200){differences.push("HTTP "+response.status()+": "+url);continue;}
+     try{
+      const actual=createHash("sha256").update(await response.body()).digest("hex");
+      if(actual!==expected)differences.push("Versión distinta: "+url);
+     }catch(error){differences.push("No se pudo leer "+url+": "+String(error));}
+    }
+    assert.deepEqual(differences,[],"El navegador recibió recursos desactualizados: "+differences.join("; "));
+    console.log("Recursos JS/CSS cargados en Chromium: "+expectedBrowserAssets.size+"/"+expectedBrowserAssets.size);
+   });
+  }
   await check("El creador de personaje responde a los controles",async()=>{
    await page.locator("#startNew").click();
    await page.locator("#creator-name").fill("Prueba de navegador");
