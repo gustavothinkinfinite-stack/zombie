@@ -297,6 +297,7 @@
   else if(game.scene==="sidevenue"){game.scene="paris";game.x=game.cityPos.x;game.y=game.cityPos.y;}
   if(CASES)CASES.init(game);
   if(ELI)ELI.init(game);
+  window.VTM_PARKER_POLITICS?.init(game);
   game.localPlaces=game.localPlaces||{};
   game.localClues=game.localClues||[];
   if(H)H.init(game);
@@ -2348,6 +2349,7 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
+  if(window.VTM_PARKER_POLITICS){const p=window.VTM_PARKER_POLITICS.summary(game);if(p.verdict||p.protection){const title=document.createElement("p");title.textContent="Consecuencias del expediente Parker: "+(p.verdict||"sin audiencia")+" · custodia de testigos: "+(p.protection||"sin asignar");root.appendChild(title);for(const next of p.paths){const entry=document.createElement("p");entry.textContent="• Nueva línea política: "+next.title+" — "+next.description;root.appendChild(entry);}}}
   if(CONSP){
    for(const description of CONSP.journal(game)){
     const row=document.createElement("p");row.textContent=description;root.appendChild(row);
