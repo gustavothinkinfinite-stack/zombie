@@ -8,7 +8,7 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 function refresh(html, root) {
-  const base = path.resolve(root);
+  const base = fs.realpathSync(path.resolve(root));
   const seen = new Set();
   let updated = 0;
   const output = html.replace(/<(script|link)\b[^>]*>/gi, (tag, kind) => {
@@ -29,7 +29,12 @@ function refresh(html, root) {
     if (!absolute.startsWith(base + path.sep)) {
       throw new Error("Recurso fuera del proyecto: " + filename);
     }
-    const bytes = fs.readFileSync(absolute);
+    // La comprobación léxica anterior no impide escapar mediante enlaces simbólicos.
+    const target = fs.realpathSync(absolute);
+    if (!target.startsWith(base + path.sep)) {
+      throw new Error("Recurso fuera del proyecto (enlace simbólico): " + filename);
+    }
+    const bytes = fs.readFileSync(target);
     const digest = crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 12);
     const params = new URLSearchParams(queryAt < 0 ? "" : withoutFragment.slice(queryAt + 1));
     params.set("v", "sha256-" + digest);

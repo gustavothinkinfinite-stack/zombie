@@ -30,6 +30,22 @@ try {
   assert.throws(() => refresh('<script src="faltante.js?v=1"></script>', dir), /ENOENT/);
   assert.throws(() => refresh('<script src="../secreto.js?v=1"></script>', dir), /fuera del proyecto/);
   assert.throws(() => refresh("<div>sin recursos</div>", dir), /No se encontraron recursos/);
+  // Un enlace simbólico puede eludir la protección de rutas con "..".
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "cronicas-cache-externo-"));
+  try {
+    const secret = path.join(outside, "secreto.js");
+    fs.writeFileSync(secret, "contenido privado");
+    fs.symlinkSync(secret, path.join(dir, "externo.js"));
+    assert.throws(
+      () => refresh('<script src="externo.js?v=1"></script>', dir),
+      /fuera del proyecto/,
+      "No debe leerse un archivo externo mediante un enlace simbólico"
+    );
+    fs.symlinkSync(path.join(dir, "vtm-save.js"), path.join(dir, "interno.js"));
+    assert.equal(refresh('<script src="interno.js?v=1"></script>', dir).updated, 1);
+  } finally {
+    fs.rmSync(outside, {recursive: true, force: true});
+  }
   console.log("OK: versiones SHA-256 reproducibles, selectivas, seguras e idempotentes");
 } finally {
   fs.rmSync(dir, {recursive: true, force: true});
