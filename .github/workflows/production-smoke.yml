@@ -76,7 +76,12 @@ jobs:
 
           assets = EntrypointAssets()
           assets.feed(Path("index.html").read_text(encoding="utf-8"))
-          files = ("index.html", *sorted(assets.paths))
+          svg_files = sorted(
+              path.as_posix() for path in Path("assets").rglob("*.svg") if path.is_file()
+          )
+          if not svg_files:
+              raise SystemExit("No se encontraron recursos SVG en assets/.")
+          files = ("index.html", *sorted(assets.paths), *svg_files)
           if len(files) < 15:
               raise SystemExit("Se esperaban al menos 14 recursos JS/CSS en index.html.")
           expected = {
@@ -118,7 +123,7 @@ jobs:
               "checked_at": datetime.now(timezone.utc).isoformat(),
               "commit": revision, "site": base, "attempts": attempt,
               "result": "match" if passed else "mismatch", "files": results,
-              "scope": f"{len(files)} recursos de entrada (index.html y todos los JS/CSS locales referenciados); no cubre recursos SVG ni demuestra identidad del commit completo.",
+              "scope": f"{len(files)} recursos publicados (index.html, JS/CSS locales referenciados y todos los SVG de assets/); no demuestra identidad de otros archivos ni del commit completo.",
           }
           Path("hostinger-integrity-report.json").write_text(
               json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
