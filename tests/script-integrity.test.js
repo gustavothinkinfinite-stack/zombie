@@ -19,7 +19,11 @@ const modules = scripts.map(src => {
   return file;
 });
 assert.equal(new Set(modules).size, modules.length, "No cargar dos veces un mismo módulo");
-assert.equal(modules.at(-1), "vtm-game.js", "El motor debe cargarse al final");
+const engineIndex = modules.indexOf("vtm-game.js");
+assert.ok(engineIndex >= 0, "Falta el motor principal");
+// EP/47 se monta sobre el DOM existente después del motor, sin sustituirlo.
+assert.deepEqual(modules.slice(engineIndex + 1), ["vtm-parker-dossier.js"],
+  "Sólo el complemento documental EP/47 puede cargarse después del motor");
 
 const required = [
   "vtm-data.js", "vtm-content.js", "vtm-npcs.js", "vtm-arcs.js",
