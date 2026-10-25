@@ -71,6 +71,39 @@ test("Sucesos y transeúntes permiten interacción una vez por noche",()=>{
  messages.at(-1).options[0].action();
  assert.ok(game.cityLife.talked[game.clock.night+":"+passerby.id]);
 });
+test("Los peatones transmiten rumores públicos según barrio y hora sin alterar expedientes",()=>{
+ const game=g("district","bastilla",23*60+40,2),messages=[],logs=[];
+ game.elizabeth={proof:["pista original"]};
+ game.localCases={closed:["expediente anterior"]};
+ game.reactiveDistricts={rumors:[
+  {id:"visible",origin:"stjuly",district:"bastilla",night:2,minute:23*60+20,text:"Un club revisa invitaciones falsificadas."},
+  {id:"futuro",origin:"passy",district:"bastilla",night:2,minute:24*60+10,text:"Mensaje que todavía no circula."},
+  {id:"anterior",origin:"stjuly",district:"bastilla",night:1,minute:23*60,text:"Un visitante discutió con un portero."},
+  {id:"otro-barrio",origin:"stjuly",district:"passy",night:2,minute:23*60,text:"Rumor ajeno al barrio."}
+ ]};
+ const walker=C.walkers(game,8)[0],rumor=C.streetRumor(game,walker);
+ assert.equal(rumor.id,"visible");
+ C.bind({ask:(title,body,options)=>messages.push({title,body,options}),log:x=>logs.push(x),save:()=>{},refresh:()=>{}});
+ assert.equal(C.interactWalker(game,walker),true);
+ assert.match(messages.at(-1).body,/invitaciones falsificadas/);
+ assert.match(messages.at(-1).body,/sin pruebas verificadas/);
+ assert.doesNotMatch(messages.at(-1).body,/todavía no circula|Rumor ajeno/);
+ messages.at(-1).options[0].action();
+ assert.equal(logs.length,1);
+ assert.match(logs[0],/Rumor sin verificar/);
+ const loaded=JSON.parse(JSON.stringify(game));
+ assert.equal(loaded.cityLife.talked[game.clock.night+":"+walker.id],true);
+ assert.equal(C.interactWalker(loaded,walker),true);
+ assert.match(messages.at(-1).body,/ya conversaron/);
+ messages.at(-1).options[0].action();
+ assert.equal(logs.length,1,"No se repite el registro al cargar una partida");
+ assert.deepEqual(loaded.elizabeth,game.elizabeth);
+ assert.deepEqual(loaded.localCases,game.localCases);
+ const withoutRumors=g("district","bastilla",22*60,2);
+ withoutRumors.reactiveDistricts={rumors:[game.reactiveDistricts.rumors[1]]};
+ assert.equal(C.streetRumor(withoutRumors,C.walkers(withoutRumors,8)[0]),null);
+ assert.equal(C.streetRumor(g(),C.walkers(g(),8)[0]),null,"Compatibilidad con partidas antiguas");
+});
 test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const source=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");

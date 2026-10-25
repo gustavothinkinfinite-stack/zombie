@@ -225,15 +225,37 @@ window.VTM_CITY_LIFE=(()=>{
    }},{label:"Alejarte",action:()=>{}}],"PARÍS · ACONTECIMIENTO NOCTURNO");
   return true;
  }
+ // Los rumores públicos de los siete incidentes reactivos ya circulan por
+ // barrios y horarios; conversar no equivale a verificar sus afirmaciones.
+ function streetRumor(g,w){
+  if(!byId[g?.district]||typeof w?.id!=="string"||!w.id.startsWith(g.district+":walker:"))return null;
+  const rows=g.reactiveDistricts?.rumors;
+  if(!Array.isArray(rows))return null; // Partidas antiguas sin incidentes.
+  const night=Math.max(1,Math.floor(Number(g.clock?.night)||1)),now=current(g);
+  const published=rows.filter(r=>r&&r.district===g.district&&
+   typeof r.text==="string"&&r.text.trim()&&
+   Number.isInteger(r.night)&&r.night>=night-1&&r.night<=night&&
+   Number.isFinite(r.minute)&&(r.night<night||r.minute<=now));
+  published.sort((a,b)=>b.night-a.night||b.minute-a.minute||String(a.id).localeCompare(String(b.id)));
+  if(!published.length)return null;
+  const idx=Number(w.id.slice((g.district+":walker:").length));
+  return published[Number.isInteger(idx)&&idx>=0?idx%Math.min(3,published.length):0];
+ }
  function interactWalker(g,w){
   const state=init(g),key=g.clock.night+":"+w.id,remembered=!!state.talked[key];
+  const rumor=streetRumor(g,w);
   const text=remembered?
    "La persona reconoce que ya conversaron esta noche. Mira la calle y continúa con sus asuntos.":
    "La persona interrumpe brevemente su recorrido. No conoce los secretos de los Vástagos ni tiene información excepcional.";
-  api?.ask?.(w.name,text+"\n\n"+(active(g).length?
-   "En el barrio se comenta: "+active(g)[0].title+".":"La noche continúa con actividad cotidiana."),
+  const streetNews=rumor?
+   "Se comenta en este barrio, sin pruebas verificadas: "+rumor.text+"\nEl comentario no constituye evidencia de una investigación.":
+   (active(g).length?"En el barrio se comenta: "+active(g)[0].title+".":"La noche continúa con actividad cotidiana.");
+  api?.ask?.(w.name,text+"\n\n"+streetNews,
    [{label:remembered?"Despedirte":"Preguntar por lo sucedido en el barrio",action:()=>{
-     if(!remembered){state.talked[key]=true;api?.log?.("Conversaste con "+w.name+" en "+g.district+".");}
+     if(!remembered){
+      state.talked[key]=true;
+      api?.log?.("Conversaste con "+w.name+" en "+g.district+"."+(rumor?" Rumor sin verificar: "+rumor.text:""));
+     }
      api?.refresh?.();api?.save?.();
    }}],"PARÍS · TRANSEÚNTE");
   return true;
@@ -253,5 +275,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,interact,interactShop,interactEvent,interactWalker,summary,version:"15.0"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,interact,interactShop,interactEvent,interactWalker,summary,version:"15.1"});
 })();
