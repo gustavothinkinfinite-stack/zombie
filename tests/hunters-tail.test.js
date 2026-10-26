@@ -112,6 +112,21 @@ check("Un seguidor incompleto no bloquea la vigilancia ni modifica otros expedie
   assert.equal(g.cityConsequences.heat.bastilla,0);
  }
 });
+check("Un muro próximo al observador bloquea la visión a corta distancia",()=>{
+ const g=make(),p=H.ensure(g,P);
+ assert.ok(p);
+ p.mode="tail";p.x=200;p.y=200;p.alert=60;
+ g.x=219;g.y=200;
+ // La pared empieza antes del primer punto de muestreo anterior (9 px).
+ const wall={canStand:(_scene,x)=>x<203||x>207,path:()=>[],slide:()=>({moved:false})};
+ assert.equal(H.sight(wall,p.x,p.y,g.x,g.y),false);
+ const events=H.step(g,.06,wall,{moving:false});
+ assert.ok(!events.some(e=>e.type==="near"),"no puede reconocer al jugador tras el muro");
+ assert.ok(g.hunters.follower,"el seguimiento no debe resolverse por error");
+ assert.equal(g.hunters.resolved[p.source],undefined);
+ assert.equal(g.elizabeth.evidence[0],"intacta");
+ assert.equal(g.localCases.closed[0],"caso");
+});
 check("Un observador no reconoce al personaje a través de un obstáculo cercano",()=>{
  const g=make(),p=H.ensure(g,P);
  assert.ok(p);

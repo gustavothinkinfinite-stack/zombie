@@ -39,7 +39,7 @@ window.VTM_HUNTERS=(()=>{
  }
  function sight(physics,x1,y1,x2,y2){
   const length=Math.hypot(x2-x1,y2-y1);
-  for(let d=9;d<length;d+=7){
+  for(let d=2;d<length;d+=3){
    const t=d/length;
    if(!physics.canStand("district",x1+(x2-x1)*t,y1+(y2-y1)*t,3))return false;
   }
