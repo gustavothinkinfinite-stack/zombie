@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, HUNTERS=window.VTM_HUNTERS||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, PRINC=window.VTM_PRINCIPADO||null, CONSP=window.VTM_CONSPIRACY||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, HUNTERS=window.VTM_HUNTERS||null, HCASE=window.VTM_HUNTERS_CASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, PRINC=window.VTM_PRINCIPADO||null, CONSP=window.VTM_CONSPIRACY||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -773,6 +773,7 @@
    if(game.combat?.active){TACTUI.battleMenu();return;}
    const m=M.init(game),choices=[
      ...(ELI?[{label:"Expediente Elizabeth Parker · investigación principal",action:ELI.menu}]:[]),
+     ...(HCASE?.unlocked(game)?[{label:"Caso 03 · Los cazadores de la noche · investigación",action:HCASE.menu}]:[]),
      ...(CITY?[{label:"París nocturno · sucesos, tránsito y horarios comerciales",action:()=>askMenu("Pulso de la ciudad",CITY.bulletin(game),[{label:"Continuar",action:()=>{}}],"ACTIVIDAD NOCTURNA")}]:[]),
      ...(REACT?[{label:"París reactivo · investigar el robo de Bastilla",action:REACT.menu}]:[]),
      ...(REGION?[{label:"París reactivo · investigar los otros siete barrios",action:REGION.menu}]:[]),
@@ -1358,6 +1359,7 @@
    if(game.embraced&&["policia","stjuly","passy","tuneles"].includes(location.id))actions.push({label:"Contrastar irregularidades documentales para la corte",action:()=>COURTUI.archive(location.id)});
    for(const task of POL.tasksAt(game,location.id))actions.push({label:"Servicio político: "+task.title+(task.blocked?" · "+task.blocked:""),disabled:!!task.blocked,action:()=>POLUI.investigate(task.id)});
    if(ELI&&ELI.atPlace(game,location.id))actions.push({label:"Investigar el asesinato de Elizabeth Parker",action:ELI.menu});
+   if(HCASE?.unlocked(game)&&HCASE.scenes.some(d=>d.place===location.id))actions.push({label:"Caso 03 · Los cazadores de la noche · buscar indicios",action:HCASE.menu});
    if(game.embraced)actions.push({label:"Usar una Disciplina durante la investigación",action:WORLDUI.menu});
    if(EQUIP.OFFERS[location.id])actions.push({label:"Conseguir suministros o preparar equipamiento",action:TACTUI.equipmentMenu});
    if(TACT.ENEMIES[location.id])actions.push({label:"Enfrentar físicamente una amenaza del lugar",action:()=>TACTUI.battleEntry(location.id)});
@@ -2407,7 +2409,13 @@
     if(ep.court){const court=document.createElement("p");court.textContent="Audiencia celebrada: "+ep.court;root.appendChild(court);}
     if(ep.hunters){const h=document.createElement("p");h.textContent="Nueva amenaza: se detectó vigilancia humana sobre un refugio de Bapthiste.";root.appendChild(h);}
   }
-  if(window.VTM_PARKER_POLITICS){const p=window.VTM_PARKER_POLITICS.summary(game);if(p.verdict||p.protection){const title=document.createElement("p");title.textContent="Consecuencias del expediente Parker: "+(p.verdict||"sin audiencia")+" · custodia de testigos: "+(p.protection||"sin asignar");root.appendChild(title);for(const next of p.paths){const entry=document.createElement("p");entry.textContent="• Nueva línea política: "+next.title+" — "+next.description;root.appendChild(entry);}}}
+  if(HCASE?.unlocked(game)){
+    const report=HCASE.progress(game),row=document.createElement("p");
+    row.textContent="Caso 03 · Los cazadores de la noche: "+report.found+"/"+report.total+" fuentes contrastadas · "+(report.decision?"informe preliminar "+(report.decision==="archive"?"resguardado":"comunicado"):"identidad y fuente sin verificar")+".";
+    root.appendChild(row);
+    for(const entry of report.evidence){const line=document.createElement("p");line.textContent="• Caso 03: "+entry;root.appendChild(line);}
+   }
+   if(window.VTM_PARKER_POLITICS){const p=window.VTM_PARKER_POLITICS.summary(game);if(p.verdict||p.protection){const title=document.createElement("p");title.textContent="Consecuencias del expediente Parker: "+(p.verdict||"sin audiencia")+" · custodia de testigos: "+(p.protection||"sin asignar");root.appendChild(title);for(const next of p.paths){const entry=document.createElement("p");entry.textContent="• Nueva línea política: "+next.title+" — "+next.description;root.appendChild(entry);}}}
   if(CONSP){
    for(const description of CONSP.journal(game)){
     const row=document.createElement("p");row.textContent=description;root.appendChild(row);
@@ -2516,6 +2524,7 @@
   TACTUI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,save,refresh:hud,advance:advanceClock,exposure,faction:increaseFaction,scene:id=>id==="bapthiste"?ELI.menu():SU.openScene(D.locations.find(l=>l.id===id)),bapthisteOutcome:caseAfterBattle,actions:traitsMenu,vitaeFrenzy:(reason)=>VITAE?.frenzy(game,reason),vitaeRitual:(name)=>VITAE?.ritual(game,name)});
   SU.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save});
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
+  if(HCASE)HCASE.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,advance:advanceClock,refresh:hud,save});
   window.VTM_PARKER_DOSSIER?.bind({getGame:()=>game,save,refresh:hud});
   if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
   if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save});
