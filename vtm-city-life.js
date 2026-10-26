@@ -194,17 +194,50 @@ window.VTM_CITY_LIFE=(()=>{
   });
   return entries.filter(x=>x.d<=range).sort((a,b)=>a.d-b.d)[0]||null;
  }
+ // Los clientes reflejan decisiones sociales ya públicas del establecimiento
+ // y su vecino, sin alterar relaciones, pruebas ni expedientes.
+ function shopperReaction(g,shop){
+  if(g?.scene!=="sidevenue"||!shop||shop.id!==g.sidevenue||!byId[shop.district])return "";
+  const own=g.localPlaces?.[shop.id]?.decision;
+  const other=(window.VTM_SHOPS?.byDistrict?.[shop.district]||[]).find(s=>s.id!==shop.id);
+  const nearby=other?g.localPlaces?.[other.id]?.decision:null;
+  let note=own==="help"?
+   "Un cliente comenta que colaboraste con este comercio y te saluda con cordialidad.":
+   own==="pressure"?
+   "Un cliente recuerda una discusión tensa contigo en este local y evita prolongar la conversación.":
+   nearby==="help"?
+   "Tu colaboración con otro negocio del barrio llegó a oídos de algunos clientes.":
+   nearby==="pressure"?
+   "Se habla de un altercado en otro comercio del barrio. El cliente responde con cautela.":"";
+  const heat=Number(g.cityConsequences?.heat?.[shop.district]);
+  if(Number.isFinite(heat)&&heat>=40)
+   note+=(note?" ":"")+"Las patrullas frecuentes hacen que los clientes hablen en voz baja.";
+  return note;
+ }
  function interactShop(g,time=0){
   const visitor=nearShopVisitor(g,time);if(!visitor)return false;
   const state=init(g),key=g.clock.night+":"+visitor.id;
   const shop=window.VTM_SHOPS?.byId[g.sidevenue],already=!!state.talked[key];
+  const reaction=shopperReaction(g,shop);
   const body=already?"La persona continúa comprando y no tiene más novedades esta noche.":
    "Un cliente examina los artículos y comenta que la actividad del establecimiento cambia notablemente después de medianoche. No conoce los secretos de los Vástagos.";
-  api?.ask?.("Cliente de "+shop.name,body+"\n\n"+shopReport(g,shop),
-   [{label:already?"Despedirte":"Escuchar y tomar nota",action:()=>{
-     if(!already){state.talked[key]=true;api?.log?.("Hablaste con un cliente nocturno de "+shop.name+".");}
-     api?.refresh?.();api?.save?.();
-   }}],"COMERCIO · VIDA COTIDIANA");
+  const choices=[{label:already?"Despedirte":"Escuchar y tomar nota",action:()=>{
+   if(!already){state.talked[key]=true;api?.log?.("Hablaste con un cliente nocturno de "+shop.name+".");}
+   api?.refresh?.();api?.save?.();
+  }}];
+  if(reaction)choices.push({label:"Preguntar qué se comenta sobre vos",action:()=>{
+   const id=g.clock.night+":shop-reaction:"+visitor.id;
+   if(!state.checked[id]){
+    state.checked[id]=true;
+    api?.log?.("Impresión comercial sin verificar en "+shop.name+": "+reaction);
+    api?.save?.();
+   }
+   api?.ask?.("Conversación de mostrador",reaction+"\n\nEs una impresión social, no una prueba de investigación.",
+    [{label:"Continuar",action:()=>{}}],"COMERCIO · REPUTACIÓN LOCAL");
+   api?.refresh?.();
+  }});
+  api?.ask?.("Cliente de "+shop.name,body+(reaction?"\n\n"+reaction:"")+"\n\n"+shopReport(g,shop),
+   choices,"COMERCIO · VIDA COTIDIANA");
   return true;
  }
  function bulletin(g){
@@ -330,6 +363,6 @@ window.VTM_CITY_LIFE=(()=>{
    active:active(g).length,shopsOpen:shopList.filter(x=>shopState(g,x)?.open).length,
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
- return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,interact,interactShop,interactEvent,interactWalker,summary,version:"15.3"});
+ return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,shopperReaction,
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,interact,interactShop,interactEvent,interactWalker,summary,version:"15.4"});
 })();

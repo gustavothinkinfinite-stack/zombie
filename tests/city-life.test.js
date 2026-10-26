@@ -180,6 +180,51 @@ test("Los habitantes reaccionan a decisiones previas con memoria y sin alterar e
  C.interactWalker(previous,C.walkers(previous,5)[0]);
  assert.equal(dialogs.at(-1).options.length,1);
 });
+test("Los clientes recuerdan favores, tensiones y vigilancia sin modificar la partida",()=>{
+ const game=g("sidevenue","stjuly",1215,4),dialogs=[],logs=[],saves=[];
+ game.localPlaces={"stjuly-cafe":{decision:"help"}};
+ game.cityConsequences={heat:{stjuly:45}};
+ game.elizabeth={status:"original"};game.localCases={clues:["a"]};
+ game.principado={submitted:true};game.conspiracy={chapter:2};
+ game.parkerDossier={collected:["EP-03"]};game.parkerPolitics={protection:"shelter"};
+ game.vitae={lastNight:3};game.contactMemory={"stjuly-cafe":{choice:"help",trust:2}};
+ const shop=S.byId["stjuly-cafe"];
+ assert.match(C.shopperReaction(game,shop),/colaboraste/);
+ assert.match(C.shopperReaction(game,shop),/patrullas/);
+ const visitor=C.nearShopVisitor({...game,x:150,y:247},0,100);
+ assert.ok(visitor,"El cliente debe estar disponible durante el horario comercial");
+ game.x=visitor.x;game.y=visitor.y;
+ C.bind({ask:(title,body,options)=>dialogs.push({title,body,options}),
+  log:x=>logs.push(x),save:()=>saves.push(true),refresh:()=>{}});
+ assert.equal(C.interactShop(game,0),true);
+ assert.match(dialogs.at(-1).body,/colaboraste/);
+ const option=dialogs.at(-1).options.find(o=>/sobre vos/.test(o.label));
+ assert.ok(option);option.action();
+ assert.match(dialogs.at(-1).body,/no una prueba de investigación/);
+ assert.equal(logs.length,1);assert.equal(saves.length,1);
+ const recovered=JSON.parse(JSON.stringify(game));
+ assert.equal(C.interactShop(recovered,0),true);
+ dialogs.at(-1).options.find(o=>/sobre vos/.test(o.label)).action();
+ assert.equal(logs.length,1,"La impresión guardada no se vuelve a registrar");
+ assert.equal(saves.length,1,"La impresión guardada no se reescribe");
+ for(const key of ["localPlaces","cityConsequences","elizabeth","localCases","principado",
+  "conspiracy","parkerDossier","parkerPolitics","vitae","contactMemory"])
+  assert.deepEqual(recovered[key],game[key],"No modificar "+key);
+ const other=JSON.parse(JSON.stringify(game));
+ other.localPlaces={"stjuly-floristeria":{decision:"pressure"}};
+ other.cityConsequences.heat.stjuly=0;
+ assert.match(C.shopperReaction(other,shop),/otro comercio/);
+ other.localPlaces={"stjuly-floristeria":{decision:"help"}};
+ assert.match(C.shopperReaction(other,shop),/otro negocio/);
+ other.localPlaces={"stjuly-cafe":{decision:"pressure"}};
+ assert.match(C.shopperReaction(other,shop),/discusión tensa/);
+ other.localPlaces={};other.cityConsequences.heat.stjuly=0;
+ assert.equal(C.shopperReaction(other,shop),"");
+ assert.equal(C.shopperReaction({...other,scene:"district"},shop),"");
+ const old=g("sidevenue","stjuly",1215,1);
+ assert.equal(C.shopperReaction(old,shop),"","Las partidas antiguas no inventan reputación");
+ assert.equal(C.shopperReaction(game,S.byId["passy-anticuario"]),"","No filtrar otros barrios");
+});
 test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const source=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
