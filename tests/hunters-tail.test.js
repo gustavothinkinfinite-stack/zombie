@@ -78,8 +78,8 @@ check("El guardado principal y el respaldo conservan el seguimiento sin alterar 
  assert.equal(result.game.hunters.follower.alert,60);
  assert.equal(result.game.conspiracy.chapter,2);
  assert.equal(result.game.parkerPolitics.protection,"active");
- assert.deepEqual(result.game.elizabeth,g.elizabeth);
- assert.deepEqual(result.game.localCases,g.localCases);
+ assert.equal(JSON.stringify(result.game.elizabeth),JSON.stringify(g.elizabeth));
+ assert.equal(JSON.stringify(result.game.localCases),JSON.stringify(g.localCases));
 });
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const game=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
