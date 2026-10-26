@@ -1,7 +1,7 @@
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),window={};
-for(const file of ["vtm-shops.js","vtm-contacts.js","vtm-city-life.js","vtm-save.js"])
+for(const file of ["vtm-shops.js","vtm-contacts.js","vtm-city-life.js","vtm-hunters.js","vtm-save.js"])
  vm.runInNewContext(fs.readFileSync(path.join(root,file),"utf8"),{window},{filename:file});
 const CITY=window.VTM_CITY_LIFE,SAVE=window.VTM_SAVE;
 const episode=(night,outcome,choice="observe")=>({night,district:"bastilla",choice,outcome,
@@ -45,4 +45,25 @@ for(const k of ["elizabeth","localCases","principado","conspiracy","parkerDossie
 const engine=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
 assert.ok(engine.includes("const observations=CITY.surveillanceJournal(game);"));
 assert.ok(engine.includes("Vigilancia civil sin verificar"));
+const HUNTERS=window.VTM_HUNTERS;
+const legacySnapshot=JSON.stringify(old);
+assert.equal(HUNTERS.summary(old).active,false);
+assert.equal(HUNTERS.summary(old).history.length,0);
+assert.equal(JSON.stringify(old),legacySnapshot,"un guardado antiguo no debe mutar");
+const watched={...g,scene:"district",district:"bastilla",hunters:{
+ history:Array.from({length:7},(_,i)=>"Noche "+(i+1)+": silueta sin identificar."),
+ follower:{district:"bastilla",night:6,mode:"tail",source:"5:bastilla",x:250,y:225}
+}};
+const watchedSnapshot=JSON.stringify(watched);
+const watch=HUNTERS.summary(watched);
+assert.equal(watch.active,true);
+assert.equal(watch.history.length,5);
+assert.match(watch.history[0],/Noche 3/);
+assert.match(watch.history[4],/Noche 7/);
+assert.doesNotMatch(watch.history.join(" "),/Etienne|Moreau|Senescal|impostora/);
+assert.equal(JSON.stringify(watched),watchedSnapshot,"consultar el diario no debe alterar la partida");
+assert.equal(HUNTERS.summary({...watched,scene:"paris"}).active,false);
+assert.ok(engine.includes("const watch=HUNTERS.summary(game);"));
+assert.ok(engine.includes("Seguimiento civil sin identificar"));
+assert.ok(engine.includes("for(const event of watch.history)"));
 console.log("OK: diario de vigilancia civil y respaldo recuperable sin filtrar secretos");

@@ -2425,6 +2425,19 @@
     }
    }
   }
+  if(HUNTERS){
+   const watch=HUNTERS.summary(game);
+   if(watch.active||watch.history.length){
+    const heading=document.createElement("p");
+    heading.textContent="Seguimiento civil sin identificar · "+(watch.active?"observador activo":"sin observador activo")+".";
+    root.appendChild(heading);
+    for(const event of watch.history){
+     const row=document.createElement("p");
+     row.textContent="• "+event;
+     root.appendChild(row);
+    }
+   }
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
