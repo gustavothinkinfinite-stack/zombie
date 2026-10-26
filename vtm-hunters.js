@@ -7,7 +7,8 @@ window.VTM_HUNTERS=(()=>{
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),routes=new WeakMap();
  function source(g){
   const n=Math.floor(Number(g?.clock?.night)||0);
-  if(g?.scene!=="district"||!districts.has(g.district)||n<2)return null;
+  if(g?.scene!=="district"||!districts.has(g.district)||n<2||
+   (Number.isInteger(g?.hunters?.cooldownUntilNight)&&n<=g.hunters.cooldownUntilNight))return null;
   return Array.isArray(g.cityLife?.surveillanceEpisodes)?
    g.cityLife.surveillanceEpisodes.find(e=>e&&e.night===n-1&&e.district===g.district&&e.choice==="observe"&&e.outcome==="noticed")||null:null;
  }
@@ -122,11 +123,18 @@ window.VTM_HUNTERS=(()=>{
  }
  function decide(g,physics,choice,success=false){
   if(!["withdraw","dialogue"].includes(choice)||!canConfront(g,physics))return [];
-  if(choice==="withdraw")return finish(g,"withdrew",
-   "Te apartaste sin confrontar a la silueta. Su identidad sigue siendo desconocida.");
-  return finish(g,success?"spoken":"refused",success?
-   "El desconocido responde con evasivas y se retira. No obtuviste una identidad verificable.":
-   "El desconocido evita responder y se aleja. No obtuviste información verificable.");
+  const events=choice==="withdraw"?
+   finish(g,"withdrew","Te apartaste sin confrontar a la silueta. Su identidad sigue siendo desconocida."):
+   finish(g,success?"spoken":"refused",success?
+    "El desconocido responde con evasivas y se retira. No obtuviste una identidad verificable.":
+    "El desconocido evita responder y se aleja. No obtuviste información verificable.");
+  // Una confrontación voluntaria da una noche de respiro; no altera a la policía.
+  if(events.length){
+   const s=init(g),night=Math.floor(Number(g.clock?.night)||0);
+   if(night>0)s.cooldownUntilNight=Math.max(
+    Number.isInteger(s.cooldownUntilNight)?s.cooldownUntilNight:0,night+1);
+  }
+  return events;
  }
  function draw(ctx,g){
   const p=position(g);if(!p||!ctx)return;

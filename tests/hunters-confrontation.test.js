@@ -76,6 +76,24 @@ assert.equal(H.position(damaged),null,"un origen inválido no debe renderizarse"
 assert.equal(H.canConfront(damaged,P),false);
 assert.equal(H.decide(damaged,P,"withdraw").length,0);
 
+// Una retirada o conversación da una noche sin nuevo seguimiento automático.
+const cooled=prepare(),cooledId=cooled.hunters.follower.source;
+assert.equal(H.decide(cooled,P,"withdraw").length,1);
+assert.equal(cooled.hunters.cooldownUntilNight,7);
+cooled.clock.night=7;
+cooled.cityLife.surveillanceEpisodes.push({night:6,district:"bastilla",choice:"observe",outcome:"noticed"});
+assert.equal(H.source(cooled),null,"la noche siguiente sigue protegida");
+assert.equal(H.ensure(cooled,P),null,"no aparece un nuevo observador durante el respiro");
+const cooledRestored=JSON.parse(JSON.stringify(cooled));
+assert.equal(H.ensure(cooledRestored,P),null,"el respiro sobrevive al guardado");
+assert.equal(cooledRestored.hunters.resolved[cooledId],"withdrew");
+cooledRestored.clock.night=8;
+cooledRestored.cityLife.surveillanceEpisodes.push({night:7,district:"bastilla",choice:"observe",outcome:"noticed"});
+assert.ok(H.ensure(cooledRestored,P),"un nuevo episodio válido puede surgir después del respiro");
+assert.equal(cooledRestored.cityConsequences.heat.bastilla,0);
+assert.equal(cooledRestored.elizabeth.evidence[0],"intacta");
+assert.equal(cooledRestored.localCases.closed[0],"uno");
+
 const engine=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
 assert.ok(engine.includes("if(civilFollowerMenu())return;"));
 assert.ok(engine.includes("HUNTERS.decide(game,P,"));
