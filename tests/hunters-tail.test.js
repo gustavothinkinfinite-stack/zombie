@@ -93,6 +93,25 @@ check("Seguimiento de otra noche caduca aunque no aparezcan indicios nuevos",()=
  assert.deepEqual(recovered.localCases,g.localCases);
  assert.equal(recovered.combat,undefined);
 });
+check("Un seguidor incompleto no bloquea la vigilancia ni modifica otros expedientes",()=>{
+ for(const invalid of [null,"5:passy","0:bastilla"]){
+  const g=make(),f=H.ensure(g,P),original=f.source;
+  if(invalid===null)delete f.source;
+  else f.source=invalid;
+  H.init(g);
+  assert.equal(g.hunters.follower,null,"se descarta el seguimiento inconsistente");
+  assert.equal(g.hunters.resolved[original],undefined,"no se marca resuelto un episodio válido");
+  const next=H.ensure(g,P);
+  assert.ok(next,"el episodio válido sigue disponible");
+  assert.equal(next.source,original);
+  assert.equal(H.ensure(g,P),next,"no se duplica al reintentar");
+  assert.equal(g.elizabeth.evidence[0],"intacta");
+  assert.equal(g.localCases.closed[0],"caso");
+  assert.equal(g.parkerPolitics.protection,"active");
+  assert.equal(g.conspiracy.chapter,2);
+  assert.equal(g.cityConsequences.heat.bastilla,0);
+ }
+});
 check("No actúa en interiores, otros barrios ni durante un combate existente",()=>{
  const g=make();H.ensure(g,P);
  assert.equal(H.step({...g,scene:"sidevenue"},.06,P).length,0);

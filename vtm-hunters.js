@@ -18,7 +18,12 @@ window.VTM_HUNTERS=(()=>{
   s.history=Array.isArray(s.history)?s.history.filter(v=>typeof v==="string").slice(-12):[];
   const p=s.follower;
   if(p){
-   if(!districts.has(p.district)||!Number.isInteger(p.night)||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!["watch","tail"].includes(p.mode))s.follower=null;
+   if(!districts.has(p.district)||!Number.isInteger(p.night)||p.night<2||
+    p.source!==(p.night-1)+":"+p.district||
+    !Number.isFinite(p.x)||!Number.isFinite(p.y)||!["watch","tail"].includes(p.mode)){
+    // Un seguidor incompleto de un guardado antiguo no debe bloquear el episodio válido.
+    s.follower=null;routes.delete(g);
+   }
    else if(Number.isInteger(g.clock?.night)&&p.night!==g.clock.night){
     // Un seguidor de otra noche no puede bloquear episodios nuevos ni reaparecer.
     if(typeof p.source==="string"&&p.source&&!s.resolved[p.source])s.resolved[p.source]="expired";
