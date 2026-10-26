@@ -1107,6 +1107,7 @@
       " éxitos netos. El desconocido no quedó identificado.",
       [{label:"Continuar",action:()=>{}}],"CONFRONTACIÓN CIVIL · SIN PRUEBAS");
     }},
+    ...(HUNTERS.canFight(game,P)?[{label:"Defenderte ante un vigilante hostil · combate opcional",action:()=>TACTUI.streetEntry()}]:[]),
     {label:"Retirarte sin confrontar",action:()=>{
      const events=HUNTERS.decide(game,P,"withdraw");
      if(!events.length)return;

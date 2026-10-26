@@ -146,6 +146,22 @@ window.VTM_TACTICS=(()=>{
   ADV?.init(g);
   return {started:true,enemy:e.name};
  }
+ // Encuentro independiente, identificado por episodio; sin recompensas de lugar.
+ function startStreet(g){
+  if(!window.VTM_HUNTERS?.canFight(g,window.VTM_PHYSICS))
+   return {error:"No existe una amenaza civil que justifique este combate."};
+  init(g);
+  if(g.combat.active)return {error:"Ya hay un combate activo."};
+  const place="street-vigilante:"+g.hunters.follower.source;
+  if(g.combat.records[place])return {error:"Este encuentro ya se resolvió."};
+  const enemy={name:"Vigilante hostil sin identificar",health:5,max:5,
+   dex:3,wits:2,str:2,stamina:2,skill:2,willpower:3,armor:0,ammo:0,
+   style:"evasivo",damage:"contundente"};
+  g.combat.active={place,round:1,enemy,history:[],ended:false,
+   tactical:ADV?{distance:1}:undefined};
+  ADV?.init(g);
+  return {started:true,enemy:enemy.name,place};
+ }
  function action(g,choice,rng=Math.random){
   init(g);
   const encounter=g.combat.active;if(!encounter||encounter.ended)return {error:"No hay combate activo."};
@@ -329,5 +345,5 @@ window.VTM_TACTICS=(()=>{
   if(name==="Ofuscación"&&index>=1)changed.exposure=-Math.min(10,index*2+2);
   return {name,label,level:magnitude,cost,effect,risk,description:message,changed,opposed};
  }
- return {ENEMIES,POWERS,init,dice,wounds,status,deal,soak,start,action,recover,catalog,cast,resist};
+ return {ENEMIES,POWERS,init,dice,wounds,status,deal,soak,start,startStreet,action,recover,catalog,cast,resist};
 })();

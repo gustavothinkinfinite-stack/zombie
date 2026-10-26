@@ -147,6 +147,29 @@ window.VTM_HUNTERS=(()=>{
   }
   return events;
  }
+ // Hostilidad manifiesta, tras vigilancia previa; identidad aún desconocida.
+ function canFight(g,physics){
+  const p=g?.hunters?.follower;
+  return !!(canConfront(g,physics)&&g.elizabeth?.hunters===true&&
+   Number(g.exposure)>=75&&Number(p?.alert)>=45&&Number(g.mechanics?.health)>=2);
+ }
+ function finishFight(g,place){
+  const p=g?.hunters?.follower;
+  if(!p||place!=="street-vigilante:"+p.source||g.combat?.active)return [];
+  const result=g.combat?.records?.[place];
+  if(!["won","lost","escaped"].includes(result)||g.hunters?.resolved?.[p.source])return [];
+  const descriptions={
+   won:"Neutralizaste al agresor y escapaste. No sabés si pertenece a una célula organizada.",
+   lost:"Te auxiliaron tras la pelea. El agresor desapareció sin identificarse.",
+   escaped:"Escapaste sin poder identificar a quien te perseguía."
+  };
+  const events=finish(g,"fight_"+result,descriptions[result]);
+  if(events.length){
+   const s=init(g);
+   s.cooldownUntilNight=Math.max(Number(s.cooldownUntilNight)||0,(Number(g.clock?.night)||0)+1);
+  }
+  return events;
+ }
  function draw(ctx,g){
   const p=position(g);if(!p||!ctx)return;
   ctx.fillStyle="#141820aa";ctx.fillRect(p.x-9,p.y+9,18,4);
@@ -156,5 +179,5 @@ window.VTM_HUNTERS=(()=>{
   if(p.mode==="tail"){ctx.fillStyle="#d6c0ac";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("¿SEGUIMIENTO?",p.x,p.y-30);}
  }
  function summary(g){const p=position(g),s=g?.hunters;return {active:!!p,mode:p?.mode||"sin seguimiento",history:Array.isArray(s?.history)?s.history.slice(-5):[]};}
- return Object.freeze({source,init,ensure,position,sight,step,canConfront,decide,draw,summary,version:"27B.1"});
+ return Object.freeze({source,init,ensure,position,sight,step,canConfront,canFight,finishFight,decide,draw,summary,version:"27C.2"});
 })();

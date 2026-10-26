@@ -38,6 +38,23 @@ window.VTM_TACTICS_UI=(()=>{
   bridge.log("Comienza un enfrentamiento con "+started.enemy+".");
   bridge.save();battleMenu();
  }
+ function streetEntry(){
+  const game=g(),H=window.VTM_HUNTERS;
+  if(game?.combat?.active){battleMenu();return;}
+  if(!H?.canFight(game,window.VTM_PHYSICS))return;
+  detail("Amenaza en una calle de París",
+   "El desconocido te bloquea el paso y levanta una barra metálica. Podés retirarte sin pelear. No sabés quién lo envió ni si pertenece a una célula de cazadores.",
+   [{label:"Defenderte · combate táctico por turnos",action:()=>{
+     if(!H.canFight(game,window.VTM_PHYSICS))return;
+     const result=E.startStreet(game);
+     if(result.error){detail("No podés combatir",result.error,[{label:"Continuar",action:()=>{}}],"ENCUENTRO CIVIL");return;}
+     bridge.log("Comienza una pelea defensiva contra un desconocido hostil.");
+     bridge.exposure(8,"Una pelea callejera llamó la atención de testigos.");
+     bridge.save();battleMenu();
+    }},
+    {label:"Desistir y seguir explorando",action:()=>{}}],
+   "CONFRONTACIÓN VOLUNTARIA");
+ }
  function battleMenu(){
   const game=g(),combat=game?.combat?.active;
   if(!combat){detail("Sin combate activo","Por ahora no hay ningún enfrentamiento en curso.",[{label:"Continuar",action:()=>{}}],"COMBATE");return;}
@@ -70,7 +87,23 @@ window.VTM_TACTICS_UI=(()=>{
   if(result.error)return;
   let extra="";
   if(result.ended){
-   if(result.victory){
+   const street=typeof result.place==="string"&&result.place.startsWith("street-vigilante:");
+   if(street){
+    if(result.defeat){
+     E.recover(game,2,"contundente");
+     bridge.exposure(12,"El altercado callejero atrajo a testigos.");
+     extra+="\\nRecibiste ayuda tras quedar incapacitado; recuperás dos niveles de Salud.";
+    }
+    if(result.victory&&(move==="arma"||move==="disparo")){
+     const moral=S.moralTest(game,1);
+     extra+="\\nConciencia ["+moral.roll.dice.join(", ")+"]: "+
+      (moral.degeneration?"la violencia deterioró tu Humanidad.":"no perdiste Humanidad.");
+    }
+    const endings=window.VTM_HUNTERS?.finishFight(game,result.place)||[];
+    for(const event of endings)bridge.log(event.text);
+    if(endings.length)extra+="\\n"+endings[0].text;
+   }
+   if(result.victory&&!street){
     // PX sólo por primera victoria, sin recompensas infinitas.
     const info=E.ENEMIES[result.place];
     const score=S.init(game);
@@ -97,7 +130,7 @@ window.VTM_TACTICS_UI=(()=>{
     if(result.place!=="bapthiste")bridge.faction(result.place==="saintdenis"?"brujah":result.place==="passy"?"tremere":"brujah",2,"Conflicto controlado.");
     else extra+="\nBapthiste ha sido incapacitado. Debés decidir si entregarlo bajo custodia.";
    }
-   if(result.defeat){
+   if(result.defeat&&!street){
     // Rescate contextual: evita un guardado injugable, pero deja coste.
     E.recover(game,2,"contundente");
     bridge.exposure(12,"El altercado provocó intervención de testigos.");
@@ -215,5 +248,5 @@ window.VTM_TACTICS_UI=(()=>{
    result.error||"Recuperaste "+result.healed+" niveles de Salud.\n"+G.summary(game),
    [{label:"Continuar",action:equipmentMenu}],"MEDICINA");
  }
- return {bind,battleEntry,battleMenu,powersMenu,equipmentMenu,status:body,canBattle};
+ return {bind,battleEntry,streetEntry,battleMenu,powersMenu,equipmentMenu,status:body,canBattle};
 })();
