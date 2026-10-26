@@ -64,9 +64,13 @@ window.VTM_HUNTERS=(()=>{
  }
  function position(g){
   const p=g?.hunters?.follower;
-  return p&&g.scene==="district"&&p.district===g.district&&p.night===g.clock?.night&&
-   p.source===(p.night-1)+":"+p.district&&!g.hunters?.resolved?.[p.source]&&
-   Number.isFinite(p.x)&&Number.isFinite(p.y)&&["watch","tail"].includes(p.mode)?
+  if(!p||g.scene!=="district"||p.district!==g.district||p.night!==g.clock?.night||
+   p.source!==(p.night-1)+":"+p.district||g.hunters?.resolved?.[p.source]||
+   !Number.isFinite(p.x)||!Number.isFinite(p.y)||!["watch","tail"].includes(p.mode))return null;
+  // Un guardado inconsistente o una noche de respiro no debe dibujar ni
+  // permitir confrontar un observador sin un episodio de vigilancia vigente.
+  const episode=source(g);
+  return episode&&p.source===episode.night+":"+episode.district?
    {x:p.x,y:p.y,mode:p.mode}:null;
  }
  function finish(g,type,message){
