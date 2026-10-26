@@ -37,7 +37,7 @@ check("Edificios bloquean la visión; sigilo reduce la alerta del seguidor",()=>
  assert.equal(H.sight(P,50,150,50,260),false);
  assert.equal(H.sight(P,240,225,295,225),true);
  const visible=make(),hidden=make();H.ensure(visible,P);H.ensure(hidden,P);
- for(const g of [visible,hidden]){g.hunters.follower.x=320;g.hunters.follower.y=225;}
+ for(const g of [visible,hidden]){g.hunters.follower.x=290;g.hunters.follower.y=225;}
  hidden.stealthChase.crouched=true;
  for(let i=0;i<18;i++){H.step(visible,.06,P,{moving:true});H.step(hidden,.06,P,{moving:true});}
  assert.ok(visible.hunters.follower.alert>hidden.hunters.follower.alert);
