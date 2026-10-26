@@ -2478,9 +2478,13 @@
   }
   if(HUNTERS){
    const watch=HUNTERS.summary(game);
-   if(watch.active||watch.history.length){
+   const until=game.hunters?.cooldownUntilNight;
+   const night=Math.floor(Number(game.clock?.night)||0);
+   const respite=Number.isInteger(until)&&night>0&&night<=until;
+   if(watch.active||watch.history.length||respite){
     const heading=document.createElement("p");
-    heading.textContent="Seguimiento civil sin identificar · "+(watch.active?"observador activo":"sin observador activo")+".";
+    heading.textContent="Seguimiento civil sin identificar · "+(watch.active?"observador activo":"sin observador activo")+". "+
+     (respite?"Tras una confrontación, evitás nuevos seguimientos hasta finalizar la noche "+until+".":"");
     root.appendChild(heading);
     for(const event of watch.history){
      const row=document.createElement("p");
