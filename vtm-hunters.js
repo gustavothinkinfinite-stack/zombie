@@ -111,6 +111,20 @@ window.VTM_HUNTERS=(()=>{
   }
   return events;
  }
+ function canConfront(g,physics){
+  const p=position(g);
+  return !!(p&&p.mode==="tail"&&physics&&!g.combat?.active&&
+   !g.hunters?.resolved?.[p.source]&&Math.hypot(g.x-p.x,g.y-p.y)<=65&&
+   sight(physics,g.x,g.y,p.x,p.y));
+ }
+ function decide(g,physics,choice,success=false){
+  if(!["withdraw","dialogue"].includes(choice)||!canConfront(g,physics))return [];
+  if(choice==="withdraw")return finish(g,"withdrew",
+   "Te apartaste sin confrontar a la silueta. Su identidad sigue siendo desconocida.");
+  return finish(g,success?"spoken":"refused",success?
+   "El desconocido responde con evasivas y se retira. No obtuviste una identidad verificable.":
+   "El desconocido evita responder y se aleja. No obtuviste información verificable.");
+ }
  function draw(ctx,g){
   const p=position(g);if(!p||!ctx)return;
   ctx.fillStyle="#141820aa";ctx.fillRect(p.x-9,p.y+9,18,4);
@@ -120,5 +134,5 @@ window.VTM_HUNTERS=(()=>{
   if(p.mode==="tail"){ctx.fillStyle="#d6c0ac";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("¿SEGUIMIENTO?",p.x,p.y-30);}
  }
  function summary(g){const p=position(g),s=g?.hunters;return {active:!!p,mode:p?.mode||"sin seguimiento",history:Array.isArray(s?.history)?s.history.slice(-5):[]};}
- return Object.freeze({source,init,ensure,position,sight,step,draw,summary,version:"27B.1"});
+ return Object.freeze({source,init,ensure,position,sight,step,canConfront,decide,draw,summary,version:"27B.1"});
 })();

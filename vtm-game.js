@@ -1068,10 +1068,36 @@
         ...shopCaseChoices(shop),{label:"Continuar la visita",action:()=>{}}],"EXPLORACIÓN INTERIOR");
  }
 
+ function civilFollowerMenu(){
+  if(!HUNTERS?.canConfront(game,P))return false;
+  askMenu("Una silueta entre los transeúntes",
+   "Alguien parece mantener tu paso. No sabés quién es ni qué pretende.",
+   [{label:"Pedir explicaciones con calma · Carisma + Empatía (dif. 7)",action:()=>{
+     if(!HUNTERS.canConfront(game,P))return;
+     const roll=dicePool("Carisma","Empatía",7);
+     const events=HUNTERS.decide(game,P,"dialogue",roll.success);
+     if(!events.length)return;
+     for(const event of events)log(event.text);
+     advanceClock(4);hud();save();
+     askMenu("Una conversación inconclusa",events[0].text+
+      "\\n\\nTirada: ["+roll.dice.join(", ")+"] · "+roll.net+" éxitos netos.",
+      [{label:"Continuar",action:()=>{}}],"SEGUIMIENTO SIN IDENTIFICAR");
+    }},
+    {label:"Retirarte sin confrontar",action:()=>{
+     const events=HUNTERS.decide(game,P,"withdraw");
+     if(!events.length)return;
+     for(const event of events)log(event.text);
+     advanceClock(2);hud();save();notice(events[0].text);
+    }},
+    {label:"Ignorar y seguir caminando",action:()=>{}}],
+   "ENCUENTRO OPCIONAL");
+  return true;
+ }
  function districtInteract(){
    if(!T)return;
    const found=T.nearby(game);
    if(!found){
+     if(civilFollowerMenu())return;
      if(REACT?.interact(game))return;
      if(REGION?.interact(game))return;
      if(CHASE?.interact(game))return;
@@ -2140,6 +2166,7 @@
   }
   if(room==="district"){
     const spot=T?.nearby(game);
+    if(!spot&&HUNTERS?.canConfront(game,P))return "E · Hablar o retirarte ante un desconocido";
     if(!spot&&REACT){
 
      const situation=REACT.near(game);
