@@ -437,12 +437,12 @@ window.VTM_CITY_LIFE=(()=>{
   if(warning&&!surveillanceEpisode(g)){
    choices.push({label:"Observar discretamente · Percepción + Investigación (dif. 7)",action:()=>{
     const result=resolveSurveillance(g,"observe");
-    if(result)api?.ask?.("Vigilancia desconocida",result.summary+"\\n\\nNo constituye prueba ni identifica a los desconocidos.",
+    if(result)api?.ask?.("Vigilancia desconocida",result.summary+"\n\nNo constituye una prueba y no identifica a los desconocidos.",
      [{label:"Seguir explorando",action:()=>{}}],"PARÍS · OBSERVACIÓN NO VERIFICADA");
    }});
    choices.push({label:"Cambiar de ruta y evitar la vigilancia",action:()=>{
     const result=resolveSurveillance(g,"avoid");
-    if(result)api?.ask?.("Retirada prudente",result.summary+"\\n\\nPodrás observar las consecuencias en las noches siguientes.",
+    if(result)api?.ask?.("Retirada prudente",result.summary+"\n\nPodrás observar las consecuencias en las noches siguientes.",
      [{label:"Seguir explorando",action:()=>{}}],"PARÍS · VIGILANCIA EVITADA");
    }});
   }
