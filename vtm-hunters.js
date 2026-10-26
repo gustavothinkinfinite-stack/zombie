@@ -19,7 +19,7 @@ window.VTM_HUNTERS=(()=>{
   const p=s.follower;
   if(p){
    if(!districts.has(p.district)||!Number.isInteger(p.night)||p.night<2||
-    p.source!==(p.night-1)+":"+p.district||
+    p.source!==(p.night-1)+":"+p.district||s.resolved[p.source]||
     !Number.isFinite(p.x)||!Number.isFinite(p.y)||!["watch","tail"].includes(p.mode)){
     // Un seguidor incompleto de un guardado antiguo no debe bloquear el episodio válido.
     s.follower=null;routes.delete(g);

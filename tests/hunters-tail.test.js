@@ -127,6 +127,20 @@ check("Un observador no reconoce al personaje a través de un obstáculo cercano
  assert.equal(g.elizabeth.evidence[0],"intacta");
  assert.equal(g.conspiracy.chapter,2);
 });
+check("Un episodio resuelto descarta el observador residual de una partida",()=>{
+ const g=make(),p=H.ensure(g,P),id=p.source;
+ g.hunters.resolved[id]="escaped";
+ const restored=JSON.parse(JSON.stringify(g));
+ assert.equal(H.ensure(restored,P),null,"no reinicia un episodio cerrado");
+ assert.equal(H.position(restored),null,"no muestra un seguidor fantasma");
+ assert.equal(restored.hunters.follower,null,"elimina el seguidor residual");
+ assert.equal(restored.hunters.resolved[id],"escaped","conserva la resolución");
+ assert.deepEqual(restored.elizabeth,g.elizabeth);
+ assert.deepEqual(restored.localCases,g.localCases);
+ assert.deepEqual(restored.parkerDossier,g.parkerDossier);
+ assert.deepEqual(restored.conspiracy,g.conspiracy);
+ assert.equal(restored.stealthChase.patrols.bastilla,undefined);
+});
 check("No actúa en interiores, otros barrios ni durante un combate existente",()=>{
  const g=make();H.ensure(g,P);
  assert.equal(H.step({...g,scene:"sidevenue"},.06,P).length,0);
