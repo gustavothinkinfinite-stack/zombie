@@ -47,6 +47,10 @@ window.VTM_CITY_LIFE=(()=>{
   if(!s.seen||typeof s.seen!=="object"||Array.isArray(s.seen))s.seen={};
   if(!s.talked||typeof s.talked!=="object"||Array.isArray(s.talked))s.talked={};
   if(!s.checked||typeof s.checked!=="object"||Array.isArray(s.checked))s.checked={};
+  if(!Array.isArray(s.surveillanceEpisodes))s.surveillanceEpisodes=[];
+  s.surveillanceEpisodes=s.surveillanceEpisodes.filter(e=>e&&byId[e.district]&&
+   Number.isInteger(e.night)&&e.night>=1&&["observe","avoid"].includes(e.choice)&&
+   ["unconfirmed","noticed","avoided"].includes(e.outcome)&&typeof e.summary==="string").slice(-16);
   return s;
  }
  function plan(night,district){
@@ -342,10 +346,48 @@ window.VTM_CITY_LIFE=(()=>{
   return note+(known?
    " El comportamiento recuerda una vigilancia humana que ya investigaste, pero no demuestra que sean las mismas personas.":"");
  }
+ // Una sola decisión de vigilancia por noche: opcional y persistente.
+ function surveillanceEpisode(g){
+  const n=Math.max(1,Math.floor(Number(g?.clock?.night)||1));
+  return init(g)?.surveillanceEpisodes.find(e=>e.night===n)||null;
+ }
+ function surveillanceAftermath(g){
+  if(g?.scene!=="district"||!byId[g.district])return "";
+  const n=Math.max(1,Math.floor(Number(g.clock?.night)||1));
+  const e=init(g)?.surveillanceEpisodes.filter(x=>x.district===g.district&&
+   n>=x.night+1&&n<=x.night+2).slice(-1)[0];
+  if(!e)return "";
+  if(e.outcome==="avoided")return "Desde que elegiste otra ruta, la calle parece más tranquila. No conocés a quienes la vigilaban.";
+  if(e.outcome==="noticed")return "La noche siguiente hay miradas más cautelosas. Tal vez tu investigación llamó la atención.";
+  return "Al volver a este barrio reconocés fotografías y anotaciones similares, pero ignorás quién las hizo.";
+ }
+ function resolveSurveillance(g,choice){
+  if(!g||g.scene!=="district"||!byId[g.district]||!["observe","avoid"].includes(choice)||
+    g.combat?.active||!hunterWarning(g)||surveillanceEpisode(g))return null;
+  const state=init(g),night=Math.max(1,Math.floor(Number(g.clock?.night)||1));
+  let outcome,summary;
+  if(choice==="avoid"){
+   outcome="avoided";
+   summary="Cambiaste de recorrido para no ofrecer más información a los desconocidos.";
+  }else{
+   const roll=api?.roll?.("Percepción","Investigación",7);
+   outcome=roll?.success?"unconfirmed":"noticed";
+   summary=roll?.success?
+    "Desde una distancia segura viste fotografías y horarios anotados. No identificaste a nadie ni sus intenciones.":
+    "Intentaste observar, pero alguien pareció reparar en vos. Te alejaste antes de una confrontación.";
+  }
+  const record={night,district:g.district,choice,outcome,summary};
+  state.surveillanceEpisodes.push(record);
+  state.surveillanceEpisodes=state.surveillanceEpisodes.slice(-16);
+  if(outcome==="noticed")api?.exposure?.(5,"Una investigación de vigilancia desconocida llamó la atención.");
+  api?.log?.("Vigilancia sin verificar en "+g.district+": "+summary);
+  api?.save?.();api?.refresh?.();
+  return record;
+ }
  function interactWalker(g,w){
   const state=init(g),key=g.clock.night+":"+w.id,remembered=!!state.talked[key];
   const rumor=streetRumor(g,w),lead=rumorLead(rumor),reaction=neighborhoodReaction(g),
-   commerce=streetCommerceReputation(g),warning=hunterWarning(g);
+   commerce=streetCommerceReputation(g),warning=hunterWarning(g),aftermath=surveillanceAftermath(g);
   const text=remembered?
    "La persona reconoce que ya conversaron esta noche. Mira la calle y continúa con sus asuntos.":
    "La persona interrumpe brevemente su recorrido. No conoce los secretos de los Vástagos ni tiene información excepcional.";
@@ -392,6 +434,18 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · VIGILANCIA DESCONOCIDA");
    api?.refresh?.();
   }});
+  if(warning&&!surveillanceEpisode(g)){
+   choices.push({label:"Observar discretamente · Percepción + Investigación (dif. 7)",action:()=>{
+    const result=resolveSurveillance(g,"observe");
+    if(result)api?.ask?.("Vigilancia desconocida",result.summary+"\\n\\nNo constituye prueba ni identifica a los desconocidos.",
+     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · OBSERVACIÓN NO VERIFICADA");
+   }});
+   choices.push({label:"Cambiar de ruta y evitar la vigilancia",action:()=>{
+    const result=resolveSurveillance(g,"avoid");
+    if(result)api?.ask?.("Retirada prudente",result.summary+"\\n\\nPodrás observar las consecuencias en las noches siguientes.",
+     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · VIGILANCIA EVITADA");
+   }});
+  }
   if(lead)choices.push({label:"Preguntar dónde contrastar el rumor",action:()=>{
    const note="Podés consultar en "+lead.name+", en "+lead.district+
     ". Allí conocen versiones del incidente, pero sólo una investigación puede aportar pruebas.";
@@ -405,7 +459,7 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · RUMOR SIN VERIFICAR");
    api?.refresh?.();
   }});
-  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:"")+(commerce?"\n\n"+commerce:"")+(warning?"\n\n"+warning:""),choices,"PARÍS · TRANSEÚNTE");
+  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:"")+(commerce?"\n\n"+commerce:"")+(warning?"\n\n"+warning:"")+(aftermath?"\n\n"+aftermath:""),choices,"PARÍS · TRANSEÚNTE");
   return true;
  }
  function interact(g,time=0){
@@ -423,5 +477,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,shopperReaction,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,hunterWarning,interact,interactShop,interactEvent,interactWalker,summary,version:"15.6"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,hunterWarning,surveillanceEpisode,surveillanceAftermath,resolveSurveillance,interact,interactShop,interactEvent,interactWalker,summary,version:"15.7"});
 })();

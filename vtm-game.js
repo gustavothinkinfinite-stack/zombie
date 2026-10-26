@@ -2430,7 +2430,7 @@
   if(ELI)ELI.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,faction:increaseFaction,advance:advanceClock,refresh:hud,save,enterInterior:enterCaseInterior});
   window.VTM_PARKER_DOSSIER?.bind({getGame:()=>game,save,refresh:hud});
   if(ACT)ACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save,advance:advanceClock,bapthiste:caseBapthisteEncounter});
-  if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,log,refresh:hud,save});
+  if(CITY)CITY.bind({getGame:()=>game,ask:askMenu,roll:dicePool,exposure,log,refresh:hud,save});
   if(REACT)REACT.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(REGION)REGION.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,exposure});
   if(CIV)CIV.bind({getGame:()=>game,ask:askMenu,roll:dicePool,log,refresh:hud,save,advance:advanceClock,faction:increaseFaction});
