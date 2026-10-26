@@ -112,6 +112,21 @@ check("Un seguidor incompleto no bloquea la vigilancia ni modifica otros expedie
   assert.equal(g.cityConsequences.heat.bastilla,0);
  }
 });
+check("Un observador no reconoce al personaje a través de un obstáculo cercano",()=>{
+ const g=make(),p=H.ensure(g,P);
+ assert.ok(p);
+ p.mode="tail";p.x=200;p.y=200;p.alert=60;
+ g.x=220;g.y=200;
+ // Barrera delgada entre dos posiciones cercanas: no basta la distancia.
+ const barrier={canStand:(_scene,x)=>x<207||x>212};
+ assert.equal(H.sight(barrier,p.x,p.y,g.x,g.y),false);
+ const events=H.step(g,.06,barrier,{moving:false});
+ assert.ok(!events.some(e=>e.type==="near"),"no puede identificar a través de una pared");
+ assert.ok(g.hunters.follower,"el seguimiento continúa sin falso reconocimiento");
+ assert.equal(g.hunters.resolved[p.source],undefined);
+ assert.equal(g.elizabeth.evidence[0],"intacta");
+ assert.equal(g.conspiracy.chapter,2);
+});
 check("No actúa en interiores, otros barrios ni durante un combate existente",()=>{
  const g=make();H.ensure(g,P);
  assert.equal(H.step({...g,scene:"sidevenue"},.06,P).length,0);

@@ -105,7 +105,8 @@ window.VTM_HUNTERS=(()=>{
   if(p.mode==="tail"){
    if(!observable&&p.lost>=4)return events.concat(finish(g,"escaped","Perdiste a quien parecía seguirte. No conocés su identidad."));
    if(observable)follow(g,p,physics,time);
-   if(Math.hypot(g.x-p.x,g.y-p.y)<22)
+   // La cercanía no permite reconocer a alguien a través de una pared.
+   if(observable&&Math.hypot(g.x-p.x,g.y-p.y)<22)
     return events.concat(finish(g,"near","El desconocido se acercó, observó tu rostro y se retiró sin agredirte."));
   }
   return events;
