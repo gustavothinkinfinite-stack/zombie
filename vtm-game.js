@@ -1,6 +1,6 @@
 "use strict";
 (() => {
- const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, PRINC=window.VTM_PRINCIPADO||null, CONSP=window.VTM_CONSPIRACY||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
+ const D=window.VTM_DATA, C=window.VTM_CONTENT, N=window.VTM_NPCS, A=window.VTM_ARCS, G=window.VTM_GRAPHICS||null, P=window.VTM_PHYSICS||null, V=window.VTM_APPEARANCE, M=window.VTM_MECHANICS, TACT=window.VTM_TACTICS, EQUIP=window.VTM_EQUIPMENT, ECON=window.VTM_ECONOMY, ECONUI=window.VTM_ECONOMY_UI, POL=window.VTM_POLITICS, POLUI=window.VTM_POLITICS_UI, COURT=window.VTM_COURT, COURTUI=window.VTM_COURT_UI, WORLD=window.VTM_WORLD_POWERS, WORLDUI=window.VTM_WORLD_POWERS_UI, TACTUI=window.VTM_TACTICS_UI, ST=window.VTM_STORY, SU=window.VTM_STORY_UI, B=window.VTM_AMBIENCE||null, T=window.VTM_DISTRICTS||null, K=window.VTM_SHOPS||null, H=window.VTM_CONTACTS||null, CASES=window.VTM_LOCAL_CASES||null, ELI=window.VTM_ELIZABETH||null, CI=window.VTM_CASE_INTERIORS||null, ACT=window.VTM_CASE_ACTORS||null, VIS=window.VTM_CASE_VISUALS||null, CITY=window.VTM_CITY_LIFE||null, REACT=window.VTM_REACTIVE_CITY||null, REGION=window.VTM_REACTIVE_DISTRICTS||null, CIV=window.VTM_CITY_CONSEQUENCES||null, CHASE=window.VTM_STEALTH_CHASE||null, HUNTERS=window.VTM_HUNTERS||null, ADV=window.VTM_ADVANCED_TACTICS||null, VITAE=window.VTM_VITAE||null, PRINC=window.VTM_PRINCIPADO||null, CONSP=window.VTM_CONSPIRACY||null, SAVER=window.VTM_SAVE||null, SAVE_KEY="cronicas-paris-ghoul-v1", $=id=>document.getElementById(id);
  const groupsA=Object.keys(D.attributes),groupsH=Object.keys(D.abilities),CLANS=Object.keys(D.clans);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
@@ -340,6 +340,7 @@
   if(REGION){REGION.init(game);REGION.tick(game);}
   if(CIV){CIV.init(game);CIV.tick(game);}
   if(CHASE)CHASE.init(game);
+  if(HUNTERS&&game.hunters)HUNTERS.init(game);
   M.init(game);
   if(VITAE)VITAE.init(game);
   if(PRINC)PRINC.init(game);
@@ -2003,6 +2004,7 @@
    if(REGION)REGION.draw(g,game,visualTime);
    if(CIV)CIV.draw(g,game,visualTime);
    if(CHASE)CHASE.draw(g,game,visualTime);
+   if(HUNTERS)HUNTERS.draw(g,game,visualTime);
    portrait(game.x,game.y,"player",game.embraced?"#a65164":"#8fa2a0");
  }
  function drawParis(){
@@ -2251,6 +2253,10 @@
    chaseSaveSeconds+=dt;
    if(chaseSaveSeconds>=12){chaseSaveSeconds=0;save();}
   }else chaseSaveSeconds=0;
+  if(game&&HUNTERS&&P&&game.scene==="district"&&!overlayOpen()&&!game.combat?.active){
+   const reports=HUNTERS.step(game,dt,P,{moving:!!game.walking,sprinting:keys.has("shift")});
+   for(const report of reports){log(report.text);hud();save();}
+  }
   if(game&&ACT&&CI?.byId(game.scene)&&!overlayOpen()&&!game.combat?.active){
    const events=ACT.step(game,dt,P);
    for(const event of events){
