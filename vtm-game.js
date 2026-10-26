@@ -1083,6 +1083,30 @@
       "\\n\\nTirada: ["+roll.dice.join(", ")+"] · "+roll.net+" éxitos netos.",
       [{label:"Continuar",action:()=>{}}],"SEGUIMIENTO SIN IDENTIFICAR");
     }},
+    {label:"Apartarlo y escapar · Fuerza + Pelea (dif. 7) · riesgo de lesión",
+     disabled:(game.mechanics?.health||0)<=1,action:()=>{
+     if(!HUNTERS.canConfront(game,P)||!(game.mechanics?.health>=2))return;
+     const roll=dicePool("Fuerza","Pelea",7);
+     const events=HUNTERS.decide(game,P,"defend",roll.success);
+     if(!events.length)return;
+     let impact="";
+     if(!roll.success){
+      // Aplicar una lesión contundente con el motor existente: armadura,
+      // Fortaleza y absorción siguen las reglas habituales del personaje.
+      const absorbed=TACT.soak(game,"contundente",1);
+      const lost=absorbed.damage?TACT.deal(game,absorbed.damage,"contundente").amount:0;
+      impact=lost?" Recibiste "+lost+" nivel de daño contundente.":
+       " Conseguís absorber el golpe sin perder Salud.";
+     }
+     for(const event of events)log(event.text);
+     // Un forcejeo público tiene coste social aun si el personaje se impone.
+     exposure(roll.success?6:8,"Un forcejeo nocturno atrajo a testigos.");
+     advanceClock(5);hud();save();
+     askMenu("Una retirada violenta",events[0].text+impact+
+      "\\n\\nTirada: ["+roll.dice.join(", ")+"] · "+roll.net+
+      " éxitos netos. El desconocido no quedó identificado.",
+      [{label:"Continuar",action:()=>{}}],"CONFRONTACIÓN CIVIL · SIN PRUEBAS");
+    }},
     {label:"Retirarte sin confrontar",action:()=>{
      const events=HUNTERS.decide(game,P,"withdraw");
      if(!events.length)return;

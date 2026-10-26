@@ -122,12 +122,19 @@ window.VTM_HUNTERS=(()=>{
    sight(physics,g.x,g.y,p.x,p.y));
  }
  function decide(g,physics,choice,success=false){
-  if(!["withdraw","dialogue"].includes(choice)||!canConfront(g,physics))return [];
+  if(!["withdraw","dialogue","defend"].includes(choice)||!canConfront(g,physics))return [];
+  // El forcejeo es una elección arriesgada, nunca una ejecución automática.
+  // Al dejar al jugador con al menos un nivel de Salud, no bloquea la partida.
+  if(choice==="defend"&&!(Number(g.mechanics?.health)>=2))return [];
   const events=choice==="withdraw"?
    finish(g,"withdrew","Te apartaste sin confrontar a la silueta. Su identidad sigue siendo desconocida."):
-   finish(g,success?"spoken":"refused",success?
-    "El desconocido responde con evasivas y se retira. No obtuviste una identidad verificable.":
-    "El desconocido evita responder y se aleja. No obtuviste información verificable.");
+   choice==="defend"?
+    finish(g,success?"broke_free":"shaken",success?
+     "Empujaste al desconocido y abriste paso para escapar. Su identidad sigue sin confirmar.":
+     "El forcejeo salió mal: recibiste un golpe antes de lograr separarte. No sabés quién te seguía."):
+    finish(g,success?"spoken":"refused",success?
+     "El desconocido responde con evasivas y se retira. No obtuviste una identidad verificable.":
+     "El desconocido evita responder y se aleja. No obtuviste información verificable.");
   // Una confrontación voluntaria da una noche de respiro; no altera a la policía.
   if(events.length){
    const s=init(g),night=Math.floor(Number(g.clock?.night)||0);
