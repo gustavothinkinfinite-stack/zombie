@@ -21,6 +21,10 @@ Esta sección actualiza el alcance del proyecto sin reemplazar los registros his
 
 
 
+## Preparación del próximo release
+
+La [hoja de ruta de cazadores XXVII](RELEASE_XXVII.md) distingue encuentros ambientales, seguimiento, persecución, combate opcional e investigación documental. **Todo está pendiente de implementación.** No reemplazar los módulos policiales por cazadores ni adelantar identidades secretas en conversaciones, rótulos, mapas, registros o pantallas de derrota. Reutilizar la escala visual y las reglas de accesibilidad existentes sin modificar coordenadas y colisiones. La versión visible sigue siendo fase XXVI hasta aprobar Chromium local y validación de Hostinger.
+
 ## Dirección artística
 
 **Gótico urbano de lujo discreto, no medieval ni caricaturesco.** París contemporánea y lluviosa, mármol oscuro, vidrio húmedo, caoba, cuero, metales envejecidos y acentos de vino. La nobleza de la Camarilla debe transmitir autoridad; los Brujah, fricción urbana; los Nosferatu, inteligencia subterránea; los Tremere, orden y secreto.

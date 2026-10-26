@@ -9,6 +9,10 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 - **Ruta de alojamiento:** \`public_html\`
 - **Tecnología:** HTML + CSS + JavaScript Canvas, sin compilación ni servidor.
 
+## Próximo release en preparación — Fase XXVII
+
+La hoja de ruta técnica y narrativa de la célula de cazadores está en [`RELEASE_XXVII.md`](RELEASE_XXVII.md). Es una **especificación pendiente de implementación**, no una función presente en la web. Se integrará con la exposición, la persecución, el combate y los expedientes existentes, sin sustituir a la policía ni revelar los secretos de la conspiración.
+
 ## Estado actual del proyecto — fase XXVI (25 de octubre de 2026)
 
 La cabecera de `index.html` identifica la **fase XXVI**. Las secciones históricas de este README siguen documentando los sistemas de las fases anteriores, incluida la campaña del Principado de fase XXI; no deben interpretarse como el límite funcional del juego.
@@ -931,7 +935,7 @@ Las misiones, la barra 0–100 de aprecio, la condición inicial sin Disciplinas
 
 ## Estado y próximos pasos
 
-Ésta es una **versión 0.1**, no un juego terminado. Falta ampliar interiores, retratos/animaciones, mapas transitables completos de París, decisiones a largo plazo, NPC adicionales con rutinas, fichas de salud/combate, equipo, economía de vitae y más profundidad en las misiones.
+**El estado vigente es la fase XXVI**, todavía en desarrollo. Ya existen combate táctico, equipo, vitae, una campaña investigativa y ocho barrios con memoria social; los párrafos anteriores documentan su evolución histórica. Las prioridades abiertas son ampliar la escala de exploración, las rutinas urbanas y los encuentros con consecuencias persistentes, comenzando por el plan de cazadores de la fase XXVII. No anunciar XXVII como disponible hasta que se implementen y validen sus criterios de aceptación.
 
 **Pruebas realizadas antes de la entrega:** carga de scripts, seis pasos de distribución de puntos, inicio del ghoul, conversación, aceptación de un encargo, salida a París, resolución de una tirada, informe al Domitor, cambio de aprecio, Abrazo al 100 % y asignación de Disciplinas.
 
