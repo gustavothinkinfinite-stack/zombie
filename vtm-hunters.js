@@ -81,6 +81,8 @@ window.VTM_HUNTERS=(()=>{
  }
  function step(g,dt,physics,options={}){
   if(!g||g.scene!=="district"||!physics||g.combat?.active)return[];
+  // Al cambiar la noche, caducar el seguimiento anterior incluso sin un nuevo indicio.
+  if(g.hunters)init(g);
   const p=ensure(g,physics);if(!p)return[];
   const time=clamp(Number(dt)||0,0,.07);if(time===0)return[];
   p.elapsed+=time;

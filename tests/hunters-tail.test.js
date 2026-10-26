@@ -78,6 +78,21 @@ check("Un seguimiento de otra noche caduca y no bloquea uno nuevo",()=>{
  assert.equal(g.conspiracy.chapter,2);
  assert.equal(g.elizabeth.evidence[0],"intacta");
 });
+check("Seguimiento de otra noche caduca aunque no aparezcan indicios nuevos",()=>{
+ const g=make(),old=H.ensure(g,P);
+ assert.ok(old);
+ g.clock.night=7;
+ assert.equal(H.source(g),null);
+ assert.equal(H.step(g,.06,P).length,0);
+ assert.equal(g.hunters.follower,null);
+ assert.equal(g.hunters.resolved[old.source],"expired");
+ const recovered=JSON.parse(JSON.stringify(g));
+ assert.equal(H.step(recovered,.06,P).length,0);
+ assert.equal(recovered.hunters.resolved[old.source],"expired");
+ assert.deepEqual(recovered.elizabeth,g.elizabeth);
+ assert.deepEqual(recovered.localCases,g.localCases);
+ assert.equal(recovered.combat,undefined);
+});
 check("No actúa en interiores, otros barrios ni durante un combate existente",()=>{
  const g=make();H.ensure(g,P);
  assert.equal(H.step({...g,scene:"sidevenue"},.06,P).length,0);
