@@ -322,10 +322,30 @@ window.VTM_CITY_LIFE=(()=>{
   return known.some(mood=>mood!=="neutral")?
    "Los comerciantes del barrio tienen opiniones divididas sobre tu comportamiento.":"";
  }
+ // Señales de vigilancia civil: alerta ambiental, no identificación de cazadores.
+ // La probabilidad es estable por barrio/noche y depende de la exposición ya guardada.
+ // Nunca convierte una sospecha en prueba ni activa persecuciones o combates.
+ function hunterWarning(g){
+  const district=g?.district;
+  if(g?.scene!=="district"||!byId[district])return "";
+  const exposure=Math.max(0,Number(g.exposure)||0);
+  const heat=Math.max(0,Number(g.cityConsequences?.heat?.[district])||0);
+  const known=!!g.elizabeth?.hunters;
+  if(!known&&exposure<35&&heat<40)return "";
+  const chance=exposure>=70||heat>=70?1:
+   exposure>=50||heat>=55?.8:known?.55:.4;
+  const night=Math.max(1,Math.floor(Number(g.clock?.night)||1));
+  if(hash(night,defs.findIndex(d=>d.id===district),97)>chance)return "";
+  const note=exposure>=60||heat>=60?
+   "Unos desconocidos sin insignias parecen observar tus desplazamientos desde un vehículo estacionado. No sabés a quién responden.":
+   "Una vecina vio a dos desconocidos fotografiar entradas y anotar horarios. No pudo identificar a quién buscaban.";
+  return note+(known?
+   " El comportamiento recuerda una vigilancia humana que ya investigaste, pero no demuestra que sean las mismas personas.":"");
+ }
  function interactWalker(g,w){
   const state=init(g),key=g.clock.night+":"+w.id,remembered=!!state.talked[key];
   const rumor=streetRumor(g,w),lead=rumorLead(rumor),reaction=neighborhoodReaction(g),
-   commerce=streetCommerceReputation(g);
+   commerce=streetCommerceReputation(g),warning=hunterWarning(g);
   const text=remembered?
    "La persona reconoce que ya conversaron esta noche. Mira la calle y continúa con sus asuntos.":
    "La persona interrumpe brevemente su recorrido. No conoce los secretos de los Vástagos ni tiene información excepcional.";
@@ -361,6 +381,17 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · REPUTACIÓN COMERCIAL");
    api?.refresh?.();
   }});
+  if(warning)choices.push({label:"Preguntar por la vigilancia extraña",action:()=>{
+   const id=g.clock.night+":watch:"+w.id;
+   if(!state.checked[id]){
+    state.checked[id]=true;
+    api?.log?.("Vigilancia civil sin verificar en "+g.district+": "+warning);
+    api?.save?.();
+   }
+   api?.ask?.(w.name,warning+"\n\nNo es una prueba ni confirma la identidad o las intenciones de esas personas.",
+    [{label:"Seguir explorando",action:()=>{}}],"PARÍS · VIGILANCIA DESCONOCIDA");
+   api?.refresh?.();
+  }});
   if(lead)choices.push({label:"Preguntar dónde contrastar el rumor",action:()=>{
    const note="Podés consultar en "+lead.name+", en "+lead.district+
     ". Allí conocen versiones del incidente, pero sólo una investigación puede aportar pruebas.";
@@ -374,7 +405,7 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · RUMOR SIN VERIFICAR");
    api?.refresh?.();
   }});
-  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:"")+(commerce?"\n\n"+commerce:""),choices,"PARÍS · TRANSEÚNTE");
+  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:"")+(commerce?"\n\n"+commerce:"")+(warning?"\n\n"+warning:""),choices,"PARÍS · TRANSEÚNTE");
   return true;
  }
  function interact(g,time=0){
@@ -392,5 +423,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,shopperReaction,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,interact,interactShop,interactEvent,interactWalker,summary,version:"15.5"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,hunterWarning,interact,interactShop,interactEvent,interactWalker,summary,version:"15.6"});
 })();

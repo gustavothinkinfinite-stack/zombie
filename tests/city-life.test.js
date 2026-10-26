@@ -258,6 +258,43 @@ test("Los peatones comentan la reputación de los comercios sin modificar relaci
  C.interactWalker(old,C.walkers(old,10)[0]);
  assert.equal(dialogs.at(-1).options.some(o=>/opinan los comerciantes/.test(o.label)),false);
 });
+test("La vigilancia civil surge por exposición o sospecha sin revelar cazadores ni modificar expedientes",()=>{
+ const game=g("district","bastilla",23*60+20,5),dialogs=[],logs=[],saves=[];
+ game.exposure=82;game.cityConsequences={heat:{bastilla:20}};
+ game.elizabeth={status:"reported",hunters:true,evidence:["apartamento"]};
+ game.localCases={closed:["archivo"]};game.principado={chapter:2};
+ game.conspiracy={secret:"reservado"};game.parkerDossier={proofs:["EP-05"]};
+ game.parkerPolitics={protection:"active"};game.vitae={lastNight:4};
+ const warning=C.hunterWarning(game);
+ assert.match(warning,/desconocidos sin insignias/);
+ assert.match(warning,/no demuestra/);
+ assert.doesNotMatch(warning,/Senescal|Etienne|Moreau|impostor|Bapthiste/i);
+ const walker=C.walkers(game,9)[0];
+ C.bind({ask:(title,body,options)=>dialogs.push({title,body,options}),
+  log:x=>logs.push(x),save:()=>saves.push(true),refresh:()=>{}});
+ assert.equal(C.interactWalker(game,walker),true);
+ assert.match(dialogs.at(-1).body,/desconocidos sin insignias/);
+ const ask=dialogs.at(-1).options.find(o=>/vigilancia extraña/.test(o.label));
+ assert.ok(ask);ask.action();
+ assert.match(dialogs.at(-1).body,/No es una prueba/);
+ assert.equal(logs.length,1);assert.equal(saves.length,1);
+ const recovered=JSON.parse(JSON.stringify(game));
+ C.interactWalker(recovered,walker);
+ dialogs.at(-1).options.find(o=>/vigilancia extraña/.test(o.label)).action();
+ assert.equal(logs.length,1,"La observación guardada no se registra otra vez");
+ assert.equal(saves.length,1,"La observación guardada no se reescribe");
+ for(const key of ["elizabeth","localCases","principado","conspiracy","parkerDossier","parkerPolitics","vitae","cityConsequences"])
+  assert.deepEqual(recovered[key],game[key],"Estado inalterado: "+key);
+ const old=g("district","bastilla",1215,1);
+ assert.equal(C.hunterWarning(old),"","No inventar amenazas en partidas antiguas sin sospecha");
+ C.interactWalker(old,C.walkers(old,9)[0]);
+ assert.equal(dialogs.at(-1).options.some(o=>/vigilancia extraña/.test(o.label)),false);
+ const hot=g("district","bastilla",1215,3);
+ hot.cityConsequences={heat:{bastilla:75}};
+ assert.match(C.hunterWarning(hot),/desconocidos/,"La vigilancia local también genera avisos");
+ assert.equal(C.hunterWarning({...hot,district:"passy"}),"","No propagar la sospecha local a otro barrio");
+ assert.equal(C.hunterWarning({...game,scene:"sidevenue"}),"","Sólo en las calles");
+});
 test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const source=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
