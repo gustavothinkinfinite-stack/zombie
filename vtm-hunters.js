@@ -19,6 +19,11 @@ window.VTM_HUNTERS=(()=>{
   const p=s.follower;
   if(p){
    if(!districts.has(p.district)||!Number.isInteger(p.night)||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!["watch","tail"].includes(p.mode))s.follower=null;
+   else if(Number.isInteger(g.clock?.night)&&p.night!==g.clock.night){
+    // Un seguidor de otra noche no puede bloquear episodios nuevos ni reaparecer.
+    if(typeof p.source==="string"&&p.source&&!s.resolved[p.source])s.resolved[p.source]="expired";
+    s.follower=null;routes.delete(g);
+   }
    else{
     p.x=clamp(p.x,24,456);p.y=clamp(p.y,51,285);
     p.alert=clamp(Number(p.alert)||0,0,100);p.lost=clamp(Number(p.lost)||0,0,60);

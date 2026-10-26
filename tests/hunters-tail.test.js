@@ -57,6 +57,27 @@ check("La persecución termina al perder la línea de visión y no se reinicia a
  assert.equal(H.step(recovered,.06,P).length,0);
  assert.equal(recovered.hunters.resolved["5:bastilla"],"escaped");
 });
+check("Un seguimiento de otra noche caduca y no bloquea uno nuevo",()=>{
+ const g=make(),first=H.ensure(g,P);
+ assert.ok(first);
+ const previous=first.source;
+ g.clock.night=7;
+ H.init(g);
+ assert.equal(g.hunters.follower,null);
+ assert.equal(g.hunters.resolved[previous],"expired");
+ g.cityLife.surveillanceEpisodes.push({night:6,district:"bastilla",choice:"observe",outcome:"noticed"});
+ const next=H.ensure(g,P);
+ assert.ok(next,"debe permitir el nuevo episodio sin arrastrar al observador anterior");
+ assert.equal(next.source,"6:bastilla");
+ assert.equal(next.night,7);
+ assert.equal(H.ensure(g,P),next,"el episodio nuevo es idempotente");
+ const recovered=JSON.parse(JSON.stringify(g));
+ assert.equal(H.ensure(recovered,P).source,"6:bastilla");
+ assert.equal(recovered.hunters.resolved[previous],"expired");
+ assert.equal(g.cityConsequences.heat.bastilla,0);
+ assert.equal(g.conspiracy.chapter,2);
+ assert.equal(g.elizabeth.evidence[0],"intacta");
+});
 check("No actúa en interiores, otros barrios ni durante un combate existente",()=>{
  const g=make();H.ensure(g,P);
  assert.equal(H.step({...g,scene:"sidevenue"},.06,P).length,0);
