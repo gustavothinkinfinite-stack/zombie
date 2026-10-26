@@ -1,6 +1,6 @@
 # Próximo release — Fase XXVII: Los cazadores de la noche
 
-**Estado: fase XXVII parcialmente implementada (XXVII-A); célula de cazadores, persecución y combate aún pendientes.** Base auditada: rama `main`, fase XXVI, 25 de octubre de 2026. El número de fase es una propuesta de continuidad; no cambiar la portada ni anunciar lanzamiento hasta superar la aceptación.
+**Estado: fase XXVII parcialmente implementada (XXVII-A y primera entrega XXVII-B). Ya existe seguimiento físico por observadores sin identificar; la célula de cazadores identificados, las confrontaciones y el combate siguen pendientes.** Base auditada: rama `main`, fase XXVI, 25 de octubre de 2026. El número de fase es una propuesta de continuidad; no cambiar la portada ni anunciar lanzamiento hasta superar la aceptación.
 
 ## 1. Auditoría y continuidad
 
@@ -54,7 +54,7 @@ Se revisaron los mensajes y fechas de los **625 commits** disponibles de `main` 
 
 ## 4. Arquitectura propuesta
 
-- Módulo aislado `vtm-hunters.js`, **por implementar**, cargado antes de `vtm-game.js` cuando sea funcional. No usar nombres de personajes secretos ni la identidad de informantes en textos visibles.
+- Módulo aislado `vtm-hunters.js`, **ya integrado para XXVII-B** y cargado antes de `vtm-game.js`. Su alcance actual es un observador sin identificar, con desplazamiento físico, sigilo y desenlace persistente; ampliar el módulo sin exponer nombres de personajes secretos ni identidades de informantes en textos visibles.
 - Estado opcional `game.hunters` con `lastCheckNight`, `cooldownUntilNight`, `episodes`, `history`, `surveillance` y `case03` u otra estructura compatible. **No cambiar la versión de guardado ni la clave** `cronicas-paris-ghoul-v1`.
 - Evaluación idempotente por noche, con semilla persistente o selección estable; sincronizar solo en puntos del reloj/cambio de noche pertinentes, **no** en cada frame.
 - No modificar `vtm-stealth-chase.js` para que las patrullas policiales se comporten como cazadores. Se pueden compartir utilidades físicas, no la identidad ni los textos de captura.
@@ -70,8 +70,8 @@ Referencia: `vtm-city-life.js`, conexión de `dicePool` y `exposure` en `vtm-gam
 
 ## 5. Entregas incrementales (orden sugerido)
 
-- **XXVII-A · Presencia (parcial):** advertencias, elección de observar/evitar y seguimiento persistente ya integrados. Aún pendiente un módulo específico de célula, presencia física y señales ambientales adicionales.
-- **XXVII-B · Vigilancia (primera integración):** `vtm-hunters.js` incorpora un observador sin identificar después de investigar sin éxito una vigilancia previa: rutas físicas por `vtm-physics.js`, visión bloqueada, sigilo, pérdida del seguimiento, resolución persistida e independencia de `vtm-stealth-chase.js`. El enlace visual y de simulación está en `vtm-game.js`, con regresión `tests/hunters-tail.test.js`. **Pendiente:** equilibrar situaciones, ampliar señales e incorporar una célula de cazadores identificados; todavía no existe confrontación ni combate.
+- **XXVII-A · Presencia (parcial):** advertencias, elección de observar/evitar y memoria persistente de las decisiones integradas. La presencia física inicial corresponde a XXVII-B; siguen pendientes una célula identificada y señales ambientales adicionales.
+- **XXVII-B · Vigilancia (primera integración):** `vtm-hunters.js` incorpora un observador sin identificar después de investigar sin éxito una vigilancia previa: rutas físicas por `vtm-physics.js`, visión bloqueada, sigilo, pérdida del seguimiento, resolución persistida e independencia de `vtm-stealth-chase.js`. El enlace visual y de simulación está en `vtm-game.js`, con regresión `tests/hunters-tail.test.js`. Los seguimientos de noches anteriores caducan sin bloquear episodios nuevos; el historial y la resolución permanecen en el guardado. **Pendiente:** equilibrar situaciones, ampliar señales e incorporar una célula de cazadores identificados; todavía no existe confrontación ni combate.
 - **XXVII-C · Confrontación:** diálogo, fuga, combate opcional con cazadores humanos, heridas y consecuencias; sin granjas de PX ni partida bloqueada.
 - **XXVII-D · Caso 03:** investigación documental y callejera, alternativas a la violencia, rastros falsificables e información anónima; proteger la identidad de la fuente hasta el desbloqueo narrativo correspondiente.
 - **XXVII-E · Pulido:** test interactivo completo, guías, accesibilidad, arte discreto, equilibrio de probabilidad y verificación pública.
@@ -90,4 +90,4 @@ Referencia: `vtm-city-life.js`, conexión de `dicePool` y `exposure` en `vtm-gam
 - [ ] Chromium local aprobado; Hostinger público aprobado y todos los recursos verificados por SHA-256. Un commit no se considera un despliegue confirmado.
 - [ ] Portada, README y `GUIA_VISUAL_2_0.md` actualizados **solo después** de completar y validar la implementación.
 
-**Alcance actual:** planificación alineada y primer tramo XXVII-A jugable. **Todavía no crea cazadores identificados, persecución propia ni combate, y mantiene el encabezado fase XXVI.**
+**Alcance actual:** XXVII-A jugable y seguimiento físico inicial XXVII-B integrado, separado de las patrullas policiales. **Todavía no hay cazadores identificados, intercepción dialogada ni combate propio de cazadores; el encabezado público continúa en fase XXVI.**
