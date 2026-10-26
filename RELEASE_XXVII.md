@@ -1,6 +1,6 @@
 # Próximo release — Fase XXVII: Los cazadores de la noche
 
-**Estado: planificación / no publicado como mecánica.** Base auditada: rama `main`, fase XXVI, 25 de octubre de 2026. El número de fase es una propuesta de continuidad; no cambiar la portada ni anunciar lanzamiento hasta superar la aceptación.
+**Estado: fase XXVII parcialmente implementada (XXVII-A); célula de cazadores, persecución y combate aún pendientes.** Base auditada: rama `main`, fase XXVI, 25 de octubre de 2026. El número de fase es una propuesta de continuidad; no cambiar la portada ni anunciar lanzamiento hasta superar la aceptación.
 
 ## 1. Auditoría y continuidad
 
@@ -62,9 +62,15 @@ Se revisaron los mensajes y fechas de los **625 commits** disponibles de `main` 
 - Ningún estado nuevo debe borrar `elizabeth`, `localCases`, `principado`, `conspiracy`, `parkerDossier`, `parkerPolitics`, `contactMemory`, `cityConsequences` o `stealthChase`. Preservar partidas con combate o persecución en curso.
 - No incluir lógica de red, telemetría personal, NPC omniscientes ni generación libre de secretos.
 
+## Primera entrega XXVII-A — avance implementado
+
+La vigilancia civil ambiental ya existente ahora habilita **observar discretamente** (Percepción + Investigación, dificultad 7) o **cambiar de ruta**. Una observación fallida incrementa la exposición 5 puntos; una exitosa solo aporta información no verificada. La decisión se almacena en `cityLife.surveillanceEpisodes`, se limita a **un episodio por noche** para la partida y repercute en conversaciones del barrio durante las **dos noches posteriores**. Partidas antiguas no generan encuentros automáticos. No se añadió ningún cazador confirmado ni un combate.
+
+Referencia: `vtm-city-life.js`, conexión de `dicePool` y `exposure` en `vtm-game.js`, regresión `tests/surveillance-choices.test.js`. La cabecera pública continúa indicando fase XXVI hasta completar toda la fase XXVII.
+
 ## 5. Entregas incrementales (orden sugerido)
 
-- **XXVII-A · Presencia:** módulo opcional, selección nocturna, rumores y señales ambientales, comprobación de compatibilidad del guardado y anti-spoilers.
+- **XXVII-A · Presencia (parcial):** advertencias, elección de observar/evitar y seguimiento persistente ya integrados. Aún pendiente un módulo específico de célula, presencia física y señales ambientales adicionales.
 - **XXVII-B · Vigilancia:** sospecha contextual, seguimientos con ruta real, pérdida de línea de visión, sigilo, enfriamiento y persistencia después de recargar.
 - **XXVII-C · Confrontación:** diálogo, fuga, combate opcional con cazadores humanos, heridas y consecuencias; sin granjas de PX ni partida bloqueada.
 - **XXVII-D · Caso 03:** investigación documental y callejera, alternativas a la violencia, rastros falsificables e información anónima; proteger la identidad de la fuente hasta el desbloqueo narrativo correspondiente.
@@ -84,4 +90,4 @@ Se revisaron los mensajes y fechas de los **625 commits** disponibles de `main` 
 - [ ] Chromium local aprobado; Hostinger público aprobado y todos los recursos verificados por SHA-256. Un commit no se considera un despliegue confirmado.
 - [ ] Portada, README y `GUIA_VISUAL_2_0.md` actualizados **solo después** de completar y validar la implementación.
 
-**Alcance de esta entrega:** alinear la planificación y auditar conflictos entre módulos. **No crea todavía cazadores jugables ni cambia el encabezado de fase XXVI.**
+**Alcance actual:** planificación alineada y primer tramo XXVII-A jugable. **Todavía no crea cazadores identificados, persecución propia ni combate, y mantiene el encabezado fase XXVI.**
