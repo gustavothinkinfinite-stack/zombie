@@ -23,7 +23,7 @@ Esta sección actualiza el alcance del proyecto sin reemplazar los registros his
 
 ## Preparación del próximo release
 
-La [hoja de ruta de cazadores XXVII](RELEASE_XXVII.md) distingue encuentros ambientales, seguimiento, persecución, combate opcional e investigación documental. **Solo el primer tramo XXVII-A está integrado:** observar o evitar vigilancia civil con consecuencia persistente; los cazadores identificados, persecuciones y combates propios siguen pendientes. No reemplazar los módulos policiales por cazadores ni adelantar identidades secretas en conversaciones, rótulos, mapas, registros o pantallas de derrota. Reutilizar la escala visual y las reglas de accesibilidad existentes sin modificar coordenadas y colisiones. La versión visible sigue siendo fase XXVI hasta aprobar Chromium local y validación de Hostinger.
+La [hoja de ruta de cazadores XXVII](RELEASE_XXVII.md) distingue encuentros ambientales, seguimiento, persecución, combate opcional e investigación documental. **XXVII-A está integrado y XXVII-B tiene su primera entrega:** observar o evitar vigilancia civil, con consecuencia persistente, y una figura no identificada que puede seguir al personaje por calles transitables. Su navegación se renderiza en Canvas desde `vtm-hunters.js`, sin convertirse en policía. La célula de cazadores identificados, confrontaciones y combates propios siguen pendientes. No reemplazar los módulos policiales por cazadores ni adelantar identidades secretas en conversaciones, rótulos, mapas, registros o pantallas de derrota. Reutilizar la escala visual y las reglas de accesibilidad existentes sin modificar coordenadas y colisiones. La versión visible sigue siendo fase XXVI hasta aprobar Chromium local y validación de Hostinger.
 
 ## Dirección artística
 

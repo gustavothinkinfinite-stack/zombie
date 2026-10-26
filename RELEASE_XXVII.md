@@ -71,7 +71,7 @@ Referencia: `vtm-city-life.js`, conexión de `dicePool` y `exposure` en `vtm-gam
 ## 5. Entregas incrementales (orden sugerido)
 
 - **XXVII-A · Presencia (parcial):** advertencias, elección de observar/evitar y seguimiento persistente ya integrados. Aún pendiente un módulo específico de célula, presencia física y señales ambientales adicionales.
-- **XXVII-B · Vigilancia:** sospecha contextual, seguimientos con ruta real, pérdida de línea de visión, sigilo, enfriamiento y persistencia después de recargar.
+- **XXVII-B · Vigilancia (primera integración):** `vtm-hunters.js` incorpora un observador sin identificar después de investigar sin éxito una vigilancia previa: rutas físicas por `vtm-physics.js`, visión bloqueada, sigilo, pérdida del seguimiento, resolución persistida e independencia de `vtm-stealth-chase.js`. El enlace visual y de simulación está en `vtm-game.js`, con regresión `tests/hunters-tail.test.js`. **Pendiente:** equilibrar situaciones, ampliar señales e incorporar una célula de cazadores identificados; todavía no existe confrontación ni combate.
 - **XXVII-C · Confrontación:** diálogo, fuga, combate opcional con cazadores humanos, heridas y consecuencias; sin granjas de PX ni partida bloqueada.
 - **XXVII-D · Caso 03:** investigación documental y callejera, alternativas a la violencia, rastros falsificables e información anónima; proteger la identidad de la fuente hasta el desbloqueo narrativo correspondiente.
 - **XXVII-E · Pulido:** test interactivo completo, guías, accesibilidad, arte discreto, equilibrio de probabilidad y verificación pública.

@@ -11,7 +11,7 @@ RPG 2D narrativo de pixel art oscuro, ambientado en **el Principado de París** 
 
 ## Próximo release en preparación — Fase XXVII
 
-La hoja de ruta técnica y narrativa está en [`RELEASE_XXVII.md`](RELEASE_XXVII.md). La **primera etapa XXVII-A** ya permite investigar o evitar señales de vigilancia, con Percepción + Investigación, riesgo acotado y memoria durante dos noches; sus observadores siguen sin identificar. **La célula jugable de cazadores, sus persecuciones y su combate aún no están implementados.** No sustituir a la policía ni revelar secretos de la conspiración.
+La hoja de ruta técnica y narrativa está en [`RELEASE_XXVII.md`](RELEASE_XXVII.md). La **primera etapa XXVII-A** ya permite investigar o evitar señales de vigilancia, con Percepción + Investigación, riesgo acotado y memoria durante dos noches; sus observadores siguen sin identificar. **XXVII-B ya tiene un seguimiento físico inicial por personas sin identificar:** aparece tras una observación fallida la noche anterior, respeta calles y obstáculos, responde al sigilo y puede perder el rastro; su desenlace persiste al recargar. **La célula de cazadores identificados, las confrontaciones y el combate todavía no están implementados.** No sustituir a la policía ni revelar secretos de la conspiración.
 
 ## Estado actual del proyecto — fase XXVI (25 de octubre de 2026)
 
