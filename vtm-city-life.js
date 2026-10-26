@@ -306,9 +306,26 @@ window.VTM_CITY_LIFE=(()=>{
    note+=(note?" ":"")+"La atención policial en las calles hace que muchos midan sus palabras.";
   return note;
  }
+ // La reputación ya existente en los 16 comercios llega a la conversación
+ // con transeúntes. No se generan nuevos puntos ni cambios de relación.
+ function streetCommerceReputation(g){
+  const district=g?.district,contacts=window.VTM_CONTACTS;
+  if(g?.scene!=="district"||!byId[district]||!contacts?.mood)return "";
+  const shops=window.VTM_SHOPS?.byDistrict?.[district]||[];
+  const weights={agradecido:2,cordial:1,neutral:0,receloso:-1,hostil:-2};
+  const known=shops.map(shop=>contacts.mood(g,shop))
+   .filter(mood=>Object.prototype.hasOwnProperty.call(weights,mood));
+  if(!known.length)return "";
+  const balance=known.reduce((n,mood)=>n+weights[mood],0);
+  if(balance>0)return "En los comercios del barrio hablan bien de cómo trataste a sus responsables.";
+  if(balance<0)return "Algunos comerciantes desconfían de vos y sus clientes prefieren medir las palabras.";
+  return known.some(mood=>mood!=="neutral")?
+   "Los comerciantes del barrio tienen opiniones divididas sobre tu comportamiento.":"";
+ }
  function interactWalker(g,w){
   const state=init(g),key=g.clock.night+":"+w.id,remembered=!!state.talked[key];
-  const rumor=streetRumor(g,w),lead=rumorLead(rumor),reaction=neighborhoodReaction(g);
+  const rumor=streetRumor(g,w),lead=rumorLead(rumor),reaction=neighborhoodReaction(g),
+   commerce=streetCommerceReputation(g);
   const text=remembered?
    "La persona reconoce que ya conversaron esta noche. Mira la calle y continúa con sus asuntos.":
    "La persona interrumpe brevemente su recorrido. No conoce los secretos de los Vástagos ni tiene información excepcional.";
@@ -333,6 +350,17 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · MEMORIA DEL BARRIO");
    api?.refresh?.();
   }});
+  if(commerce)choices.push({label:"Preguntar qué opinan los comerciantes",action:()=>{
+   const id=g.clock.night+":commerce:"+w.id;
+   if(!state.checked[id]){
+    state.checked[id]=true;
+    api?.log?.("Impresión comercial sin verificar en "+g.district+": "+commerce);
+    api?.save?.();
+   }
+   api?.ask?.(w.name,commerce+"\n\nSon opiniones sociales, no pruebas de ningún expediente.",
+    [{label:"Seguir explorando",action:()=>{}}],"PARÍS · REPUTACIÓN COMERCIAL");
+   api?.refresh?.();
+  }});
   if(lead)choices.push({label:"Preguntar dónde contrastar el rumor",action:()=>{
    const note="Podés consultar en "+lead.name+", en "+lead.district+
     ". Allí conocen versiones del incidente, pero sólo una investigación puede aportar pruebas.";
@@ -346,7 +374,7 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · RUMOR SIN VERIFICAR");
    api?.refresh?.();
   }});
-  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:""),choices,"PARÍS · TRANSEÚNTE");
+  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:"")+(commerce?"\n\n"+commerce:""),choices,"PARÍS · TRANSEÚNTE");
   return true;
  }
  function interact(g,time=0){
@@ -364,5 +392,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,shopperReaction,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,interact,interactShop,interactEvent,interactWalker,summary,version:"15.4"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,interact,interactShop,interactEvent,interactWalker,summary,version:"15.5"});
 })();

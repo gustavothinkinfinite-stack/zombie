@@ -2,7 +2,7 @@
 /* node tests/city-life.test.js */
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),window={};
-for(const f of ["vtm-shops.js","vtm-districts.js","vtm-reactive-districts.js","vtm-city-life.js"])vm.runInNewContext(fs.readFileSync(path.join(root,f),"utf8"),{window},{filename:f});
+for(const f of ["vtm-shops.js","vtm-districts.js","vtm-reactive-districts.js","vtm-contacts.js","vtm-city-life.js"])vm.runInNewContext(fs.readFileSync(path.join(root,f),"utf8"),{window},{filename:f});
 const C=window.VTM_CITY_LIFE,S=window.VTM_SHOPS,D=window.VTM_DISTRICTS;
 const test=(label,fn)=>{fn();console.log("OK:",label);};
 const g=(scene="district",district="bastilla",minutes=1215,night=1)=>({scene,district,sidevenue:"stjuly-cafe",x:202,y:169,clock:{night,minutes}});
@@ -224,6 +224,39 @@ test("Los clientes recuerdan favores, tensiones y vigilancia sin modificar la pa
  const old=g("sidevenue","stjuly",1215,1);
  assert.equal(C.shopperReaction(old,shop),"","Las partidas antiguas no inventan reputación");
  assert.equal(C.shopperReaction(game,S.byId["passy-anticuario"]),"","No filtrar otros barrios");
+});
+test("Los peatones comentan la reputación de los comercios sin modificar relaciones o expedientes",()=>{
+ const game=g("district","stjuly",23*60+20,4),dialogs=[],logs=[],saves=[];
+ const shop=S.byId["stjuly-cafe"];
+ game.contactMemory={[shop.id]:{choice:"help",trust:2,decisionNight:3}};
+ game.elizabeth={proofs:["preservada"]};game.localCases={cases:["otro"]};
+ game.parkerDossier={proofs:["EP47"]};game.parkerPolitics={audience:"held"};
+ game.conspiracy={sealed:true};
+ assert.match(C.streetCommerceReputation(game),/hablan bien/);
+ const walker=C.walkers(game,10)[0];
+ C.bind({ask:(title,body,options)=>dialogs.push({title,body,options}),
+  log:x=>logs.push(x),save:()=>saves.push(true),refresh:()=>{}});
+ C.interactWalker(game,walker);
+ assert.match(dialogs.at(-1).body,/hablan bien/);
+ const choice=dialogs.at(-1).options.find(o=>/opinan los comerciantes/.test(o.label));
+ assert.ok(choice);choice.action();
+ assert.match(dialogs.at(-1).body,/no pruebas de ningún expediente/);
+ assert.equal(logs.length,1);assert.equal(saves.length,1);
+ const loaded=JSON.parse(JSON.stringify(game));
+ C.interactWalker(loaded,walker);
+ dialogs.at(-1).options.find(o=>/opinan los comerciantes/.test(o.label)).action();
+ assert.equal(logs.length,1,"No repetir registro de reputación");
+ assert.equal(saves.length,1,"No reescribir estado conocido");
+ for(const key of ["contactMemory","elizabeth","localCases","parkerDossier","parkerPolitics","conspiracy"])
+  assert.deepEqual(loaded[key],game[key],"Inalterado: "+key);
+ const distrust=JSON.parse(JSON.stringify(game));
+ distrust.contactMemory[shop.id]={choice:"pressure",trust:-2,decisionNight:3};
+ assert.match(C.streetCommerceReputation(distrust),/desconfían/);
+ assert.equal(C.streetCommerceReputation({...distrust,district:"passy"}),"","Sin contagio entre barrios");
+ const old=g("district","stjuly",1215,1);
+ assert.equal(C.streetCommerceReputation(old),"","Partidas anteriores sin reputación");
+ C.interactWalker(old,C.walkers(old,10)[0]);
+ assert.equal(dialogs.at(-1).options.some(o=>/opinan los comerciantes/.test(o.label)),false);
 });
 test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
