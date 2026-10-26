@@ -241,23 +241,45 @@ window.VTM_CITY_LIFE=(()=>{
   const idx=Number(w.id.slice((g.district+":walker:").length));
   return published[Number.isInteger(idx)&&idx>=0?idx%Math.min(3,published.length):0];
  }
+ // Los peatones pueden orientar hacia un comercio que ya participa en
+ // el incidente. Escuchar el rumor no constituye una prueba ni activa misiones.
+ function rumorLead(rumor){
+  const def=window.VTM_REACTIVE_DISTRICTS?.byId?.[rumor?.origin];
+  if(!def||!Array.isArray(def.shops))return null;
+  const shop=def.shops.map(id=>window.VTM_SHOPS?.byId?.[id])
+   .find(s=>s&&s.district===rumor.origin);
+  return shop?{name:shop.name,district:def.name}:null;
+ }
  function interactWalker(g,w){
   const state=init(g),key=g.clock.night+":"+w.id,remembered=!!state.talked[key];
-  const rumor=streetRumor(g,w);
+  const rumor=streetRumor(g,w),lead=rumorLead(rumor);
   const text=remembered?
    "La persona reconoce que ya conversaron esta noche. Mira la calle y continúa con sus asuntos.":
    "La persona interrumpe brevemente su recorrido. No conoce los secretos de los Vástagos ni tiene información excepcional.";
   const streetNews=rumor?
    "Se comenta en este barrio, sin pruebas verificadas: "+rumor.text+"\nEl comentario no constituye evidencia de una investigación.":
    (active(g).length?"En el barrio se comenta: "+active(g)[0].title+".":"La noche continúa con actividad cotidiana.");
-  api?.ask?.(w.name,text+"\n\n"+streetNews,
-   [{label:remembered?"Despedirte":"Preguntar por lo sucedido en el barrio",action:()=>{
-     if(!remembered){
-      state.talked[key]=true;
-      api?.log?.("Conversaste con "+w.name+" en "+g.district+"."+(rumor?" Rumor sin verificar: "+rumor.text:""));
-     }
-     api?.refresh?.();api?.save?.();
-   }}],"PARÍS · TRANSEÚNTE");
+  const choices=[{label:remembered?"Despedirte":"Preguntar por lo sucedido en el barrio",action:()=>{
+   if(!remembered){
+    state.talked[key]=true;
+    api?.log?.("Conversaste con "+w.name+" en "+g.district+"."+(rumor?" Rumor sin verificar: "+rumor.text:""));
+   }
+   api?.refresh?.();api?.save?.();
+  }}];
+  if(lead)choices.push({label:"Preguntar dónde contrastar el rumor",action:()=>{
+   const note="Podés consultar en "+lead.name+", en "+lead.district+
+    ". Allí conocen versiones del incidente, pero sólo una investigación puede aportar pruebas.";
+   const id=g.clock.night+":lead:"+rumor.id;
+   if(!state.checked[id]){
+    state.checked[id]=true;
+    api?.log?.("Orientación vecinal sin verificar: "+lead.name+" ("+lead.district+").");
+    api?.save?.();
+   }
+   api?.ask?.("Una dirección para investigar",note,
+    [{label:"Seguir explorando",action:()=>{}}],"PARÍS · RUMOR SIN VERIFICAR");
+   api?.refresh?.();
+  }});
+  api?.ask?.(w.name,text+"\n\n"+streetNews,choices,"PARÍS · TRANSEÚNTE");
   return true;
  }
  function interact(g,time=0){
@@ -275,5 +297,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,interact,interactShop,interactEvent,interactWalker,summary,version:"15.1"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,interact,interactShop,interactEvent,interactWalker,summary,version:"15.2"});
 })();

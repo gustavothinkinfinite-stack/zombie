@@ -2,7 +2,7 @@
 /* node tests/city-life.test.js */
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),window={};
-for(const f of ["vtm-shops.js","vtm-districts.js","vtm-city-life.js"])vm.runInNewContext(fs.readFileSync(path.join(root,f),"utf8"),{window},{filename:f});
+for(const f of ["vtm-shops.js","vtm-districts.js","vtm-reactive-districts.js","vtm-city-life.js"])vm.runInNewContext(fs.readFileSync(path.join(root,f),"utf8"),{window},{filename:f});
 const C=window.VTM_CITY_LIFE,S=window.VTM_SHOPS,D=window.VTM_DISTRICTS;
 const test=(label,fn)=>{fn();console.log("OK:",label);};
 const g=(scene="district",district="bastilla",minutes=1215,night=1)=>({scene,district,sidevenue:"stjuly-cafe",x:202,y:169,clock:{night,minutes}});
@@ -103,6 +103,39 @@ test("Los peatones transmiten rumores públicos según barrio y hora sin alterar
  withoutRumors.reactiveDistricts={rumors:[game.reactiveDistricts.rumors[1]]};
  assert.equal(C.streetRumor(withoutRumors,C.walkers(withoutRumors,8)[0]),null);
  assert.equal(C.streetRumor(g(),C.walkers(g(),8)[0]),null,"Compatibilidad con partidas antiguas");
+});
+test("Los rumores indican comercios existentes sin conceder pruebas ni repetir orientaciones",()=>{
+ const game=g("district","bastilla",23*60+40,2),dialogs=[],logs=[],saved=[];
+ game.elizabeth={investigacion:"intacta"};
+ game.localCases={pistas:3};
+ game.reactiveDistricts={rumors:[{
+  id:"stjuly:search:bastilla",origin:"stjuly",district:"bastilla",
+  night:2,minute:23*60+20,text:"Se revisan invitaciones falsas."
+ }]};
+ const person=C.walkers(game,8)[0],rumor=C.streetRumor(game,person);
+ assert.equal(C.rumorLead(rumor).name,"Café des Lanternes");
+ C.bind({ask:(title,body,choices)=>dialogs.push({title,body,choices}),
+  log:text=>logs.push(text),save:()=>saved.push(true),refresh:()=>{}});
+ C.interactWalker(game,person);
+ const lead=dialogs.at(-1).choices.find(c=>/dónde contrastar/.test(c.label));
+ assert.ok(lead);
+ lead.action();
+ assert.match(dialogs.at(-1).body,/Café des Lanternes/);
+ assert.match(dialogs.at(-1).body,/sólo una investigación puede aportar pruebas/);
+ assert.equal(logs.length,1);
+ assert.equal(game.cityLife.checked["2:lead:stjuly:search:bastilla"],true);
+ assert.deepEqual(game.elizabeth,{investigacion:"intacta"});
+ assert.deepEqual(game.localCases,{pistas:3});
+ const recovered=JSON.parse(JSON.stringify(game));
+ C.interactWalker(recovered,person);
+ dialogs.at(-1).choices.find(c=>/dónde contrastar/.test(c.label)).action();
+ assert.equal(logs.length,1,"Una pista ya anotada no debe duplicar entradas");
+ assert.equal(saved.length,1,"No se vuelve a escribir el mismo dato");
+ const unknown={origin:"inexistente"};
+ assert.equal(C.rumorLead(unknown),null);
+ assert.equal(C.rumorLead(null),null);
+ const old=g();C.interactWalker(old,C.walkers(old,8)[0]);
+ assert.equal(dialogs.at(-1).choices.length,1,"Las partidas antiguas no inventan indicios");
 });
 test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
