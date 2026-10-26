@@ -250,9 +250,32 @@ window.VTM_CITY_LIFE=(()=>{
    .find(s=>s&&s.district===rumor.origin);
   return shop?{name:shop.name,district:def.name}:null;
  }
+ // Reacciones civiles basadas en las decisiones persistidas y la vigilancia.
+ // No convierten rumores en pruebas ni revelan sucesos ocultos.
+ function neighborhoodReaction(g){
+  const district=g?.district;
+  if(g?.scene!=="district"||!byId[district])return "";
+  const c=g.reactiveDistricts?.cases?.[district],night=Math.max(1,Math.floor(Number(g.clock?.night)||1));
+  const flags=c?.flags&&typeof c.flags==="object"?c.flags:{};
+  let note="";
+  if(c&&Number.isInteger(c.night)&&c.night<=night&&c.stage!=="pending"){
+   if(flags.intimidated)note="Varios vecinos evitan hablar de lo ocurrido: recuerdan que un testigo fue presionado y desconfían de nuevas preguntas.";
+   else if(flags.hidden||flags.concealed)note="Las versiones del incidente siguen sin encajar. Los vecinos hablan con cautela y evitan señalar culpables.";
+   else if((flags.reported&&(flags.evidence||flags.testimony||flags.shop))||c.outcome==="verified")
+    note="Algunos vecinos saben que se entregaron indicios a los responsables del barrio y parecen más dispuestos a conversar.";
+   else if(flags.helped||c.outcome==="aided")
+    note="Un vecino recuerda que ayudaste durante el incidente. La conversación empieza con más confianza.";
+   else if(c.outcome==="lost"||c.outcome==="unresolved")
+    note="El incidente quedó sin una explicación convincente. Se percibe inquietud entre los residentes.";
+  }
+  const heat=Number(g.cityConsequences?.heat?.[district]);
+  if(Number.isFinite(heat)&&heat>=40)
+   note+=(note?" ":"")+"La atención policial en las calles hace que muchos midan sus palabras.";
+  return note;
+ }
  function interactWalker(g,w){
   const state=init(g),key=g.clock.night+":"+w.id,remembered=!!state.talked[key];
-  const rumor=streetRumor(g,w),lead=rumorLead(rumor);
+  const rumor=streetRumor(g,w),lead=rumorLead(rumor),reaction=neighborhoodReaction(g);
   const text=remembered?
    "La persona reconoce que ya conversaron esta noche. Mira la calle y continúa con sus asuntos.":
    "La persona interrumpe brevemente su recorrido. No conoce los secretos de los Vástagos ni tiene información excepcional.";
@@ -266,6 +289,17 @@ window.VTM_CITY_LIFE=(()=>{
    }
    api?.refresh?.();api?.save?.();
   }}];
+  if(reaction)choices.push({label:"Preguntar cómo cambió el barrio",action:()=>{
+   const id=g.clock.night+":reaction:"+w.id;
+   if(!state.checked[id]){
+    state.checked[id]=true;
+    api?.log?.("Impresiones de "+g.district+" (sin verificar): "+reaction);
+    api?.save?.();
+   }
+   api?.ask?.(w.name,reaction+"\n\nSon impresiones vecinales; no constituyen pruebas de ninguna investigación.",
+    [{label:"Seguir explorando",action:()=>{}}],"PARÍS · MEMORIA DEL BARRIO");
+   api?.refresh?.();
+  }});
   if(lead)choices.push({label:"Preguntar dónde contrastar el rumor",action:()=>{
    const note="Podés consultar en "+lead.name+", en "+lead.district+
     ". Allí conocen versiones del incidente, pero sólo una investigación puede aportar pruebas.";
@@ -279,7 +313,7 @@ window.VTM_CITY_LIFE=(()=>{
     [{label:"Seguir explorando",action:()=>{}}],"PARÍS · RUMOR SIN VERIFICAR");
    api?.refresh?.();
   }});
-  api?.ask?.(w.name,text+"\n\n"+streetNews,choices,"PARÍS · TRANSEÚNTE");
+  api?.ask?.(w.name,text+"\n\n"+streetNews+(reaction?"\n\n"+reaction:""),choices,"PARÍS · TRANSEÚNTE");
   return true;
  }
  function interact(g,time=0){
@@ -297,5 +331,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,interact,interactShop,interactEvent,interactWalker,summary,version:"15.2"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,interact,interactShop,interactEvent,interactWalker,summary,version:"15.3"});
 })();

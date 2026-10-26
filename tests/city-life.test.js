@@ -137,6 +137,49 @@ test("Los rumores indican comercios existentes sin conceder pruebas ni repetir o
  const old=g();C.interactWalker(old,C.walkers(old,8)[0]);
  assert.equal(dialogs.at(-1).choices.length,1,"Las partidas antiguas no inventan indicios");
 });
+test("Los habitantes reaccionan a decisiones previas con memoria y sin alterar expedientes",()=>{
+ const game=g("district","passy",23*60+55,4),dialogs=[],logs=[],saves=[];
+ game.version=1;game.character={name:"Clara",clan:"Toreador"};
+ game.elizabeth={evidence:["anterior"]};game.localCases={closed:["local"]};
+ game.parkerDossier={proofs:["expediente"]};game.parkerPolitics={audience:"held"};
+ game.conspiracy={sealed:true};game.cityConsequences={heat:{passy:48}};
+ game.reactiveDistricts={cases:{passy:{night:3,stage:"closed",outcome:"aided",flags:{helped:true}}}};
+ assert.match(C.neighborhoodReaction(game),/ayudaste/);
+ assert.match(C.neighborhoodReaction(game),/atención policial/);
+ const walker=C.walkers(game,5)[0];
+ C.bind({ask:(title,body,options)=>dialogs.push({title,body,options}),
+  log:x=>logs.push(x),save:()=>saves.push(true),refresh:()=>{}});
+ C.interactWalker(game,walker);
+ assert.match(dialogs.at(-1).body,/ayudaste/);
+ const ask=dialogs.at(-1).options.find(o=>/cómo cambió el barrio/.test(o.label));
+ assert.ok(ask);ask.action();
+ assert.match(dialogs.at(-1).body,/no constituyen pruebas/);
+ assert.equal(logs.length,1);assert.equal(saves.length,1);
+ const loaded=JSON.parse(JSON.stringify(game));
+ C.interactWalker(loaded,walker);
+ dialogs.at(-1).options.find(o=>/cómo cambió el barrio/.test(o.label)).action();
+ assert.equal(logs.length,1,"Una observación recuperada no se registra dos veces");
+ assert.equal(saves.length,1,"Una observación recuperada no se vuelve a guardar");
+ for(const name of ["elizabeth","localCases","parkerDossier","parkerPolitics","conspiracy","cityConsequences"])
+  assert.deepEqual(loaded[name],game[name],"Sin cambios en "+name);
+ const changed=JSON.parse(JSON.stringify(game));
+ changed.reactiveDistricts.cases.passy={night:3,stage:"closed",outcome:"unresolved",flags:{intimidated:true}};
+ assert.match(C.neighborhoodReaction(changed),/presionado/);
+ changed.reactiveDistricts.cases.passy.flags={hidden:true};
+ assert.match(C.neighborhoodReaction(changed),/versiones/);
+ assert.doesNotMatch(C.neighborhoodReaction(changed),/Senescal|impostor|diabol/i);
+ changed.reactiveDistricts.cases.passy={night:3,stage:"closed",outcome:"verified",flags:{reported:true,evidence:true}};
+ assert.match(C.neighborhoodReaction(changed),/indicios/);
+ changed.reactiveDistricts.cases.passy={night:3,stage:"closed",outcome:"lost",flags:{}};
+ assert.match(C.neighborhoodReaction(changed),/sin una explicación/);
+ changed.reactiveDistricts.cases.passy={night:7,stage:"closed",outcome:"aided",flags:{helped:true}};
+ changed.cityConsequences.heat.passy=0;
+ assert.equal(C.neighborhoodReaction(changed),"","No anticipar noches futuras");
+ const previous=g("district","passy",1215,1);
+ assert.equal(C.neighborhoodReaction(previous),"","Compatibilidad de partidas antiguas");
+ C.interactWalker(previous,C.walkers(previous,5)[0]);
+ assert.equal(dialogs.at(-1).options.length,1);
+});
 test("El guardado original y las rutas de entrada a comercios permanecen",()=>{
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const source=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
