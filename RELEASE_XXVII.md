@@ -68,6 +68,14 @@ La vigilancia civil ambiental ya existente ahora habilita **observar discretamen
 
 Referencia: `vtm-city-life.js`, conexión de `dicePool` y `exposure` en `vtm-game.js`, regresión `tests/surveillance-choices.test.js`. La cabecera pública continúa indicando fase XXVI hasta completar toda la fase XXVII.
 
+### XXVII-C · Combate táctico contextual (implementación inicial)
+
+El enfrentamiento por turnos está integrado exclusivamente para un **vigilante hostil sin identidad demostrada**, no para cualquier peatón. Exige `elizabeth.hunters === true`, exposición mínima de 75, persecución activa con alerta al menos 45, línea de visión, proximidad y Salud suficiente. El personaje puede retirarse antes del combate o usar la acción táctica de huida. Un agresor humano con barra metálica se enfrenta usando el motor de iniciativa, ataques, defensa, heridas, absorción y equipo de `vtm-tactics.js`.
+
+La función `startStreet()` crea una identidad de episodio `street-vigilante:<fuente>`, separada de los enemigos fijos. `vtm-tactics-ui.js` no concede PX, aumenta exposición por testigos, evalúa Conciencia al derrotar usando armas y recupera dos puntos de Salud tras una derrota para no bloquear la partida. `vtm-hunters.js` registra desenlace y descanso de una noche. Prueba `tests/hunters-street-combat.test.js` cubre requisitos, huida, munición, ausencia de PX y recuperación del guardado.
+
+**Pendiente:** investigadores de la célula y pruebas de identidad, adversarios armados especializados, Caso 03 completo y evaluación de equilibrio antes de cambiar la versión visible.
+
 ## 5. Entregas incrementales (orden sugerido)
 
 - **XXVII-A · Presencia (parcial):** advertencias, elección de observar/evitar y memoria persistente de las decisiones integradas. La presencia física inicial corresponde a XXVII-B; siguen pendientes una célula identificada y señales ambientales adicionales.

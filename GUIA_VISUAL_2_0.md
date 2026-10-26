@@ -25,6 +25,10 @@ Esta sección actualiza el alcance del proyecto sin reemplazar los registros his
 
 La [hoja de ruta de cazadores XXVII](RELEASE_XXVII.md) distingue encuentros ambientales, seguimiento, persecución, combate opcional e investigación documental. **XXVII-A está integrado y XXVII-B tiene su primera entrega:** observar o evitar vigilancia civil, con consecuencia persistente, y una figura no identificada que puede seguir al personaje por calles transitables. Su navegación se renderiza en Canvas desde `vtm-hunters.js`, sin convertirse en policía. XXVII-C ya ofrece diálogo, retirada o forcejeo defensivo no letal y voluntario ante el observador sin identificar, con línea de visión y distancia limitadas; el daño eventual usa la absorción de `vtm-tactics.js`, pero aún no hay combate por turnos propio; la célula de cazadores identificados y sus combates propios siguen pendientes. No reemplazar los módulos policiales por cazadores ni adelantar identidades secretas en conversaciones, rótulos, mapas, registros o pantallas de derrota. Reutilizar la escala visual y las reglas de accesibilidad existentes sin modificar coordenadas y colisiones. La versión visible sigue siendo fase XXVI hasta aprobar Chromium local y validación de Hostinger.
 
+## Combate callejero contextual XXVII-C
+
+La amenaza visible es un **vigilante humano sin identificar** con barra metálica. Dibujarlo con apariencia civil, sin insignias de facción, iconos de cazadores ni pistas sobre informantes. Solo puede enfrentarse por elección del jugador, tras antecedentes de vigilancia suficientemente graves. La interfaz reutiliza el menú de combate por turnos y permite huir; no presentar la identidad del adversario como confirmada ni usar imágenes de ejecución o muerte obligatoria.
+
 ## Dirección artística
 
 **Gótico urbano de lujo discreto, no medieval ni caricaturesco.** París contemporánea y lluviosa, mármol oscuro, vidrio húmedo, caoba, cuero, metales envejecidos y acentos de vino. La nobleza de la Camarilla debe transmitir autoridad; los Brujah, fricción urbana; los Nosferatu, inteligencia subterránea; los Tremere, orden y secreto.
