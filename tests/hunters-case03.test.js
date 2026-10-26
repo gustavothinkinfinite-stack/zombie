@@ -79,6 +79,7 @@ test("Respaldo conserva el caso sin alterar a Elizabeth y los seguimientos exist
  assert.equal(rec.game.hunters.resolved["5:bastilla"],"escaped");
  assert.equal(JSON.stringify(rec.game.elizabeth),JSON.stringify(g.elizabeth));
  assert.equal(JSON.stringify(rec.game.conspiracy),JSON.stringify(g.conspiracy));
+ rec.game.district="tuneles";
  assert.equal(CASE.canAttempt(rec.game,"refugio"),"Esta fuente ya está contrastada.");
 });
 test("Menú del Caso 03 usa tiradas, minutos y guardado sin convertir rumores en pruebas",()=>{
