@@ -63,7 +63,10 @@ window.VTM_HUNTERS=(()=>{
  }
  function position(g){
   const p=g?.hunters?.follower;
-  return p&&g.scene==="district"&&p.district===g.district&&p.night===g.clock?.night?{x:p.x,y:p.y,mode:p.mode}:null;
+  return p&&g.scene==="district"&&p.district===g.district&&p.night===g.clock?.night&&
+   p.source===(p.night-1)+":"+p.district&&!g.hunters?.resolved?.[p.source]&&
+   Number.isFinite(p.x)&&Number.isFinite(p.y)&&["watch","tail"].includes(p.mode)?
+   {x:p.x,y:p.y,mode:p.mode}:null;
  }
  function finish(g,type,message){
   const s=init(g),p=s?.follower;if(!p)return[];
@@ -114,7 +117,7 @@ window.VTM_HUNTERS=(()=>{
  function canConfront(g,physics){
   const p=position(g);
   return !!(p&&p.mode==="tail"&&physics&&!g.combat?.active&&
-   !g.hunters?.resolved?.[p.source]&&Math.hypot(g.x-p.x,g.y-p.y)<=65&&
+   !g.hunters?.resolved?.[g.hunters.follower.source]&&Math.hypot(g.x-p.x,g.y-p.y)<=65&&
    sight(physics,g.x,g.y,p.x,p.y));
  }
  function decide(g,physics,choice,success=false){

@@ -59,6 +59,23 @@ for(const [choice,success,status] of [["withdraw",false,"withdrew"],["dialogue",
  assert.equal(JSON.stringify(restored.game.elizabeth),JSON.stringify(g.elizabeth));
  assert.equal(JSON.stringify(restored.game.localCases),JSON.stringify(g.localCases));
 }
+// Una resolución recuperada puede coexistir transitoriamente con un seguidor residual.
+// No debe dibujarse ni permitir una segunda confrontación antes de normalizar.
+const residual=prepare(),resolvedId=residual.hunters.follower.source;
+residual.hunters.resolved[resolvedId]="spoken";
+const historyBefore=JSON.stringify(residual.hunters.history);
+assert.equal(H.position(residual),null,"un observador ya resuelto no debe aparecer en el mapa");
+assert.equal(H.canConfront(residual,P),false,"no se puede volver a confrontar");
+assert.equal(H.decide(residual,P,"dialogue",true).length,0);
+assert.equal(residual.hunters.resolved[resolvedId],"spoken");
+assert.equal(JSON.stringify(residual.hunters.history),historyBefore);
+H.init(residual);
+assert.equal(residual.hunters.follower,null,"normalizar descarta el seguidor residual");
+const damaged=prepare();damaged.hunters.follower.source="0:bastilla";
+assert.equal(H.position(damaged),null,"un origen inválido no debe renderizarse");
+assert.equal(H.canConfront(damaged,P),false);
+assert.equal(H.decide(damaged,P,"withdraw").length,0);
+
 const engine=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
 assert.ok(engine.includes("if(civilFollowerMenu())return;"));
 assert.ok(engine.includes("HUNTERS.decide(game,P,"));
