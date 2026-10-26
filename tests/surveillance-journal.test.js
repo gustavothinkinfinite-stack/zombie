@@ -50,11 +50,13 @@ const legacySnapshot=JSON.stringify(old);
 assert.equal(HUNTERS.summary(old).active,false);
 assert.equal(HUNTERS.summary(old).history.length,0);
 assert.equal(JSON.stringify(old),legacySnapshot,"un guardado antiguo no debe mutar");
-const watched={...g,scene:"district",district:"bastilla",hunters:{
+const watched={...g,cityLife:{surveillanceEpisodes:[...g.cityLife.surveillanceEpisodes,episode(5,"noticed")]},
+ scene:"district",district:"bastilla",hunters:{
  history:Array.from({length:7},(_,i)=>"Noche "+(i+1)+": silueta sin identificar."),
  follower:{district:"bastilla",night:6,mode:"tail",source:"5:bastilla",x:250,y:225}
 }};
 const watchedSnapshot=JSON.stringify(watched);
+assert.equal(HUNTERS.source(watched)?.night,5,"el seguidor visible requiere un indicio válido");
 const watch=HUNTERS.summary(watched);
 assert.equal(watch.active,true);
 assert.equal(watch.history.length,5);
