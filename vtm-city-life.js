@@ -361,6 +361,18 @@ window.VTM_CITY_LIFE=(()=>{
   if(e.outcome==="noticed")return "La noche siguiente hay miradas más cautelosas. Tal vez tu investigación llamó la atención.";
   return "Al volver a este barrio reconocés fotografías y anotaciones similares, pero ignorás quién las hizo.";
  }
+ // Resumen público de decisiones propias, nunca una identificación de los observadores.
+ function surveillanceJournal(g){
+  const episodes=g?.cityLife?.surveillanceEpisodes;
+  if(!Array.isArray(episodes))return [];
+  const labels={avoided:"cambiaste de ruta para evitar miradas desconocidas",
+   unconfirmed:"observaste indicios sin identificar a nadie",
+   noticed:"alguien pudo advertir tu investigación; no hay identificación"};
+  return episodes.filter(e=>e&&Number.isInteger(e.night)&&e.night>=1&&
+   byId[e.district]&&["observe","avoid"].includes(e.choice)&&
+   Object.prototype.hasOwnProperty.call(labels,e.outcome))
+   .slice(-5).map(e=>"Noche "+e.night+" · "+e.district+": "+labels[e.outcome]+".");
+ }
  function resolveSurveillance(g,choice){
   if(!g||g.scene!=="district"||!byId[g.district]||!["observe","avoid"].includes(choice)||
     g.combat?.active||!hunterWarning(g)||surveillanceEpisode(g))return null;
@@ -477,5 +489,5 @@ window.VTM_CITY_LIFE=(()=>{
    totalShops:shopList.length,local:g.scene==="district"?g.district:null};
  }
  return Object.freeze({defs,byId,bind,init,phase,current,hhmm,plan,tick,recent,active,shopState,shopReport,shopperReaction,
-  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,hunterWarning,surveillanceEpisode,surveillanceAftermath,resolveSurveillance,interact,interactShop,interactEvent,interactWalker,summary,version:"15.7"});
+  pedestrian,walkers,nearWalker,nearEvent,nearShopVisitor,districtDraw,shopDraw,bulletin,streetRumor,rumorLead,neighborhoodReaction,streetCommerceReputation,hunterWarning,surveillanceEpisode,surveillanceAftermath,surveillanceJournal,resolveSurveillance,interact,interactShop,interactEvent,interactWalker,summary,version:"15.7"});
 })();

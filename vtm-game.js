@@ -2406,6 +2406,19 @@
       root.appendChild(note);
     }
   }
+  if(CITY){
+   const observations=CITY.surveillanceJournal(game);
+   if(observations.length){
+    const heading=document.createElement("p");
+    heading.textContent="Vigilancia civil sin verificar · anotaciones personales:";
+    root.appendChild(heading);
+    for(const description of observations){
+     const row=document.createElement("p");
+     row.textContent="• "+description;
+     root.appendChild(row);
+    }
+   }
+  }
   const contacts=document.createElement("p");
   contacts.textContent="Contactos conocidos ("+game.knownNpcs.length+"/8): "+(game.knownNpcs.map(id=>Object.values(N.byLocation).find(n=>n.id===id)).filter(Boolean).map(n=>n.name+" ["+(game.npcRelations[n.id]||0)+"]").join("; ")||"Ninguno");
   root.appendChild(contacts);
