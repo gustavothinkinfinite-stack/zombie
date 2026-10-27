@@ -1359,7 +1359,7 @@
    if(game.embraced&&["policia","stjuly","passy","tuneles"].includes(location.id))actions.push({label:"Contrastar irregularidades documentales para la corte",action:()=>COURTUI.archive(location.id)});
    for(const task of POL.tasksAt(game,location.id))actions.push({label:"Servicio político: "+task.title+(task.blocked?" · "+task.blocked:""),disabled:!!task.blocked,action:()=>POLUI.investigate(task.id)});
    if(ELI&&ELI.atPlace(game,location.id))actions.push({label:"Investigar el asesinato de Elizabeth Parker",action:ELI.menu});
-   if(HCASE?.unlocked(game)&&HCASE.scenes.some(d=>d.place===location.id))actions.push({label:"Caso 03 · Los cazadores de la noche · buscar indicios",action:HCASE.menu});
+   if(HCASE?.atPlace(game,location.id))actions.push({label:"Caso 03 · Los cazadores de la noche · buscar indicios",action:HCASE.menu});
    if(game.embraced)actions.push({label:"Usar una Disciplina durante la investigación",action:WORLDUI.menu});
    if(EQUIP.OFFERS[location.id])actions.push({label:"Conseguir suministros o preparar equipamiento",action:TACTUI.equipmentMenu});
    if(TACT.ENEMIES[location.id])actions.push({label:"Enfrentar físicamente una amenaza del lugar",action:()=>TACTUI.battleEntry(location.id)});
@@ -2414,6 +2414,8 @@
     row.textContent="Caso 03 · Los cazadores de la noche: "+report.found+"/"+report.total+" fuentes contrastadas · "+(report.decision?"informe preliminar "+(report.decision==="archive"?"resguardado":"comunicado"):"identidad y fuente sin verificar")+".";
     root.appendChild(row);
     for(const entry of report.evidence){const line=document.createElement("p");line.textContent="• Caso 03: "+entry;root.appendChild(line);}
+    if(report.decision){for(const person of report.suspects){const line=document.createElement("p");line.textContent="• Persona de interés: "+person.name+" · "+person.status+" (sin acusación).";root.appendChild(line);}}
+    if(report.followupDecision){const note=document.createElement("p");note.textContent="• Comprobaciones posteriores: "+report.crosschecked+"/"+report.checksTotal+" · "+(report.followupDecision==="protect"?"testigos protegidos":"observación discreta");root.appendChild(note);}
    }
    if(window.VTM_PARKER_POLITICS){const p=window.VTM_PARKER_POLITICS.summary(game);if(p.verdict||p.protection){const title=document.createElement("p");title.textContent="Consecuencias del expediente Parker: "+(p.verdict||"sin audiencia")+" · custodia de testigos: "+(p.protection||"sin asignar");root.appendChild(title);for(const next of p.paths){const entry=document.createElement("p");entry.textContent="• Nueva línea política: "+next.title+" — "+next.description;root.appendChild(entry);}}}
   if(CONSP){
