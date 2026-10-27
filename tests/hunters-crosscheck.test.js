@@ -127,6 +127,47 @@ test("Partidas guardadas y respaldo conservan ambos nombres, las pruebas y los c
  for(const field of ["elizabeth","parkerDossier","parkerPolitics","principado","conspiracy","localCases","cityConsequences","combat","story"])
   assert.equal(JSON.stringify(restored.game[field]),JSON.stringify(g[field]),field+" preserved");
 });
+test("El balance final del Caso 03 sobrevive al respaldo sin repetir decisiones ni revelar identidades ocultas",()=>{
+ for(const choice of ["protect","shadow"]){
+  const g=sample();initial(g);
+  for(const check of C.checks){
+   go(g,check.id);
+   assert.equal(C.correlate(g,check.id,{success:true}).success,true);
+  }
+  const result=C.concludeCorrelations(g,choice);
+  assert.equal(result.exposure,choice==="shadow"?5:0);
+  const protectedFields=["elizabeth","parkerDossier","parkerPolitics","principado",
+   "conspiracy","localCases","cityConsequences","combat","story","equipment"];
+  const before=Object.fromEntries(protectedFields.map(field=>[field,JSON.stringify(g[field])]));
+  const map=new Map(),storage={getItem:key=>map.has(key)?map.get(key):null,
+   setItem:(key,value)=>map.set(key,String(value))};
+  const key="cronicas-paris-ghoul-v1",clans={Toreador:{}};
+  assert.equal(S.save(storage,key,g,clans),true);
+  const next=JSON.parse(JSON.stringify(g));next.clock.night++;
+  assert.equal(S.save(storage,key,next,clans),true);
+  map.set(key,"{guardado principal corrupto");
+  const recovered=S.load(storage,key,clans);
+  assert.ok(recovered&&recovered.fromBackup);
+  const restored=recovered.game,progress=C.progress(restored);
+  assert.equal(progress.found,3);assert.equal(progress.crosschecked,4);
+  assert.equal(progress.followupDecision,choice);
+  assert.equal(progress.suspects[0].name,"Julien Mercier");
+  assert.equal(progress.suspects[1].name,"Madeleine Perrin");
+  assert.equal(C.concludeCorrelations(restored,choice),null);
+  assert.equal(C.compare(restored,"warn"),null);
+  go(restored,"alquiler");assert.equal(C.correlate(restored,"alquiler",{success:true}),null);
+  assert.equal(restored.combat.rewards,undefined);
+  for(const field of protectedFields)
+   assert.equal(JSON.stringify(restored[field]),before[field],field+" preserved after "+choice);
+  restored.clock.night++;
+  assert.ok(C.aftermath(restored));
+  assert.doesNotMatch(C.aftermath(restored),/Etienne|Moreau|Senescal|impostora/i);
+  restored.clock.night++;
+  assert.ok(C.aftermath(restored));
+  restored.clock.night++;
+  assert.equal(C.aftermath(restored),"");
+ }
+});
 const engine=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
 assert.ok(engine.includes("HCASE?.atPlace(game,location.id)"));
 assert.ok(engine.includes("report.suspects"));
