@@ -81,8 +81,11 @@ window.VTM_HUNTERS_CASE=(()=>{
    checks.filter(d=>s.correlations.includes(d.id)).map(d=>d.id):[];
   const suspects=people.map(person=>{
    const confirmed=checks.filter(d=>d.person===person.id&&correlations.includes(d.id)).length;
-   return{id:person.id,name:person.name,role:person.role,confirmed,
-    total:2,status:confirmed===2?"dos fuentes contrastadas":confirmed===1?"una fuente: falta contraste":"sin corroborar"};
+   const identified=correlations.includes(person.id==="mercier"?"alquiler":"copias");
+   return{id:person.id,
+    name:identified?person.name:person.id==="mercier"?"Persona vinculada al vehículo":"Persona vinculada a los sobres",
+    role:identified?person.role:"Identidad todavía no establecida mediante documentos",
+    confirmed,total:2,status:confirmed===2?"dos fuentes contrastadas":confirmed===1?"una fuente: falta contraste":"sin corroborar"};
   });
   return{unlocked:unlocked(g),started:!!s,found:evidence.length,total:scenes.length,
    crosschecked:correlations.length,checksTotal:checks.length,suspects,

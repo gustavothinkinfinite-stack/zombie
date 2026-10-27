@@ -17,7 +17,11 @@ La hoja de ruta técnica y narrativa está en [`RELEASE_XXVII.md`](RELEASE_XXVII
 
 Tras registrar vigilancia humana relacionada con el refugio de Bapthiste, se abre **«Los cazadores de la noche»** desde Acciones o en los lugares investigables. Hay tres fuentes independientes: rastros de un refugio en los **túneles**, un vehículo en **Saint-Denis** y anotaciones sin firma en la **comisaría**. Cada fuente exige una tirada y puede reintentarse otra noche si se falla. El expediente mantiene sus evidencias y decisiones en `game.hunters.case03`, dentro del mismo guardado v1.
 
-Con las tres fuentes, el jugador puede resguardar el informe preliminar o compartir una advertencia discreta (exposición +3). **Todavía no se identifica la célula, la fuente de las filtraciones ni se confirma la desaparición de un Vástago.** El Caso 03 completo y el lanzamiento de XXVII siguen pendientes.
+Con las tres fuentes, el jugador puede resguardar el informe preliminar o compartir una advertencia discreta (exposición +3).
+
+**XXVII-D · Segunda etapa:** después de ese informe, se abren cuatro verificaciones independientes entre Saint-Denis, St. July, hemeroteca y comisaría. Permiten investigar a dos personas de interés, Julien Mercier (vehículo) y Madeleine Perrin (mensajería), pero **sus nombres solo se muestran tras hallar un documento que los identifique**. Cada hipótesis necesita dos fuentes, sin confundir un testimonio con una identidad probada. Las tiradas fallidas pueden reintentarse en otra noche. Tras las cuatro comprobaciones, se decide proteger a los testigos o continuar observando (exposición +5). El resultado, incluido su eco durante dos noches, se guarda en `game.hunters.case03`.
+
+**Todavía no se demuestra que Mercier o Perrin sean cazadores ni se identifica al informante, la célula o el destino del ocupante del refugio.** El Caso 03 completo y el lanzamiento de XXVII siguen pendientes.
 
 ### Nuevo avance XXVII-C — Combate táctico callejero opcional
 

@@ -34,13 +34,16 @@ test("Sin expediente preliminar no se exhiben personas de interés ni registros"
 });
 test("Verificación independiente: Mercier y Perrin no quedan corroborados por una sola pista",()=>{
  const g=sample();initial(g);
+ assert.doesNotMatch(C.progress(g).suspects.map(x=>x.name).join(" "),/Mercier|Perrin/);
  assert.equal(C.atPlace(g,"stjuly"),true);
  assert.equal(C.atPlace(g,"hemeroteca"),true);
  assert.equal(C.atPlace(g,"elysee"),false);
  go(g,"alquiler");const one=C.correlate(g,"alquiler",{success:true});
  assert.equal(one.found,1);assert.match(one.message,/no identifica/);
  assert.equal(C.progress(g).suspects.find(x=>x.id==="mercier").confirmed,1);
+ assert.equal(C.progress(g).suspects.find(x=>x.id==="mercier").name,"Julien Mercier");
  assert.equal(C.progress(g).suspects.find(x=>x.id==="perrin").confirmed,0);
+ assert.doesNotMatch(C.progress(g).suspects.find(x=>x.id==="perrin").name,/Perrin/);
  assert.equal(C.concludeCorrelations(g,"shadow"),null);
  go(g,"porteria");const two=C.correlate(g,"porteria",{success:true});
  assert.equal(two.found,2);
@@ -49,12 +52,19 @@ test("Verificación independiente: Mercier y Perrin no quedan corroborados por u
  assert.match(two.message,/no reconoce al conductor/);
  go(g,"copias");assert.equal(C.correlate(g,"copias",{success:true}).found,3);
  assert.equal(C.progress(g).suspects.find(x=>x.id==="perrin").confirmed,1);
+ assert.equal(C.progress(g).suspects.find(x=>x.id==="perrin").name,"Madeleine Perrin");
  go(g,"mensajeria");assert.equal(C.correlate(g,"mensajeria",{success:true}).found,4);
  const p=C.progress(g);assert.equal(p.crosschecked,4);assert.equal(p.checksTotal,4);
  assert.equal(p.suspects[1].confirmed,2);
  assert.equal(p.nextChecks.length,0);
  assert.equal(C.correlate(g,"mensajeria",{success:true}),null);
  assert.match(C.canCorrelate(g,"mensajeria"),/ya está registrado/);
+});
+test("Un testimonio sin identificación documental nunca revela nombres",()=>{
+ const g=sample();initial(g);
+ for(const id of ["porteria","mensajeria"]){go(g,id);assert.equal(C.correlate(g,id,{success:true}).success,true);}
+ assert.equal(C.progress(g).crosschecked,2);
+ assert.doesNotMatch(C.progress(g).suspects.map(x=>x.name).join(" "),/Mercier|Perrin/);
 });
 test("Si una prueba falla, se bloquea sólo esa fuente por la noche; al recargar no se regala",()=>{
  const g=sample();initial(g);go(g,"copias");

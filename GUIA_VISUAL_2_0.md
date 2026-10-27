@@ -27,7 +27,7 @@ La [hoja de ruta de cazadores XXVII](RELEASE_XXVII.md) distingue encuentros ambi
 
 ## Caso 03 · Pistas visuales XXVII-D
 
-Las tres escenas del expediente abierto se presentan como **indicios no confirmados**: un refugio desocupado en túneles, un vehículo de vigilancia en Saint-Denis y documentos sin firma en la comisaría. No incluir insignias ni símbolos que identifiquen cazadores, ni nombres o retratos del informante. El texto del diario debe distinguir pruebas contrastadas, rumores y conclusiones preliminares. La interfaz sigue el estilo nocturno de París y reutiliza la navegación actual.
+Las tres escenas del expediente abierto se presentan como **indicios no confirmados**: un refugio desocupado en túneles, un vehículo de vigilancia en Saint-Denis y documentos sin firma en la comisaría. No incluir insignias ni símbolos que identifiquen cazadores, ni nombres o retratos del informante. El texto del diario debe distinguir pruebas contrastadas, rumores y conclusiones preliminares. En la segunda etapa, **no se muestra ningún nombre de persona de interés antes de corroborar su documento identificatorio**. Los testimonios por sí solos dejan identidades anónimas; incluso con dos fuentes, no representar culpabilidad ni afiliación a cazadores. La interfaz sigue el estilo nocturno de París y reutiliza la navegación actual.
 
 ## Combate callejero contextual XXVII-C
 
