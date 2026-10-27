@@ -176,7 +176,7 @@ window.VTM_HUNTERS_CASE=(()=>{
  }
  function aftermath(g){
   const state=read(g),n=night(g);
-  if(!state?.followupDecision||!Number.isInteger(state.followupNight)||
+  if(!["protect","shadow"].includes(state?.followupDecision)||!Number.isInteger(state.followupNight)||
    n<=state.followupNight||n>state.followupNight+2)return "";
   return state.followupDecision==="protect"?
    "Al regresar, algunos testigos procuran no exponerse. Tu advertencia fue recibida, aunque no aportó nombres nuevos.":

@@ -168,6 +168,24 @@ test("El balance final del Caso 03 sobrevive al respaldo sin repetir decisiones 
   assert.equal(C.aftermath(restored),"");
  }
 });
+test("Las consecuencias posteriores ignoran decisiones inválidas de partidas antiguas",()=>{
+ const g=sample();
+ g.hunters.case03={evidence:[],correlations:[],decision:"archive",
+  followupDecision:"dato_invalido",followupNight:7,history:[]};
+ const previous=JSON.stringify(g);
+ assert.equal(C.progress(g).followupDecision,null);
+ assert.equal(C.aftermath(g),"","Un estado desconocido no debe inventar vigilancia");
+ assert.equal(JSON.stringify(g),previous,"Consultar consecuencias no modifica el guardado");
+ g.hunters.case03.followupDecision="protect";
+ assert.match(C.aftermath(g),/testigos/);
+ g.hunters.case03.followupDecision="shadow";
+ assert.match(C.aftermath(g),/automóvil/);
+ g.hunters.case03.followupNight="7";
+ assert.equal(C.aftermath(g),"","La fecha debe ser un entero válido");
+ g.hunters.case03.followupNight=7;
+ g.clock.night=10;
+ assert.equal(C.aftermath(g),"","La consecuencia caduca tras dos noches");
+});
 const engine=fs.readFileSync(path.join(root,"vtm-game.js"),"utf8");
 assert.ok(engine.includes("HCASE?.atPlace(game,location.id)"));
 assert.ok(engine.includes("report.suspects"));
